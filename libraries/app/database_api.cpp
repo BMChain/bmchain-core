@@ -239,6 +239,11 @@ dynamic_global_property_object database_api::get_dynamic_global_properties()cons
 
 chain_properties database_api::get_chain_properties()const
 {
+   return my->_db.get_witness_schedule_object().median_props.chain_props;
+}
+
+median_witness_properties database_api::get_median_witness_properties()const
+{
    return my->_db.get_witness_schedule_object().median_props;
 }
 
@@ -1317,7 +1322,7 @@ state database_api::get_state( string path )const
       } else if( part[1].size() == 0 || part[1] == "feed" ) {
          const auto& fidxs = my->_db.get_index_type<follow::feed_index>().indices();
          const auto& fidx = fidxs.get<steemit::follow::by_account>();
-         
+
          auto itr = fidx.lower_bound( eacnt.id );
          int count = 0;
          while( itr != fidx.end() && itr->account == eacnt.id && count < 100 ) {

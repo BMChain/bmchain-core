@@ -12,6 +12,12 @@ namespace steemit { namespace chain {
 
    using namespace graphene::db;
 
+   struct median_witness_properties
+   {
+      chain_properties              chain_props;
+      liquidity_reward_properties   liquidity_props;
+      content_rewards_distribution  content_reward_dist;
+   };
 
    /**
     *  All witnesses with at least 1% net positive approval and
@@ -25,12 +31,12 @@ namespace steemit { namespace chain {
          static const uint8_t type_id  = impl_witness_object_type;
 
          /** the account that has authority over this witness */
-         string          owner;
-         time_point_sec  created;
-         string          url;
-         uint32_t        total_missed = 0;
-         uint64_t        last_aslot = 0;
-         uint64_t        last_confirmed_block_num = 0;
+         string                     owner;
+         time_point_sec             created;
+         string                     url;
+         uint32_t                   total_missed = 0;
+         uint64_t                   last_aslot = 0;
+         uint64_t                   last_confirmed_block_num = 0;
 
          /**
           * Some witnesses have the job because they did a proof of work,
@@ -38,16 +44,16 @@ namespace steemit { namespace chain {
           * each round, the witness with the lowest pow_worker value greater
           * than 0 is removed.
           */
-         uint64_t        pow_worker = 0;
+         uint64_t                   pow_worker = 0;
 
          /**
           *  This is the key used to sign blocks on behalf of this witness
           */
          public_key_type signing_key;
 
-         chain_properties props;
-         price            sbd_exchange_rate;
-         time_point_sec   last_sbd_exchange_update;
+         median_witness_properties  props;
+         price                      sbd_exchange_rate;
+         time_point_sec             last_sbd_exchange_update;
 
 
          /**
@@ -55,7 +61,7 @@ namespace steemit { namespace chain {
           *  scheduling.  The top N witnesses by votes are scheduled every round, every one
           *  else takes turns being scheduled proportional to their votes.
           */
-         share_type      votes;
+         share_type                 votes;
 
          /**
           * These fields are used for the witness scheduling algorithm which uses
@@ -98,7 +104,6 @@ namespace steemit { namespace chain {
          witness_id_type get_id()const { return id; }
    };
 
-
    class witness_vote_object : public abstract_object<witness_vote_object>
    {
       public:
@@ -115,11 +120,11 @@ namespace steemit { namespace chain {
          static const uint8_t space_id = implementation_ids;
          static const uint8_t type_id = impl_witness_schedule_object_type;
 
-         fc::uint128      current_virtual_time;
-         uint32_t         next_shuffle_block_num = 1;
-         vector< string > current_shuffled_witnesses;
-         chain_properties median_props;
-         version          majority_version;
+         fc::uint128                current_virtual_time;
+         uint32_t                   next_shuffle_block_num = 1;
+         vector< string >           current_shuffled_witnesses;
+         median_witness_properties  median_props;
+         version                    majority_version;
    };
 
 
@@ -181,6 +186,8 @@ namespace steemit { namespace chain {
    typedef generic_index< witness_object,         witness_multi_index_type>             witness_index;
    typedef generic_index< witness_vote_object,    witness_vote_multi_index_type >       witness_vote_index;
 } }
+
+FC_REFLECT( steemit::chain::median_witness_properties, (chain_props)(liquidity_props)(content_reward_dist) );
 
 FC_REFLECT_DERIVED( steemit::chain::witness_object, (graphene::db::object),
                     (owner)

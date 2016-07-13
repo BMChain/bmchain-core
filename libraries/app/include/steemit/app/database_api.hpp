@@ -151,6 +151,7 @@ class database_api
        */
       dynamic_global_property_object get_dynamic_global_properties()const;
       chain_properties               get_chain_properties()const;
+      median_witness_properties      get_median_witness_properties()const;
       price                          get_current_median_history_price()const;
       feed_history_object            get_feed_history()const;
       witness_schedule_object        get_witness_schedule()const;
@@ -421,6 +422,7 @@ FC_API(steemit::app::database_api,
    (get_config)
    (get_dynamic_global_properties)
    (get_chain_properties)
+   (get_median_witness_properties)
    (get_feed_history)
    (get_current_median_history_price)
    (get_witness_schedule)

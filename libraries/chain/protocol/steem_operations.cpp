@@ -129,6 +129,22 @@ namespace steemit { namespace chain {
       props.validate();
    }
 
+   struct witness_props_validator_visitor
+   {
+      typedef void result_type;
+
+      template< typename T >
+      void operator() ( T& t )const{ t.validate(); }
+   };
+
+   void witness_properties_vote_operation::validate() const
+   {
+      FC_ASSERT( is_valid_account_name( owner ), "Owner account name invalid" );
+      witness_props_validator_visitor visitor = witness_props_validator_visitor();
+      for( witness_props prop : extensions )
+         prop.visit( visitor );
+   }
+
    void account_witness_vote_operation::validate() const
    {
       FC_ASSERT( is_valid_account_name( account ), "Account ${a}", ("a",account)  );

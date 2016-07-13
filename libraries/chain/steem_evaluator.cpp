@@ -63,7 +63,7 @@ void witness_update_evaluator::do_apply( const witness_update_operation& o )
       db().modify( *wit_itr, [&]( witness_object& w ) {
          w.url                = o.url;
          w.signing_key        = o.block_signing_key;
-         w.props              = o.props;
+         w.props.chain_props  = o.props;
       });
    }
    else
@@ -73,7 +73,7 @@ void witness_update_evaluator::do_apply( const witness_update_operation& o )
          w.url                = o.url;
          w.signing_key        = o.block_signing_key;
          w.created            = db().head_block_time();
-         w.props              = o.props;
+         w.props.chain_props  = o.props;
       });
    }
 }
@@ -88,8 +88,8 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
 
    if( db().has_hardfork( STEEMIT_HARDFORK_0_1 ) )  {
       const witness_schedule_object& wso = db().get_witness_schedule_object();
-      FC_ASSERT( o.fee >= wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided",
-                 ("f", wso.median_props.account_creation_fee)
+      FC_ASSERT( o.fee >= wso.median_props.chain_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided",
+                 ("f", wso.median_props.chain_props.account_creation_fee)
                  ("p", o.fee) );
    }
 
@@ -527,7 +527,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
       const auto& props = db().get_dynamic_global_properties();
       const witness_schedule_object& wso = db().get_witness_schedule_object();
 
-      asset min_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
+      asset min_vests = wso.median_props.chain_props.account_creation_fee * props.get_vesting_share_price();
       min_vests.amount.value *= 10;
 
       FC_ASSERT( account.vesting_shares > min_vests,
@@ -1055,14 +1055,14 @@ void pow_evaluator::do_apply( const pow_operation& o ) {
    if( cur_witness ) {
       FC_ASSERT( cur_witness->pow_worker == 0, "this account is already scheduled for pow block production" );
       db().modify(*cur_witness, [&]( witness_object& w ){
-          w.props             = o.props;
+          w.props.chain_props = o.props;
           w.pow_worker        = dgp.total_pow;
           w.last_work         = o.work.work;
       });
    } else {
       db().create<witness_object>( [&]( witness_object& w ) {
           w.owner             = o.worker_account;
-          w.props             = o.props;
+          w.props.chain_props = o.props;
           w.signing_key       = o.work.worker;
           w.pow_worker        = dgp.total_pow;
           w.last_work         = o.work.work;

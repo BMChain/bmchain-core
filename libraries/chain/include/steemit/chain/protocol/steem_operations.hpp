@@ -3,6 +3,8 @@
 #include <steemit/chain/protocol/block_header.hpp>
 #include <steemit/chain/protocol/asset.hpp>
 
+#include <steemit/chain/hardfork.hpp>
+
 #include <fc/utf8.hpp>
 
 namespace steemit { namespace chain {
@@ -210,7 +212,7 @@ namespace steemit { namespace chain {
     *
     *  In the event of a dispute the *agent* can divide the funds between the to/from account.
     *
-    *  The escrow agent is paid the fee no matter what. It is up to the escrow agent to determine 
+    *  The escrow agent is paid the fee no matter what. It is up to the escrow agent to determine
     *
     *  Escrow transactions are uniquely identified by 'from' and 'escrow_id', the 'escrow_id' is defined
     *  by the sender.
@@ -322,7 +324,8 @@ namespace steemit { namespace chain {
     * and well functioning network.  Any time @owner is in the active set of witnesses these
     * properties will be used to control the blockchain configuration.
     */
-   struct chain_properties {
+   struct chain_properties
+   {
       /**
        *  This fee, paid in STEEM, is converted into VESTING SHARES for the new account. Accounts
        *  without vesting shares cannot earn usage rations and therefore are powerless. This minimum
@@ -371,6 +374,44 @@ namespace steemit { namespace chain {
 
       void validate()const;
       void get_required_active_authorities( flat_set<string>& a )const{ a.insert(owner); }
+   };
+
+   struct liquidity_reward_properties
+   {
+      uint32_t liquidity_min_reward_period_sec = STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF9.to_seconds();
+      uint32_t liquidity_reward_period_sec = STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC;
+
+      void validate()const {}
+   };
+
+   struct content_rewards_distribution
+   {
+      uint16_t    author_rewards = STEEMIT_1_PERCENT * 75;
+      uint16_t    curation_rewards = STEEMIT_1_PERCENT * 25;
+      uint16_t    discussion_rewards = 0;
+
+      void validate()const
+      {
+         FC_ASSERT( author_rewards <= STEEMIT_100_PERCENT );
+         FC_ASSERT( curation_rewards <= STEEMIT_100_PERCENT );
+         FC_ASSERT( discussion_rewards <= STEEMIT_100_PERCENT );
+         FC_ASSERT( author_rewards + curation_rewards + discussion_rewards == STEEMIT_100_PERCENT );
+      }
+   };
+
+   typedef fc::static_variant<
+            chain_properties,
+            liquidity_reward_properties,
+            content_rewards_distribution
+      > witness_props;
+
+   struct witness_properties_vote_operation : public base_operation
+   {
+      string                  owner;
+      vector< witness_props > extensions;
+
+      void validate()const;
+      void get_required_active_authorities( flat_set< string >& a )const{ a.insert( owner ); }
    };
 
    /**
@@ -495,7 +536,7 @@ namespace steemit { namespace chain {
       void  validate()const;
       void  get_required_active_authorities( flat_set<string>& a )const{ a.insert(owner); }
 
-      price           get_price()const { return exchange_rate; } 
+      price           get_price()const { return exchange_rate; }
 
       pair<asset_symbol_type,asset_symbol_type> get_market()const
       {
@@ -582,7 +623,9 @@ FC_REFLECT( steemit::chain::report_over_production_operation, (reporter)(first_b
 FC_REFLECT( steemit::chain::convert_operation, (owner)(requestid)(amount) )
 FC_REFLECT( steemit::chain::feed_publish_operation, (publisher)(exchange_rate) )
 FC_REFLECT( steemit::chain::pow, (worker)(input)(signature)(work) )
-FC_REFLECT( steemit::chain::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) );
+FC_REFLECT( steemit::chain::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) )
+FC_REFLECT( steemit::chain::liquidity_reward_properties, (liquidity_min_reward_period_sec)(liquidity_reward_period_sec) )
+FC_REFLECT( steemit::chain::content_rewards_distribution, (author_rewards)(curation_rewards)(discussion_rewards) )
 
 FC_REFLECT( steemit::chain::pow_operation, (worker_account)(block_id)(nonce)(work)(props) )
 
@@ -609,6 +652,7 @@ FC_REFLECT( steemit::chain::transfer_to_vesting_operation, (from)(to)(amount) )
 FC_REFLECT( steemit::chain::withdraw_vesting_operation, (account)(vesting_shares) )
 FC_REFLECT( steemit::chain::set_withdraw_vesting_route_operation, (from_account)(to_account)(percent)(auto_vest) )
 FC_REFLECT( steemit::chain::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
+FC_REFLECT( steemit::chain::witness_properties_vote_operation, (owner)(extensions) )
 FC_REFLECT( steemit::chain::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( steemit::chain::account_witness_proxy_operation, (account)(proxy) )
 FC_REFLECT( steemit::chain::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata) )
@@ -635,3 +679,4 @@ FC_REFLECT( steemit::chain::escrow_dispute_operation, (from)(to)(escrow_id)(who)
 FC_REFLECT( steemit::chain::escrow_release_operation, (from)(to)(escrow_id)(who)(amount) );
 
 FC_REFLECT_TYPENAME( steemit::chain::comment_options )
+FC_REFLECT_TYPENAME( steemit::chain::witness_props )

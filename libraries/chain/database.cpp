@@ -1368,35 +1368,35 @@ void database::update_median_witness_props()
    /// sort them by account_creation_fee
    std::sort( active.begin(), active.end(), [&]( const witness_object* a, const witness_object* b )
    {
-      return a->props.account_creation_fee.amount < b->props.account_creation_fee.amount;
+      return a->props.chain_props.account_creation_fee.amount < b->props.chain_props.account_creation_fee.amount;
    } );
 
    modify( wso, [&]( witness_schedule_object& _wso )
    {
-     _wso.median_props.account_creation_fee = active[active.size()/2]->props.account_creation_fee;
+     _wso.median_props.chain_props.account_creation_fee = active[active.size()/2]->props.chain_props.account_creation_fee;
    } );
 
    /// sort them by maximum_block_size
    std::sort( active.begin(), active.end(), [&]( const witness_object* a, const witness_object* b )
    {
-      return a->props.maximum_block_size < b->props.maximum_block_size;
+      return a->props.chain_props.maximum_block_size < b->props.chain_props.maximum_block_size;
    } );
 
    modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& p )
    {
-         p.maximum_block_size = active[active.size()/2]->props.maximum_block_size;
+         p.maximum_block_size = active[active.size()/2]->props.chain_props.maximum_block_size;
    } );
 
 
    /// sort them by sbd_interest_rate
    std::sort( active.begin(), active.end(), [&]( const witness_object* a, const witness_object* b )
    {
-      return a->props.sbd_interest_rate < b->props.sbd_interest_rate;
+      return a->props.chain_props.sbd_interest_rate < b->props.chain_props.sbd_interest_rate;
    } );
 
    modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& p )
    {
-         p.sbd_interest_rate = active[active.size()/2]->props.sbd_interest_rate;
+         p.sbd_interest_rate = active[active.size()/2]->props.chain_props.sbd_interest_rate;
    } );
 }
 
