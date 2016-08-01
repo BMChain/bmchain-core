@@ -146,7 +146,7 @@ void witness_plugin::plugin_initialize(const boost::program_options::variables_m
       const uint32_t maximum_block_size = options["miner-maximum-block-size"].as<uint32_t>();
 
       if( maximum_block_size < STEEMIT_MIN_BLOCK_SIZE_LIMIT )
-         wlog( "miner-maximum-block-size is below the minimum block size limit, using minimum of 128 KB instead" );
+         wlog( "miner-maximum-block-size is below the minimum block size limit, using default of 128 KB instead" );
       else if ( maximum_block_size > STEEMIT_MAX_BLOCK_SIZE )
       {
          wlog( "miner-maximum-block-size is above the maximum block size limit, using maximum of 750 MB instead" );
@@ -271,7 +271,7 @@ block_production_condition::block_production_condition_enum witness_plugin::bloc
          // ilog("Not producing block because slot has not yet arrived");
          break;
       case block_production_condition::no_private_key:
-         ilog("Not producing block for ${w} because I don't have the private key for ${scheduled_key}", (capture) );
+         ilog("Not producing block for ${scheduled_witness} because I don't have the private key for ${scheduled_key}", (capture) );
          break;
       case block_production_condition::low_participation:
          elog("Not producing block because node appears to be on a minority fork with only ${pct}% witness participation", (capture) );
@@ -343,6 +343,7 @@ block_production_condition::block_production_condition_enum witness_plugin::mayb
 
    if( private_key_itr == _private_keys.end() )
    {
+      capture("scheduled_witness", scheduled_witness);
       capture("scheduled_key", scheduled_key);
       return block_production_condition::no_private_key;
    }
@@ -419,7 +420,7 @@ void witness_plugin::on_applied_block( const chain::signed_block& b )
    auto minutes = uint64_t(seconds / 60.0);
 
 
-   if( uint64_t(hps) > 0 )
+   if( _total_hashes > 0 )
       ilog( "hash rate: ${x} hps  target: ${t} queue: ${l} estimated time to produce: ${m} minutes",
               ("x",uint64_t(hps)) ("t",bits) ("m", minutes ) ("l",dgp.num_pow_witnesses)
          );

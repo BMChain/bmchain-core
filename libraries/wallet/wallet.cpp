@@ -525,6 +525,12 @@ public:
       return _remote_db->get_witness_by_account( owner_account );
    }
 
+   void set_transaction_expiration( uint32_t tx_expiration_seconds )
+   {
+      FC_ASSERT( tx_expiration_seconds < STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      _tx_expiration_seconds = tx_expiration_seconds;
+   }
+
    annotated_signed_transaction sign_transaction(signed_transaction tx, bool broadcast = false)
    {
       flat_set< string >   req_active_approvals;
@@ -633,7 +639,7 @@ public:
 
       auto dyn_props = _remote_db->get_dynamic_global_properties();
       tx.set_reference_block( dyn_props.head_block_id );
-      tx.set_expiration( dyn_props.time + fc::seconds(30) );
+      tx.set_expiration( dyn_props.time + fc::seconds(_tx_expiration_seconds) );
       tx.signatures.clear();
 
       //idump((_keys));
@@ -901,6 +907,7 @@ public:
    optional< fc::api<network_node_api> >   _remote_net_node;
    optional< fc::api<private_message_api> > _remote_message_api;
    optional< fc::api<follow::follow_api> >  _remote_follow_api;
+   uint32_t                                _tx_expiration_seconds = 30;
 
    flat_map<string, operation>             _prototype_ops;
 
@@ -1245,6 +1252,55 @@ annotated_signed_transaction wallet_api::create_account_with_keys( string creato
    return my->sign_transaction( tx, broadcast );
 } FC_CAPTURE_AND_RETHROW( (creator)(new_account_name)(json_meta)(owner)(active)(memo)(broadcast) ) }
 
+annotated_signed_transaction wallet_api::request_account_recovery( string recovery_account, string account_to_recover, authority new_authority, bool broadcast )
+{
+   FC_ASSERT( !is_locked() );
+   request_account_recovery_operation op;
+   op.recovery_account = recovery_account;
+   op.account_to_recover = account_to_recover;
+   op.new_owner_authority = new_authority;
+
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
+
+annotated_signed_transaction wallet_api::recover_account( string account_to_recover, authority recent_authority, authority new_authority, bool broadcast ) {
+   FC_ASSERT( !is_locked() );
+
+   recover_account_operation op;
+   op.account_to_recover = account_to_recover;
+   op.new_owner_authority = new_authority;
+   op.recent_owner_authority = recent_authority;
+
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
+
+annotated_signed_transaction wallet_api::change_recovery_account( string owner, string new_recovery_account, bool broadcast ) {
+   FC_ASSERT( !is_locked() );
+
+   change_recovery_account_operation op;
+   op.account_to_recover = owner;
+   op.new_recovery_account = new_recovery_account;
+
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
+
+vector< owner_authority_history_object > wallet_api::get_owner_history( string account )const
+{
+   return my->_remote_db->get_owner_history( account );
+}
+
 annotated_signed_transaction wallet_api::update_account(
                                       string account_name,
                                       string json_meta,
@@ -1253,21 +1309,27 @@ annotated_signed_transaction wallet_api::update_account(
                                       public_key_type posting,
                                       public_key_type memo,
                                       bool broadcast )const
-{ try {
-    account_update_operation op;
-    op.account = account_name;
-    op.owner  = authority( 1, owner, 1 );
-    op.active = authority( 1, active, 1);
-    op.posting = authority( 1, posting, 1);
-    op.memo_key = memo;
-    op.json_metadata = json_meta;
+{
+   try
+   {
+      FC_ASSERT( !is_locked() );
 
-   signed_transaction tx;
-   tx.operations.push_back(op);
-   tx.validate();
+      account_update_operation op;
+      op.account = account_name;
+      op.owner  = authority( 1, owner, 1 );
+      op.active = authority( 1, active, 1);
+      op.posting = authority( 1, posting, 1);
+      op.memo_key = memo;
+      op.json_metadata = json_meta;
 
-   return my->sign_transaction( tx, broadcast );
-} FC_CAPTURE_AND_RETHROW( (account_name)(json_meta)(owner)(active)(memo)(broadcast) ) }
+      signed_transaction tx;
+      tx.operations.push_back(op);
+      tx.validate();
+
+      return my->sign_transaction( tx, broadcast );
+   }
+   FC_CAPTURE_AND_RETHROW( (account_name)(json_meta)(owner)(active)(memo)(broadcast) )
+}
 
 annotated_signed_transaction wallet_api::update_account_auth_key( string account_name, authority_type type, public_key_type key, weight_type weight, bool broadcast )
 {
@@ -1795,6 +1857,44 @@ annotated_signed_transaction wallet_api::vote( string voter, string author, stri
 
    return my->sign_transaction( tx, broadcast );
 }
+
+void wallet_api::set_transaction_expiration(uint32_t seconds)
+{
+   my->set_transaction_expiration(seconds);
+}
+
+annotated_signed_transaction wallet_api::challenge( string challenger, string challenged, bool broadcast )
+{
+   FC_ASSERT( !is_locked() );
+
+   challenge_authority_operation op;
+   op.challenger = challenger;
+   op.challenged = challenged;
+   op.require_owner = false;
+
+   signed_transaction tx;
+   tx.operations.push_back( op );
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
+
+annotated_signed_transaction wallet_api::prove( string challenged, bool broadcast )
+{
+   FC_ASSERT( !is_locked() );
+
+   prove_authority_operation op;
+   op.challenged = challenged;
+   op.require_owner = false;
+
+   signed_transaction tx;
+   tx.operations.push_back( op );
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
+
+
 annotated_signed_transaction wallet_api::get_transaction( transaction_id_type id )const {
    return my->_remote_db->get_transaction( id );
 }
