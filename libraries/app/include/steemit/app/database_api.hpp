@@ -76,6 +76,31 @@ struct discussion_query {
 };
 
 /**
+ * Get comment_object from database and fill in extra fields with fill_discussion_info.
+ */
+void get_discussion( const chain::database& db, comment_id_type id, discussion& d );
+
+/**
+ * Helper function both used by fill_discussion_info() and exposed via API.
+ */
+void get_active_votes( const chain::database& db, const string& author, const string& permlink, vector< vote_state >& result );
+
+/**
+ * Fill extra fields in discussion object from the database.
+ */
+void fill_discussion_info( const database& db, discussion& d, bool include_votes );
+
+/**
+ * Used in fill_discussion_info() implementation.
+ */
+void set_pending_payout( const database& db, discussion& d );
+
+/**
+ * Used in fill_discussion_info() implementation.
+ */
+void set_url( const chain::database& db, discussion& d );
+
+/**
  * @brief The database_api class implements the RPC API for the chain database.
  *
  * This API exposes accessors on the database which query state tracked by a blockchain validating node. This API is
@@ -366,10 +391,6 @@ class database_api
       void on_api_startup();
 
    private:
-      void set_pending_payout( discussion& d )const;
-      void set_url( discussion& d )const;
-      discussion get_discussion( comment_id_type )const;
-
       template<typename Index, typename StartItr>
       vector<discussion> get_discussions( const discussion_query& q,
                                           const string& tag,

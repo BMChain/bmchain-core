@@ -793,31 +793,19 @@ vector<convert_request_object> database_api::get_conversion_requests( const stri
 discussion database_api::get_content( string author, string permlink )const {
    const auto& by_permlink_idx = my->_db.get_index_type< comment_index >().indices().get< by_permlink >();
    auto itr = by_permlink_idx.find( boost::make_tuple( author, permlink ) );
+   discussion result;
    if( itr != by_permlink_idx.end() )
-   {
-      discussion result(*itr);
-      set_pending_payout(result);
-      result.active_votes = get_active_votes( author, permlink );
-      return result;
-   }
-   return discussion();
+      fill_discussion_info( my->_db, result, true );
+   return result;
 }
 
 vector<vote_state> database_api::get_active_votes( string author, string permlink )const
 {
    vector<vote_state> result;
-   const auto& comment = my->_db.get_comment( author, permlink );
-   const auto& idx = my->_db.get_index_type<comment_vote_index>().indices().get< by_comment_voter >();
-   comment_id_type cid(comment.id);
-   auto itr = idx.lower_bound( cid );
-   while( itr != idx.end() && itr->comment == cid )
-   {
-      const auto& vo = itr->voter(my->_db);
-      result.push_back(vote_state{vo.name,itr->weight,itr->rshares,itr->vote_percent,itr->last_update});
-      ++itr;
-   }
+   steemit::app::get_active_votes( my->_db, author, permlink, result );
    return result;
 }
+
 vector<account_vote> database_api::get_account_votes( string voter )const {
    vector<account_vote> result;
 
@@ -842,17 +830,26 @@ u256 to256( const fc::uint128& t ) {
    return result;
 }
 
-void database_api::set_pending_payout( discussion& d )const
+void fill_discussion_info( const database& db, discussion& d, bool include_votes )
 {
-   const auto& props = my->_db.get_dynamic_global_properties();
-   const auto& hist  = my->_db.get_feed_history();
+   set_pending_payout( db, d );
+   set_url( db, d );
+   if( include_votes )
+      get_active_votes( db, d.author, d.permlink, d.active_votes );
+}
+
+void set_pending_payout( const database& db, discussion& d )
+{
+   const auto& props = db.get_dynamic_global_properties();
+   const auto& hist  = db.get_feed_history();
    asset pot = props.total_reward_fund_steem;
    if( !hist.current_median_history.is_null() ) pot = pot * hist.current_median_history;
 
    u256 total_r2 = to256( props.total_reward_shares2 );
 
-   if( props.total_reward_shares2 > 0 ){
-      auto vshares = my->_db.calculate_vshares( d.net_rshares.value > 0 ? d.net_rshares.value : 0  );
+   if( props.total_reward_shares2 > 0 )
+   {
+      auto vshares = db.calculate_vshares( d.net_rshares.value > 0 ? d.net_rshares.value : 0  );
 
       //int64_t abs_net_rshares = llabs(d.net_rshares.value);
 
@@ -870,12 +867,36 @@ void database_api::set_pending_payout( discussion& d )const
       d.pending_payout_value = asset( static_cast<uint64_t>(r2), pot.symbol );
       d.total_pending_payout_value = asset( static_cast<uint64_t>(tpp), pot.symbol );
    }
-   set_url(d);
 }
-void database_api::set_url( discussion& d )const {
+
+void get_discussion( const chain::database& db, comment_id_type id, discussion& d )
+{
+   d = id(db);
+   fill_discussion_info( db, d, true );
+   return;
+}
+
+void get_active_votes( const chain::database& db, const string& author, const string& permlink, vector< vote_state >& result )
+{
+   const auto& comment = db.get_comment( author, permlink );
+   const auto& idx = db.get_index_type<comment_vote_index>().indices().get< by_comment_voter >();
+   comment_id_type cid(comment.id);
+   auto itr = idx.lower_bound( cid );
+   while( itr != idx.end() && itr->comment == cid )
+   {
+      const auto& vo = itr->voter(db);
+      result.push_back(vote_state{vo.name,itr->weight,itr->rshares,itr->vote_percent,itr->last_update});
+      ++itr;
+   }
+   return;
+}
+
+void set_url( const chain::database& db, discussion& d )
+{
    const comment_object* root = &d;
-   while( root->parent_author.size() ) {
-      root = &my->_db.get_comment( root->parent_author, root->parent_permlink );
+   while( root->parent_author.size() )
+   {
+      root = &db.get_comment( root->parent_author, root->parent_permlink );
    }
    d.url = "/" + root->category + "/@" + root->author + "/" + root->permlink;
    d.root_title = root->title;
@@ -890,7 +911,7 @@ vector<discussion> database_api::get_content_replies( string author, string perm
    while( itr != by_permlink_idx.end() && itr->parent_author == author && itr->parent_permlink == permlink )
    {
       result.push_back(*itr);
-      set_pending_payout( result.back() );
+      fill_discussion_info( my->_db, result.back(), false );
       ++itr;
    }
    return result;
@@ -925,13 +946,11 @@ vector<discussion> database_api::get_replies_by_last_update( string start_parent
       }
 
       result.push_back( *itr );
-      set_pending_payout(result.back());
-      result.back().active_votes = get_active_votes( itr->author, itr->permlink );
+      fill_discussion_info( my->_db, result.back(), true );
       ++itr;
    }
    return result;
 }
-
 
 map<uint32_t,operation_object> database_api::get_account_history( string account, uint64_t from, uint32_t limit )const {
    FC_ASSERT( limit <= 2000, "Limit of ${l} is greater than maxmimum allowed", ("l",limit) );
@@ -964,15 +983,6 @@ vector<tags::tag_stats_object> database_api::get_trending_tags( string after, ui
   return result;
 }
 
-discussion database_api::get_discussion( comment_id_type id )const {
-   discussion d = id(my->_db);
-   set_url( d );
-   set_pending_payout( d );
-   d.active_votes = get_active_votes( d.author, d.permlink );
-   return d;
-}
-
-
 template<typename Index, typename StartItr>
 vector<discussion> database_api::get_discussions( const discussion_query& query,
                                                   const string& tag,
@@ -1003,7 +1013,8 @@ vector<discussion> database_api::get_discussions( const discussion_query& query,
       if( tidx_itr->tag != tag || tidx_itr->parent != parent )
          break;
       try {
-      result.push_back( get_discussion( tidx_itr->comment ) );
+      result.emplace_back();
+      get_discussion( my->_db, tidx_itr->comment, result.back() );
 
       if( filter( result.back() ) )
          result.pop_back();
@@ -1214,8 +1225,7 @@ vector<discussion>  database_api::get_discussions_by_author_before_date(
 
      while( itr != didx.end() && itr->author ==  author && count < limit ) {
         result.push_back( *itr );
-        set_pending_payout( result.back() );
-        result.back().active_votes = get_active_votes( itr->author, itr->permlink );
+        fill_discussion_info( my->_db, result.back(), true );
         ++itr;
         ++count;
      }
@@ -1318,7 +1328,7 @@ state database_api::get_state( string path )const
         while( itr != pidx.end() && itr->author == acnt && count < 20 ) {
            eacnt.posts->push_back(itr->permlink);
            _state.content[acnt+"/"+itr->permlink] = *itr;
-           set_pending_payout( _state.content[acnt+"/"+itr->permlink] );
+           fill_discussion_info( my->_db, _state.content[acnt+"/"+itr->permlink], false );
            ++itr;
            ++count;
         }
@@ -1330,7 +1340,7 @@ state database_api::get_state( string path )const
            while( itr != pidx.end() && itr->author == acnt && count < 20 && !itr->parent_author.size() ) {
               eacnt.blog->push_back(itr->permlink);
               _state.content[acnt+"/"+itr->permlink] = *itr;
-              set_pending_payout( _state.content[acnt+"/"+itr->permlink] );
+              fill_discussion_info( my->_db, _state.content[acnt+"/"+itr->permlink], false );
               ++itr;
               ++count;
            }
@@ -1345,7 +1355,7 @@ state database_api::get_state( string path )const
             const auto link = c.author + "/" + c.permlink;
             _state.content[link] = c;
             eacnt.feed->push_back( link );
-            set_pending_payout( _state.content[link] );
+            fill_discussion_info( my->_db, _state.content[link], false );
             ++itr;
             ++count;
          }
