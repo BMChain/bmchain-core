@@ -1699,6 +1699,31 @@ void database::process_vesting_withdrawals()
    }
 }
 
+void database::process_expired_opposition() {
+  const auto& oidx = get_index_type<opposition_index>().indices().get<by_expiration>();
+  auto itr = oidx.begin();
+  while( itr != oidx.end() ) {
+     if( itr->expiration < head_block_time() ) {
+        const auto& acnt = itr->account(*this);
+        const auto& opp = itr->opposition_account(*this);
+
+        modify( acnt, [&]( account_object& a ){
+                a.votable_vests += itr->weight;
+               });
+
+        modify( opp, [&]( account_object& a ){
+                a.votable_vests += itr->weight;
+               });
+
+        /// TODO: update witness votes for acnt and opp
+        remove( *itr );
+        itr = oidx.begin();
+     } else {
+        return;
+     }
+  }
+}
+
 void database::adjust_total_payout( const comment_object& cur, const asset& sbd_created, const asset& curator_sbd_value )
 {
    modify( cur, [&]( comment_object& c )
@@ -2378,6 +2403,7 @@ void database::initialize_evaluators()
     _my->_evaluator_registry.register_evaluator<pow_evaluator>();
     _my->_evaluator_registry.register_evaluator<pow2_evaluator>();
     _my->_evaluator_registry.register_evaluator<report_over_production_evaluator>();
+    _my->_evaluator_registry.register_evaluator<oppose_account_evaluator>();
 
     _my->_evaluator_registry.register_evaluator<feed_publish_evaluator>();
     _my->_evaluator_registry.register_evaluator<convert_evaluator>();
@@ -2439,7 +2465,9 @@ void database::initialize_indexes()
    add_index< primary_index< owner_authority_history_index                 > >();
    add_index< primary_index< account_recovery_request_index                > >();
    add_index< primary_index< change_recovery_account_request_index         > >();
+   add_index< primary_index< opposition_index                              > >();
 }
+
 
 void database::init_genesis( uint64_t init_supply )
 {

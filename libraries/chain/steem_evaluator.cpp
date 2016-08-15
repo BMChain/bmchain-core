@@ -1604,4 +1604,56 @@ void change_recovery_account_evaluator::do_apply( const change_recovery_account_
    }
 }
 
+void oppose_account_evaluator::do_apply( const oppose_account_operation& o ) {
+   const auto& account        = db().get_account(o.account);
+   const auto& oppose_account = db().get_account(o.opposition_account);
+
+   const witness_schedule_object& wso = db().get_witness_schedule_object();
+   const auto& props = db().get_dynamic_global_properties();
+
+
+   const auto& opposition_idx = db().get_index_type<opposition_index>().indices().get<by_account_opposition>();
+
+   if( o.weight.amount == 0 ) { /// remove edge
+      auto itr = opposition_idx.find( boost::make_tuple( account.get_id(), oppose_account.get_id() ) );
+      FC_ASSERT( itr != opposition_idx.end() );
+      db().modify( *itr, [&]( oppose_edge_object& e ) {
+        e.expiration = db().head_block_time() + fc::days(1);
+      });
+   } else { /// create or update edge
+      auto acf_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
+      FC_ASSERT( o.weight >= acf_vests );
+      FC_ASSERT( o.weight.amount >= account.vesting_shares.amount / 256 );
+      FC_ASSERT( o.weight <= account.get_votable_vests()  );
+
+      auto itr = opposition_idx.find( boost::make_tuple( account.get_id(), oppose_account.get_id() ) );
+      asset current_weight( 0, VESTS_SYMBOL );
+      if( itr != opposition_idx.end() ) {
+         current_weight = itr->weight;
+         db().modify( *itr, [&]( oppose_edge_object& e ) {
+           e.weight     = o.weight;
+           e.expiration = db().head_block_time() + fc::days(7);
+         });
+      } else {
+         db().create<oppose_edge_object>( [&]( oppose_edge_object& e ) {
+           e.account            = account.get_id();
+           e.opposition_account = oppose_account.get_id();
+           e.weight             = o.weight;
+           e.expiration = db().head_block_time() + fc::days(7);
+         });
+      }
+
+      if( o.weight > current_weight ) { /// increases take effect immediately, decreases require wait till expiration
+         auto delta = o.weight - current_weight;
+         db().modify( account, [&]( account_object& a ) {
+                      a.votable_vests -= delta;
+                      });
+         db().modify( oppose_account, [&]( account_object& a ) {
+                      a.votable_vests -= delta;
+                         });
+      }
+   }
+}
+
+
 } } // steemit::chain

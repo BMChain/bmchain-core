@@ -70,6 +70,9 @@ namespace steemit { namespace chain {
          share_type      curation_rewards = 0;
          share_type      posting_rewards = 0;
 
+         asset           get_votable_vests()const { return vesting_shares + votable_vests; }
+
+         asset           votable_vests = asset( 0, VESTS_SYMBOL );
          asset           vesting_shares = asset( 0, VESTS_SYMBOL ); ///< total vesting shares held by this account, controls its voting power
          asset           vesting_withdraw_rate = asset( 0, VESTS_SYMBOL ); ///< at the time this is updated it can be at most vesting_shares/104
          time_point_sec  next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
@@ -186,6 +189,41 @@ namespace steemit { namespace chain {
 
          change_recovery_account_request_id_type get_id()const { return id; }
    };
+
+   class oppose_edge_object : public abstract_object<oppose_edge_object> {
+      public:
+         static const uint8_t space_id = implementation_ids;
+         static const uint8_t type_id  = impl_oppose_edge_object_type;
+
+         account_id_type account;
+         account_id_type opposition_account;
+         asset           weight;
+         time_point_sec  expiration;
+   };
+   
+   struct by_account_opposition;
+   struct by_expiration;
+   typedef multi_index_container<
+      oppose_edge_object,
+      indexed_by<
+         ordered_unique< tag< by_id >,
+            member< object, object_id_type, &object::id > >,
+         ordered_unique< tag< by_account_opposition >,
+            composite_key< oppose_edge_object,
+               member< oppose_edge_object, account_id_type, &oppose_edge_object::account >,
+               member< oppose_edge_object, account_id_type, &oppose_edge_object::opposition_account >
+            > 
+         >,
+         ordered_unique< tag< by_expiration >,
+            composite_key< oppose_edge_object,
+               member< oppose_edge_object, time_point_sec, &oppose_edge_object::expiration >,
+               member<object, object_id_type, &object::id >
+            > 
+         >
+      >
+   >  oppose_edge_object_multi_index_type;
+
+
 
    struct by_name;
    struct by_proxy;
@@ -343,6 +381,7 @@ namespace steemit { namespace chain {
    typedef generic_index< owner_authority_history_object,         owner_authority_history_multi_index_type >         owner_authority_history_index;
    typedef generic_index< account_recovery_request_object,        account_recovery_request_multi_index_type >        account_recovery_request_index;
    typedef generic_index< change_recovery_account_request_object, change_recovery_account_request_multi_index_type > change_recovery_account_request_index;
+   typedef generic_index< oppose_edge_object, oppose_edge_object_multi_index_type >                                  opposition_index;
 } }
 
 FC_REFLECT_DERIVED( steemit::chain::account_object, (graphene::db::object),
@@ -352,7 +391,7 @@ FC_REFLECT_DERIVED( steemit::chain::account_object, (graphene::db::object),
                     (comment_count)(lifetime_vote_count)(post_count)(voting_power)(last_vote_time)
                     (balance)
                     (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
-                    (vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+                    (votable_vests)(vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
                     (curation_rewards)
                     (posting_rewards)
                     (proxied_vsf_votes)(witnesses_voted_for)
@@ -373,3 +412,5 @@ FC_REFLECT_DERIVED( steemit::chain::account_recovery_request_object, (graphene::
 FC_REFLECT_DERIVED( steemit::chain::change_recovery_account_request_object, (graphene::db::object),
                      (account_to_recover)(recovery_account)(effective_on)
                   )
+FC_REFLECT_DERIVED( steemit::chain::oppose_edge_object, (graphene::db::object), 
+                      (account)(opposition_account)(weight)(expiration) )

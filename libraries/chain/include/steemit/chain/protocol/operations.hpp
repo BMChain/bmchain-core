@@ -51,6 +51,7 @@ namespace steemit { namespace chain {
             escrow_dispute_operation,
             escrow_release_operation,
             pow2_operation,
+            oppose_account_operation,
 
             /// virtual operations below this point
             fill_convert_request_operation,

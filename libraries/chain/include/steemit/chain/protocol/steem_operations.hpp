@@ -786,8 +786,23 @@ namespace steemit { namespace chain {
 
       void validate() const;
    };
+
+   /**
+    *  Any account with net votable_vests > 0 can oppose another account's votes with
+    *  up to votable_vests or max( vesting_shares / 256, account_creation_vests ) 
+    */
+   struct oppose_account_operation : public base_operation {
+      string account;
+      string opposition_account;
+      asset  weight; ///< VESTS to oppose with
+
+      void get_required_posting_authorities( flat_set<string>& a )const{ a.insert( account ); }
+      void validate() const;
+   };
+
 } } // steemit::chain
 
+FC_REFLECT( steemit::chain::oppose_account_operation, (account)(opposition_account)(weight) )
 FC_REFLECT( steemit::chain::report_over_production_operation, (reporter)(first_block)(second_block) )
 FC_REFLECT( steemit::chain::convert_operation, (owner)(requestid)(amount) )
 FC_REFLECT( steemit::chain::feed_publish_operation, (publisher)(exchange_rate) )

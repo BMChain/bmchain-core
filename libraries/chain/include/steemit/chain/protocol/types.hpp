@@ -118,7 +118,8 @@ namespace steemit { namespace chain {
       impl_owner_authority_history_object_type,
       impl_account_recovery_request_object_type,
       impl_change_recovery_account_request_object_type,
-      impl_escrow_object_type
+      impl_escrow_object_type,
+      impl_oppose_edge_object_type
    };
 
    class operation_object;
@@ -147,6 +148,7 @@ namespace steemit { namespace chain {
    class account_recovery_request_object;
    class change_recovery_account_request_object;
    class escrow_object;
+   class oppose_edge_object;
 
 
    typedef object_id< implementation_ids, impl_operation_object_type,                        operation_object >                        operation_id_type;
@@ -174,6 +176,7 @@ namespace steemit { namespace chain {
    typedef object_id< implementation_ids, impl_account_recovery_request_object_type,         account_recovery_request_object >         account_recovery_request_id_type;
    typedef object_id< implementation_ids, impl_change_recovery_account_request_object_type,  change_recovery_account_request_object >  change_recovery_account_request_id_type;
    typedef object_id< implementation_ids, impl_escrow_object_type,                           escrow_object >                           escrow_id_type;
+   typedef object_id< implementation_ids, impl_oppose_edge_object_type,                      oppose_edge_object >                      oppose_edge_id_type;
 
    typedef fc::ripemd160                                        block_id_type;
    typedef fc::ripemd160                                        checksum_type;
@@ -302,6 +305,7 @@ FC_REFLECT_ENUM( steemit::chain::impl_object_type,
                  (impl_account_recovery_request_object_type)
                  (impl_change_recovery_account_request_object_type)
                  (impl_escrow_object_type)
+                 (impl_oppose_edge_object_type)
                )
 
 FC_REFLECT_TYPENAME( steemit::chain::share_type )

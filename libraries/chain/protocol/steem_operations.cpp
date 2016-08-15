@@ -337,4 +337,12 @@ namespace steemit { namespace chain {
       FC_ASSERT( is_valid_account_name( new_recovery_account ) );
    }
 
+   void oppose_account_operation::validate()const {
+      FC_ASSERT( is_valid_account_name( account ) );
+      FC_ASSERT( is_valid_account_name( opposition_account ) );
+      FC_ASSERT( weight.symbol == VESTS_SYMBOL );
+      FC_ASSERT( weight.amount >= 0 );
+      FC_ASSERT( account != opposition_account );
+   }
+
 } } // steemit::chain
