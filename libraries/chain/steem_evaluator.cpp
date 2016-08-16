@@ -551,51 +551,11 @@ void transfer_evaluator::do_apply( const transfer_operation& o )
       });
    }
 
-   if( o.amount.symbol != VESTS_SYMBOL ) {
-      FC_ASSERT( db().get_balance( from_account, o.amount.symbol ) >= o.amount );
-      db().adjust_balance( from_account, -o.amount );
-      db().adjust_balance( to_account, o.amount );
+   FC_ASSERT( o.amount.symbol != VESTS_SYMBOL );
 
-   } else {
-      /// TODO: this line can be removed after hard fork
-      FC_ASSERT( false , "transferring of Steem Power (STMP) is not allowed." );
-#if 0
-      /** allow transfer of vesting balance if the full balance is transferred to a new account
-       *  This will allow combining of VESTS but not division of VESTS
-       **/
-      FC_ASSERT( db().get_balance( from_account, o.amount.symbol ) == o.amount );
-
-      db().modify( to_account, [&]( account_object& a ){
-          a.vesting_shares += o.amount;
-          a.voting_power = std::min( to_account.voting_power, from_account.voting_power );
-
-          // Update to_account bandwidth. from_account bandwidth is already updated as a result of the transfer op
-          /*
-          auto now = db().head_block_time();
-          auto delta_time = (now - a.last_bandwidth_update).to_seconds();
-          uint64_t N = trx_size * STEEMIT_BANDWIDTH_PRECISION;
-          if( delta_time >= STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS )
-             a.average_bandwidth = N;
-          else
-          {
-             auto old_weight = a.average_bandwidth * (STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS - delta_time);
-             auto new_weight = delta_time * N;
-             a.average_bandwidth =  (old_weight + new_weight) / (STEEMIT_BANDWIDTH_AVERAGE_WINDOW_SECONDS);
-          }
-
-          a.average_bandwidth += from_account.average_bandwidth;
-          a.last_bandwidth_update = now;
-          */
-
-          db().adjust_proxied_witness_votes( a, o.amount.amount, 0 );
-      });
-
-      db().modify( from_account, [&]( account_object& a ){
-          db().adjust_proxied_witness_votes( a, -o.amount.amount, 0 );
-          a.vesting_shares -= o.amount;
-      });
-#endif
-   }
+   FC_ASSERT( db().get_balance( from_account, o.amount.symbol ) >= o.amount );
+   db().adjust_balance( from_account, -o.amount );
+   db().adjust_balance( to_account, o.amount );
 }
 
 void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operation& o )
@@ -728,7 +688,11 @@ void account_witness_proxy_evaluator::do_apply( const account_witness_proxy_oper
 
    /// remove all current votes
    std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH+1> delta;
-   delta[0] = -account.vesting_shares.amount;
+   if( db().has_hardfork( STEEMIT_HARDFORK_0_14__279 ) )
+      delta[0] = -account.get_votable_vests().amount;
+   else
+      delta[0] = -account.vesting_shares.amount;
+
    for( int i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i )
       delta[i+1] = -account.proxied_vsf_votes[i];
    db().adjust_proxied_witness_votes( account, delta );
@@ -789,7 +753,10 @@ void account_witness_vote_evaluator::do_apply( const account_witness_vote_operat
          });
 
          if( db().has_hardfork( STEEMIT_HARDFORK_0_3 ) ) {
-            db().adjust_witness_vote( witness, voter.witness_vote_weight() );
+            if( db().has_hardfork( STEEMIT_HARDFORK_0_14__279 ) )
+               db().adjust_witness_vote( witness, voter.witness_vote_weight2() );
+            else
+               db().adjust_witness_vote( witness, voter.witness_vote_weight() );
          }
          else {
             db().adjust_proxied_witness_votes( voter, voter.witness_vote_weight() );
@@ -814,9 +781,10 @@ void account_witness_vote_evaluator::do_apply( const account_witness_vote_operat
       FC_ASSERT( !o.approve, "vote currently exists, user must be indicate a desire to reject witness" );
 
       if (  db().has_hardfork( STEEMIT_HARDFORK_0_2 ) ) {
-         if( db().has_hardfork( STEEMIT_HARDFORK_0_3 ) )
-            db().adjust_witness_vote( witness, -voter.witness_vote_weight() );
-         else
+         if( db().has_hardfork( STEEMIT_HARDFORK_0_3 ) ) {
+            if( db().has_hardfork( STEEMIT_HARDFORK_0_14__279 ) )
+               db().adjust_witness_vote( witness, -voter.witness_vote_weight2() );
+         } else
             db().adjust_proxied_witness_votes( voter, -voter.witness_vote_weight() );
       } else  {
          db().modify( witness, [&]( witness_object& w ) {
@@ -882,7 +850,12 @@ void vote_evaluator::do_apply( const vote_operation& o )
    used_power = (used_power/200) + 1;
    FC_ASSERT( used_power <= current_power );
 
-   int64_t abs_rshares    = ((uint128_t(voter.vesting_shares.amount.value) * used_power) / (STEEMIT_100_PERCENT)).to_uint64();
+   auto votable_vesting_shares = voter.get_votable_vests();
+   if( !db().has_hardfork( STEEMIT_HARDFORK_0_14__279 ) )
+      votable_vesting_shares = voter.vesting_shares;
+   FC_ASSERT( votable_vesting_shares.amount > 0, "Insufficient voting stake, your account is in opposition to another voter" );
+
+   int64_t abs_rshares    = ((uint128_t(votable_vesting_shares.amount.value) * used_power) / (STEEMIT_100_PERCENT)).to_uint64();
    if( abs_rshares == 0 ) abs_rshares = 1;
 
    if( db().is_producing() || db().has_hardfork( STEEMIT_HARDFORK_0_13__248 ) ) {
@@ -1412,27 +1385,7 @@ void limit_order_cancel_evaluator::do_apply( const limit_order_cancel_operation&
 
 void report_over_production_evaluator::do_apply( const report_over_production_operation& o )
 {
-   FC_ASSERT( !db().is_producing(), "this operation is currently disabled" );
    FC_ASSERT( !db().has_hardfork( STEEMIT_HARDFORK_0_4 ), "this operation is disabled after this hardfork" );
-
-   /*
-   const auto& reporter = db().get_account( o.reporter );
-   const auto& violator = db().get_account( o.first_block.witness );
-   const auto& witness  = db().get_witness( o.first_block.witness );
-   FC_ASSERT( violator.vesting_shares.amount > 0, "violator has no vesting shares, must have already been reported" );
-   FC_ASSERT( (db().head_block_num() - o.first_block.block_num()) < STEEMIT_MAX_MINERS, "must report within one round" );
-   FC_ASSERT( (db().head_block_num() - witness.last_confirmed_block_num) < STEEMIT_MAX_MINERS, "must report within one round" );
-   FC_ASSERT( public_key_type(o.first_block.signee()) == witness.signing_key );
-
-   db().modify( reporter, [&]( account_object& a ){
-       a.vesting_shares += violator.vesting_shares;
-       db().adjust_proxied_witness_votes( a, violator.vesting_shares.amount, 0 );
-   });
-   db().modify( violator, [&]( account_object& a ){
-       db().adjust_proxied_witness_votes( a, -a.vesting_shares.amount, 0 );
-       a.vesting_shares.amount = 0;
-   });
-   */
 }
 
 void challenge_authority_evaluator::do_apply( const challenge_authority_operation& o )

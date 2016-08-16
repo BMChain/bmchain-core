@@ -70,7 +70,7 @@ namespace steemit { namespace chain {
          share_type      curation_rewards = 0;
          share_type      posting_rewards = 0;
 
-         asset           get_votable_vests()const { return vesting_shares + votable_vests; }
+         asset           get_votable_vests()const { return std::min( asset( 0, VESTS_SYMBOL ), vesting_shares + votable_vests); }
 
          asset           votable_vests = asset( 0, VESTS_SYMBOL );
          asset           vesting_shares = asset( 0, VESTS_SYMBOL ); ///< total vesting shares held by this account, controls its voting power
@@ -120,6 +120,12 @@ namespace steemit { namespace chain {
                                     proxied_vsf_votes.end(),
                                     vesting_shares.amount );
          }
+         share_type      witness_vote_weight2()const {
+            return std::accumulate( proxied_vsf_votes.begin(),
+                                    proxied_vsf_votes.end(),
+                                    get_votable_vests().amount  );
+         }
+
          share_type      proxied_vsf_votes_total()const {
             return std::accumulate( proxied_vsf_votes.begin(),
                                     proxied_vsf_votes.end(),

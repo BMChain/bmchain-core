@@ -984,6 +984,7 @@ asset database::create_vesting( const account_object& to_account, asset steem )
    try
    {
       const auto& cprops = get_dynamic_global_properties();
+      auto init_votable_vests = to_account.get_votable_vests();
 
       /**
        *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
@@ -1011,7 +1012,13 @@ asset database::create_vesting( const account_object& to_account, asset steem )
          props.total_vesting_shares += new_vesting;
       } );
 
-      adjust_proxied_witness_votes( to_account, new_vesting.amount );
+      if( has_hardfork( STEEMIT_HARDFORK_0_14__279 ) )
+      {
+         auto final_votable_vests = to_account.get_votable_vests();
+         adjust_proxied_witness_votes( to_account, (final_votable_vests - init_votable_vests).amount ); //new_vesting.amount );
+      }
+      else 
+         adjust_proxied_witness_votes( to_account, new_vesting.amount );
 
       return new_vesting;
    }
@@ -1589,6 +1596,7 @@ void database::process_vesting_withdrawals()
    while( current != widx.end() && current->next_vesting_withdrawal <= head_block_time() )
    {
       const auto& from_account = *current; ++current;
+      auto initial_from_votable = from_account.get_votable_vests();
 
       /**
       *  Let T = total tokens in vesting fund
@@ -1621,12 +1629,19 @@ void database::process_vesting_withdrawals()
             {
                const auto& to_account = itr->to_account( *this );
 
+               auto old_votable = to_account.get_votable_vests();
                modify( to_account, [&]( account_object& a )
                {
                   a.vesting_shares.amount += to_deposit;
                });
 
-               adjust_proxied_witness_votes( to_account, to_deposit );
+               if( has_hardfork( STEEMIT_HARDFORK_0_14__279 ) ) {
+                  auto new_votable = to_account.get_votable_vests();
+                  auto delta = new_votable - old_votable;
+                  adjust_proxied_witness_votes( to_account, delta.amount );
+               } else {
+                  adjust_proxied_witness_votes( to_account, to_deposit );
+               }
 
                push_applied_operation( fill_vesting_withdraw_operation( from_account.name, to_account.name, asset( to_deposit, VESTS_SYMBOL ), asset( to_deposit, VESTS_SYMBOL ) ) );
             }
@@ -1692,8 +1707,15 @@ void database::process_vesting_withdrawals()
          o.total_vesting_shares.amount -= to_convert;
       });
 
-      if( to_withdraw > 0 )
-         adjust_proxied_witness_votes( from_account, -to_withdraw );
+      if( to_withdraw > 0 ) {
+         if( has_hardfork( STEEMIT_HARDFORK_0_14__279 ) ) {
+            auto new_votable = from_account.get_votable_vests();
+            auto delta = new_votable - initial_from_votable;
+            adjust_proxied_witness_votes( from_account, delta.amount );
+         }
+         else
+            adjust_proxied_witness_votes( from_account, -to_withdraw );
+      }
 
       push_applied_operation( fill_vesting_withdraw_operation( from_account.name, from_account.name, asset( to_withdraw, VESTS_SYMBOL ), converted_steem ) );
    }
@@ -3705,11 +3727,20 @@ void database::validate_invariants()const
          total_supply += itr->balance;
          total_sbd += itr->sbd_balance;
          total_vesting += itr->vesting_shares;
-         total_vsf_votes += ( itr->proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ?
-                                 itr->witness_vote_weight() :
-                                 ( STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ?
-                                      itr->proxied_vsf_votes[STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] :
-                                      itr->vesting_shares.amount ) );
+         if( has_hardfork( STEEMIT_HARDFORK_0_14__279 ) ) {
+            total_vsf_votes += ( itr->proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ?
+                                    itr->witness_vote_weight2() :
+                                    ( STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ?
+                                         itr->proxied_vsf_votes[STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] :
+                                         itr->vesting_shares.amount ) );
+         }
+         else {
+            total_vsf_votes += ( itr->proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ?
+                                    itr->witness_vote_weight() :
+                                    ( STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ?
+                                         itr->proxied_vsf_votes[STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] :
+                                         itr->vesting_shares.amount ) );
+         }
       }
 
       const auto& convert_request_idx = get_index_type< convert_index >().indices();
@@ -3904,7 +3935,10 @@ void database::retally_witness_votes()
       auto wit_itr = vidx.lower_bound( boost::make_tuple( a.get_id(), witness_id_type() ) );
       while( wit_itr != vidx.end() && wit_itr->account == a.get_id() )
       {
-         adjust_witness_vote( wit_itr->witness(*this), a.witness_vote_weight() );
+         if( has_hardfork( STEEMIT_HARDFORK_0_14__279 ) )
+            adjust_witness_vote( wit_itr->witness(*this), a.witness_vote_weight2() );
+         else
+            adjust_witness_vote( wit_itr->witness(*this), a.witness_vote_weight() );
          ++wit_itr;
       }
    }
