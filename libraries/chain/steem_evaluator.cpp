@@ -1226,6 +1226,17 @@ void vote_evaluator::do_apply( const vote_operation& o )
 
 void custom_evaluator::do_apply( const custom_operation& o ){}
 
+/**
+ *  Implementing this evaluator implies changes to the fork-switching logic where the "best chain" is not the
+ *  longest chain, but the chain with the most unique votes of active witnesses. 
+ */
+void witness_block_confirmation_evaluator::do_apply( const witness_block_confirmation_operation& o ) {
+   database& d = db();
+   FC_ASSERT( d.has_hardfork( STEEMIT_HARDFORK_FUTURE ) );
+   FC_ASSERT( d.head_block_id() == o.head );
+   get_witness( o.witness );
+}
+
 void custom_json_evaluator::do_apply( const custom_json_operation& o )
 {
    database& d = db();

@@ -796,6 +796,24 @@ namespace steemit { namespace chain {
    };
 
    /**
+    *  The purpose of this operation is to enable witnessse to report that they have received a
+    *  particular block.  The benefit of this report is that once 2/3 of witnesses have
+    *  confirmed a particular block that it is impossible to go back.   
+    *
+    *  This report does not "bind" the witness to a given block, because the blockchain could 
+    *  fork and the witness should follow the proper fork.  Instead, this is just meant to
+    *  give all witnesses information about the current status of other witnesses.  
+    *
+    *
+    */
+   struct witness_block_confirmation_operation : public base_operation {
+      string        witness;
+      block_id_type head; ///< must be the current head block number at time applied
+
+      void get_required_posting_authorities( flat_set<string>& a )const{ a.insert( witness ); }
+   };
+
+   /**
     * Each account lists another account as their recovery account.
     * The recovery account has the ability to create account_recovery_requests
     * for the account to recover. An account can change their recovery account
@@ -859,6 +877,7 @@ namespace steemit { namespace chain {
 } } // steemit::chain
 
 
+FC_REFLECT( steemit::chain::witness_block_confirmation_operation, (witness)(head) )
 FC_REFLECT( steemit::chain::transfer_to_savings_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( steemit::chain::transfer_from_savings_operation, (from)(request_id)(to)(amount)(memo) )
 FC_REFLECT( steemit::chain::cancel_transfer_from_savings_operation, (from)(request_id) )
