@@ -145,6 +145,7 @@ namespace steemit { namespace app {
        int32_t block_num = int32_t(b.block_num());
        if( _callbacks.size() )
        {
+          wlog( "in network_broadcast_api::on_applied_block() (block={b})", ("b", b.block_num()) );
           /// we need to ensure the database_api is not deleted for the life of the async operation
           auto capture_this = shared_from_this();
           for( int32_t trx_num = 0; trx_num < b.transactions.size(); ++trx_num )
@@ -154,9 +155,19 @@ namespace steemit { namespace app {
              auto itr = _callbacks.find(id);
              if( itr != _callbacks.end() )
              {
+                wlog( "processing callback for tx ${bn}:${tn}=${txid}", ("bn", block_num)("tn", trx_num)("txid", id) );
                 confirmation_callback callback = itr->second;
-                fc::async( [capture_this,id,block_num,trx_num,callback](){ callback( fc::variant(transaction_confirmation( id, block_num, trx_num, false )) ); } );
+                wlog( "adding fc::async task" );
+                fc::async(
+                    [capture_this,id,block_num,trx_num,callback]()
+                    {
+                       wlog( "invoking confirmation callback for tx ${bn}:${tn}", ("bn", block_num)("tn", trx_num) );
+                       callback( fc::variant(transaction_confirmation( id, block_num, trx_num, false )) );
+                       wlog( "confirmation callback finished for tx ${bn}:${tn}", ("bn", block_num)("tn", trx_num) );
+                    } );
+                wlog( "erasing callback" );
                 _callbacks.erase( itr );
+                wlog( "done processing callback for tx ${txid}", ("txid", id) );
              }
           }
        }
@@ -171,17 +182,33 @@ namespace steemit { namespace app {
              break;
           for( const transaction_id_type& txid : exp_it->second )
           {
+             wlog( "processing expiration for tx ${txid} in block ${bn}", ("bn", block_num)("txid", txid) );
              auto cb_it = _callbacks.find( txid );
              // If it's empty, that means the transaction has been confirmed and has been deleted by the above check.
              if( cb_it == _callbacks.end() )
+             {
+                wlog( "tx was confirmed" );
                 continue;
+             }
+             wlog( "tx was not confirmed" );
              std::shared_ptr< network_broadcast_api > capture_this = shared_from_this();
              confirmation_callback callback = cb_it->second;
              transaction_id_type txid_byval = txid;    // can't pass in by reference as it's going to be deleted
-             fc::async( [capture_this,block_num,txid_byval,callback](){ callback( fc::variant(transaction_confirmation{ txid_byval, block_num, -1, true}) ); } );
+             wlog( "adding fc::async task" );
+             fc::async(
+                 [capture_this,block_num,txid_byval,callback]()
+                 {
+                    wlog( "invoking expiration callback for tx ${txid}", ("txid", txid_byval) );
+                    callback( fc::variant(transaction_confirmation{ txid_byval, block_num, -1, true}) );
+                    wlog( "expiration callback finished for tx ${txid}", ("txid", txid_byval) );
+                 } );
+             wlog( "erasing callback" );
              _callbacks.erase( cb_it );
+             wlog( "done processing expiration for tx ${txid}", ("txid", txid) );
           }
+          wlog( "erasing expirations for block ${bn}", ("bn", block_num) );
           _callbacks_expirations.erase( exp_it );
+          wlog( "done erasing expirations for block ${bn}", ("bn", block_num) );
        }
     }
 
