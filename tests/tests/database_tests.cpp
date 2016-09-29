@@ -32,7 +32,7 @@ typedef multi_index_container<
   bip::allocator<test_object,bip::managed_mapped_file::segment_manager>
 > test_index;
 
-SET_INDEX_TYPE( test_object, test_index );
+GRAPHENE_DB2_SET_INDEX_TYPE( test_object, test_index );
 FC_REFLECT( test_object, (a)(b) );
 
 
