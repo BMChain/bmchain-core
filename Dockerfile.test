@@ -13,7 +13,7 @@ RUN \
         -DLOW_MEMORY_NODE=OFF \
         -DCLEAR_VOTES=ON \
         .. && \
-    make -j$(nproc) chain_test && \
+    make -j$(nproc) VERBOSE=1 chain_test && \
     ./tests/chain_test && \
     cd /usr/local/src/steem && \
     doxygen && \
