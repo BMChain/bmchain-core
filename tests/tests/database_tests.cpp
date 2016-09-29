@@ -8,6 +8,8 @@
 #include <boost/multi_index/mem_fun.hpp>
 #include <fc/reflect/variant.hpp>
 
+#include <fc/io/raw.hpp>
+
 using namespace graphene::db2;
 using namespace boost::multi_index;
 
