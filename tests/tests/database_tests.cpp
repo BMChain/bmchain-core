@@ -18,16 +18,16 @@ struct test_object : public graphene::db2::object<1, test_object> {
    };
 
    id_type id;
-   int a = 0;
-   int b = 0;
+   int64_t a = 0;
+   int64_t b = 0;
 };
 
 typedef multi_index_container<
   test_object,
   indexed_by<
      ordered_unique< BOOST_MULTI_INDEX_MEMBER(test_object,test_object::id_type,id), std::less<test_object::id_type> >,
-     ordered_non_unique< BOOST_MULTI_INDEX_MEMBER(test_object,int,a) >,
-     ordered_non_unique< BOOST_MULTI_INDEX_MEMBER(test_object,int,b) >
+     ordered_non_unique< BOOST_MULTI_INDEX_MEMBER(test_object,int64_t,a) >,
+     ordered_non_unique< BOOST_MULTI_INDEX_MEMBER(test_object,int64_t,b) >
   >,
   bip::allocator<test_object,bip::managed_mapped_file::segment_manager>
 > test_index;
