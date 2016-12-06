@@ -100,6 +100,7 @@ private:
    block_id_type    _head_block_id        = block_id_type();
    uint64_t         _total_hashes         = 0;
    fc::time_point   _hash_start_time;
+   bool             _signed_pow           = false;
 
    std::vector<std::shared_ptr<fc::thread> > _thread_pool;
 

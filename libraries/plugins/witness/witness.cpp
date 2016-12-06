@@ -409,8 +409,10 @@ block_production_condition::block_production_condition_enum witness_plugin::mayb
  */
 void witness_plugin::on_applied_block(const steemit::protocol::signed_block& b)
 { try {
-  if( !_mining_threads || _miners.size() == 0 ) return;
-  chain::database& db = database();
+   if( !_mining_threads || _miners.size() == 0 ) return;
+   chain::database& db = database();
+
+   _signed_pow = false;
 
    const auto& dgp = db.get_dynamic_global_properties();
    double hps   = (_total_hashes*1000000)/(fc::time_point::now()-_hash_start_time).count();
@@ -476,7 +478,6 @@ void witness_plugin::start_mining(
    auto head_block_time = b.timestamp;
    auto block_id = b.id();
    fc::thread* mainthread = &fc::thread::current();
-   _total_hashes = 0;
    _hash_start_time = fc::time_point::now();
    auto stop = head_block_time + fc::seconds( STEEMIT_BLOCK_INTERVAL * 2 );
    uint32_t thread_num = 0;
@@ -491,7 +492,7 @@ void witness_plugin::start_mining(
       thread_num++;
       t->async( [=]()
       {
-         if( has_hardfork_16 )
+         //if( has_hardfork_16 )
          {
             protocol::pow2_operation op;
             protocol::equihash_pow work;
@@ -512,6 +513,11 @@ void witness_plugin::start_mining(
                   // wlog( "stop mining due new block arrival, nonce: ${n}", ("n",op.nonce));
                   return;
                }
+               if( _signed_pow )
+               {
+                  // wlog( "stop mining since other thread found solution, nonce: ${n}", ("n",op.nonce));
+                  return;
+               }
 
                ++this->_total_hashes;
                work.input.nonce += num_threads;
@@ -529,7 +535,7 @@ void witness_plugin::start_mining(
                   trx.ref_block_prefix = work.input.prev_block._hash[1];
                   trx.set_expiration( head_block_time + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
                   trx.sign( pk, STEEMIT_CHAIN_ID );
-                  ++this->_head_block_num;
+                  _signed_pow = true;
                   mainthread->async( [this,miner,trx]()
                   {
                      try
@@ -543,60 +549,6 @@ void witness_plugin::start_mining(
                         // wdump((e.to_detail_string()));
                      }
                   });
-                  return;
-               }
-            }
-         }
-         else // delete after hardfork 16
-         {
-            protocol::pow2_operation op;
-            protocol::pow2 work;
-            work.input.prev_block = block_id;
-            work.input.worker_account = miner;
-            work.input.nonce = start + thread_num;
-            op.props = _miner_prop_vote;
-            while( true )
-            {
-               //  if( ((op.nonce/num_threads) % 1000) == 0 ) idump((op.nonce));
-               if( graphene::time::nonblocking_now() > stop )
-               {
-                  // ilog( "stop mining due to time out, nonce: ${n}", ("n",op.nonce) );
-                  return;
-               }
-               if( this->_head_block_num != head_block_num )
-               {
-                  // wlog( "stop mining due new block arrival, nonce: ${n}", ("n",op.nonce));
-                  return;
-               }
-
-               ++this->_total_hashes;
-               work.input.nonce += num_threads;
-               work.create( block_id, miner, work.input.nonce );
-               if( work.pow_summary < target )
-               {
-                  ++this->_head_block_num; /// signal other workers to stop
-                  protocol::signed_transaction trx;
-                  op.work = work;
-                  if( !has_account )
-                     op.new_owner_key = pub;
-                  trx.operations.push_back(op);
-                  trx.ref_block_num = head_block_num;
-                  trx.ref_block_prefix = work.input.prev_block._hash[1];
-                  trx.set_expiration( head_block_time + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-                  trx.sign( pk, STEEMIT_CHAIN_ID );
-                  mainthread->async( [this,miner,trx]()
-                  {
-                     try
-                     {
-                        database().push_transaction( trx );
-                        ilog( "Broadcasting Proof of Work for ${miner}", ("miner",miner) );
-                        p2p_node().broadcast( graphene::net::trx_message(trx) );
-                     }
-                     catch( const fc::exception& e )
-                     {
-                        // wdump((e.to_detail_string()));
-                     }
-                  } );
                   return;
                }
             }
