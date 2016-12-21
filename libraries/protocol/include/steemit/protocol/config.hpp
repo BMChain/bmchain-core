@@ -230,6 +230,13 @@
 #define STEEMIT_IRREVERSIBLE_THRESHOLD          (75 * STEEMIT_1_PERCENT)
 
 /**
+ * Canonical authority type strings
+ */
+#define STEEMIT_OWNER_AUTHORITY                 (authority_classification_type( "owner" ))
+#define STEEMIT_ACTIVE_AUTHORITY                (authority_classification_type( "active" ))
+#define STEEMIT_POSTING_AUTHORITY               (authority_classification_type( "posting" ))
+
+/**
  *  Reserved Account IDs with special meaning
  */
 ///@{

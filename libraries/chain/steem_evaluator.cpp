@@ -253,6 +253,159 @@ void account_update_evaluator::do_apply( const account_update_operation& o )
 
 }
 
+struct add_authority_revoker_visitor
+{
+   add_authority_revoker_visitor( const add_authority_revoker_operation& o, database& db ) : _o( o ), _db( db ) {}
+
+   const add_authority_revoker_operation& _o;
+   database& _db;
+
+   typedef void result_type;
+
+   void operator()( const public_key_type& key )const
+   {
+      auto* revoker = _db.find< authority_revoker_object, by_account_key_auth >( boost::make_tuple( _o.account, key, _o.auth_class ) );
+
+      if( revoker == nullptr )
+         _db.create< authority_revoker_object >( [&]( authority_revoker_object& a )
+         {
+            a.account = _o.account;
+            a.revoker = _o.revoker;
+            a.auth_class = _o.auth_class;
+            a.key_auth = key;
+         });
+      else if( _o.revoker == account_name_type() )
+         _db.remove( *revoker );
+      else
+         _db.modify( *revoker, [&]( authority_revoker_object& a )
+         {
+            a.revoker = _o.revoker;
+         });
+   }
+
+   void operator()( const account_name_type& acc )const
+   {
+      auto* revoker = _db.find< authority_revoker_object, by_account_account_auth >( boost::make_tuple( _o.account, acc, _o.auth_class ) );
+
+      if( revoker == nullptr )
+         _db.create< authority_revoker_object >( [&]( authority_revoker_object& a )
+         {
+            a.account = _o.account;
+            a.revoker = _o.revoker;
+            a.auth_class = _o.auth_class;
+            a.account_auth = acc;
+         });
+      else if( _o.revoker == account_name_type() )
+         _db.remove( *revoker );
+      else
+         _db.modify( *revoker, [&]( authority_revoker_object& a )
+         {
+            a.revoker = _o.revoker;
+         });
+   }
+};
+
+void add_authority_revoker_evaluator::do_apply( const add_authority_revoker_operation& o )
+{
+   FC_ASSERT( false, "Operation is disabled." );
+   o.auth.visit( add_authority_revoker_visitor( o, db() ) );
+}
+
+
+struct revoke_authority_visitor
+{
+   revoke_authority_visitor( const revoke_authority_operation& o, database& db ) : _o( o ), _db( db ) {}
+
+   const revoke_authority_operation& _o;
+   database& _db;
+
+   typedef void result_type;
+
+   void operator()( const public_key_type& key )const
+   {
+      vector< std::pair< account_name_type, authority_classification_type > > affected_accounts;
+      const auto& rev_idx = _db.get_index< authority_revoker_index >().indices().get< by_revoker_key_auth >();
+      auto itr = rev_idx.lower_bound( boost::make_tuple( _o.revoker, key ) );
+
+      if( _o.account.valid() )
+         itr = rev_idx.lower_bound( boost::make_tuple( _o.revoker, key, *_o.account ) );
+
+      while( itr != rev_idx.end() && itr->key_auth == key )
+      {
+         affected_accounts.push_back( std::make_pair( itr->account, itr->auth_class ) );
+         _db.remove( *itr );
+
+         if( _o.account.valid() )
+         {
+            itr = rev_idx.lower_bound( boost::make_tuple( _o.revoker, key, *_o.account ) );
+            if( itr == rev_idx.end() || itr->account != *_o.account )
+               break;
+         }
+         else
+            itr = rev_idx.lower_bound( boost::make_tuple( _o.revoker, key ) );
+      }
+
+      for( auto& auth_obj : affected_accounts )
+      {
+
+         _db.modify( _db.get< account_authority_object, by_account >( auth_obj.first ), [&]( account_authority_object& a )
+         {
+            if( auth_obj.second == STEEMIT_ACTIVE_AUTHORITY )
+               a.active.key_auths.erase( key );
+            else if( auth_obj.second == STEEMIT_POSTING_AUTHORITY )
+               a.posting.key_auths.erase( key );
+            else
+               FC_ASSERT( false, "Encountered unknown authority type" );
+         });
+      }
+   }
+
+   void operator()( const account_name_type& acc )const
+   {
+      vector< std::pair< account_name_type, authority_classification_type > > affected_accounts;
+      const auto& rev_idx = _db.get_index< authority_revoker_index >().indices().get< by_revoker_account_auth >();
+      auto itr = rev_idx.lower_bound( boost::make_tuple( _o.revoker, acc ) );
+
+      if( _o.account.valid() )
+         itr = rev_idx.lower_bound( boost::make_tuple( _o.revoker, acc, *_o.account ) );
+
+      while( itr != rev_idx.end() && itr->account_auth == acc )
+      {
+         affected_accounts.push_back( std::make_pair( itr->account, itr->auth_class ) );
+         _db.remove( *itr );
+
+         if( _o.account.valid() )
+         {
+            itr = rev_idx.lower_bound( boost::make_tuple( _o.revoker, acc, *_o.account ) );
+            if( itr == rev_idx.end() || itr->account != *_o.account )
+               break;
+         }
+         else
+            itr = rev_idx.lower_bound( boost::make_tuple( _o.revoker, acc ) );
+      }
+
+      for( auto& auth_obj : affected_accounts )
+      {
+
+         _db.modify( _db.get< account_authority_object, by_account >( auth_obj.first ), [&]( account_authority_object& a )
+         {
+            if( auth_obj.second == STEEMIT_ACTIVE_AUTHORITY )
+               a.active.account_auths.erase( acc );
+            else if( auth_obj.second == STEEMIT_POSTING_AUTHORITY )
+               a.posting.account_auths.erase( acc );
+            else
+               FC_ASSERT( false, "Encountered unknown authority type" );
+         });
+      }
+   }
+};
+
+void revoke_authority_evaluator::do_apply( const revoke_authority_operation& o )
+{
+   FC_ASSERT( false, "Operation is disabled." );
+   o.auth.visit( revoke_authority_visitor( o, db() ) );
+}
+
 
 /**
  *  Because net_rshares is 0 there is no need to update any pending payout calculations or parent posts.

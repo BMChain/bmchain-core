@@ -56,6 +56,37 @@ namespace steemit { namespace protocol {
       }
    }
 
+   struct authority_type_visitor
+   {
+      typedef void result_type;
+
+      void operator()( const public_key_type& pub )const
+      {
+         FC_ASSERT( pub != public_key_type() );
+      }
+
+      void operator()( const account_name_type& acc )const
+      {
+         validate_account_name( acc );
+      }
+   };
+
+   void add_authority_revoker_operation::validate() const
+   {
+      validate_account_name( account );
+      validate_account_name( revoker );
+      FC_ASSERT( auth_class == STEEMIT_ACTIVE_AUTHORITY
+              || auth_class == STEEMIT_POSTING_AUTHORITY, "Authority type must be active or posting." );
+      auth.visit( authority_type_visitor() );
+   }
+
+   void revoke_authority_operation::validate() const
+   {
+      validate_account_name( revoker );
+      if( account.valid() ) validate_account_name( *account );
+      auth.visit( authority_type_visitor() );
+   }
+
    void comment_operation::validate() const
    {
       FC_ASSERT( title.size() < 256, "Title larger than size limit" );

@@ -15,6 +15,7 @@
 namespace steemit { namespace chain {
 
    using steemit::protocol::authority;
+   using steemit::protocol::authority_classification_type;
 
    class account_object : public object< account_object_type, account_object >
    {
@@ -150,6 +151,24 @@ namespace steemit { namespace chain {
          shared_authority  posting; ///< used for voting and posting
 
          time_point_sec    last_owner_update;
+   };
+
+   class authority_revoker_object : public object< authority_revoker_object_type, authority_revoker_object >
+   {
+      public:
+         template< typename Constructor, typename Allocator >
+         authority_revoker_object( Constructor&& c, allocator< Allocator > a )
+         {
+            c( *this );
+         }
+
+         id_type                       id;
+
+         account_name_type             account;
+         account_name_type             revoker;
+         authority_classification_type auth_class;
+         public_key_type               key_auth = public_key_type();
+         account_name_type             account_auth = account_name_type();
    };
 
    class owner_authority_history_object : public object< owner_authority_history_object_type, owner_authority_history_object >
@@ -327,6 +346,55 @@ namespace steemit { namespace chain {
    > account_authority_index;
 
 
+   struct by_revoker_account_auth;
+   struct by_revoker_key_auth;
+   struct by_account_account_auth;
+   struct by_account_key_auth;
+
+   typedef multi_index_container <
+      authority_revoker_object,
+      indexed_by <
+         ordered_unique< tag< by_id >,
+            member< authority_revoker_object, authority_revoker_id_type, &authority_revoker_object::id > >,
+         ordered_unique< tag< by_revoker_account_auth >,
+            composite_key< authority_revoker_object,
+               member< authority_revoker_object, account_name_type, &authority_revoker_object::revoker >,
+               member< authority_revoker_object, account_name_type, &authority_revoker_object::account_auth >,
+               member< authority_revoker_object, account_name_type, &authority_revoker_object::account >,
+               member< authority_revoker_object, authority_classification_type, &authority_revoker_object::auth_class >,
+               member< authority_revoker_object, authority_revoker_id_type, &authority_revoker_object::id >
+            >
+         >,
+         ordered_unique< tag< by_revoker_key_auth >,
+            composite_key< authority_revoker_object,
+               member< authority_revoker_object, account_name_type, &authority_revoker_object::revoker >,
+               member< authority_revoker_object, public_key_type, &authority_revoker_object::key_auth >,
+               member< authority_revoker_object, account_name_type, &authority_revoker_object::account >,
+               member< authority_revoker_object, authority_classification_type, &authority_revoker_object::auth_class >,
+               member< authority_revoker_object, authority_revoker_id_type, &authority_revoker_object::id >
+            >
+         >,
+         ordered_unique< tag< by_account_account_auth >,
+            composite_key< authority_revoker_object,
+               member< authority_revoker_object, account_name_type, &authority_revoker_object::account >,
+               member< authority_revoker_object, account_name_type, &authority_revoker_object::account_auth >,
+               member< authority_revoker_object, authority_classification_type, &authority_revoker_object::auth_class >,
+               member< authority_revoker_object, authority_revoker_id_type, &authority_revoker_object::id >
+            >
+         >,
+         ordered_unique< tag< by_account_key_auth >,
+            composite_key< authority_revoker_object,
+               member< authority_revoker_object, account_name_type, &authority_revoker_object::account >,
+               member< authority_revoker_object, public_key_type, &authority_revoker_object::key_auth >,
+               member< authority_revoker_object, authority_classification_type, &authority_revoker_object::auth_class >,
+               member< authority_revoker_object, authority_revoker_id_type, &authority_revoker_object::id >
+            >
+         >
+      >,
+      allocator< authority_revoker_object >
+   > authority_revoker_index;
+
+
    struct by_expiration;
 
    typedef multi_index_container <
@@ -401,6 +469,10 @@ FC_REFLECT( steemit::chain::account_authority_object,
              (id)(account)(owner)(active)(posting)(last_owner_update)
 )
 CHAINBASE_SET_INDEX_TYPE( steemit::chain::account_authority_object, steemit::chain::account_authority_index )
+
+FC_REFLECT( steemit::chain::authority_revoker_object,
+            (id)(account)(revoker)(auth_class)(key_auth)(account_auth) )
+CHAINBASE_SET_INDEX_TYPE( steemit::chain::authority_revoker_object, steemit::chain::authority_revoker_index )
 
 FC_REFLECT( steemit::chain::owner_authority_history_object,
              (id)(account)(previous_owner_authority)(last_valid_time)

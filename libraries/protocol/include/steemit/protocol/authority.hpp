@@ -4,17 +4,14 @@
 
 namespace steemit { namespace protocol {
 
+   typedef static_variant<
+      public_key_type,
+      account_name_type
+      > authority_type;
+
    struct authority
    {
       authority(){}
-
-      enum classification
-      {
-         owner   = 0,
-         active  = 1,
-         key     = 2,
-         posting = 3
-      };
 
       template< class ...Args >
       authority( uint32_t threshold, Args... auths )
@@ -101,7 +98,7 @@ bool operator == ( const authority& a, const authority& b );
 } } // namespace steemit::protocol
 
 
-FC_REFLECT_TYPENAME( steemit::protocol::authority::account_authority_map)
-FC_REFLECT_TYPENAME( steemit::protocol::authority::key_authority_map)
+FC_REFLECT_TYPENAME( steemit::protocol::authority::account_authority_map )
+FC_REFLECT_TYPENAME( steemit::protocol::authority::key_authority_map )
+FC_REFLECT_TYPENAME( steemit::protocol::authority_type )
 FC_REFLECT( steemit::protocol::authority, (weight_threshold)(account_auths)(key_auths) )
-FC_REFLECT_ENUM( steemit::protocol::authority::classification, (owner)(active)(key)(posting) )

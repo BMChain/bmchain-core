@@ -2,6 +2,7 @@
 #include <steemit/protocol/base.hpp>
 #include <steemit/protocol/block_header.hpp>
 #include <steemit/protocol/asset.hpp>
+#include <steemit/protocol/authority.hpp>
 
 #include <fc/utf8.hpp>
 #include <fc/crypto/equihash.hpp>
@@ -40,6 +41,34 @@ namespace steemit { namespace protocol {
 
       void get_required_active_authorities( flat_set<account_name_type>& a )const
       { if( !owner ) a.insert( account ); }
+   };
+
+   struct add_authority_revoker_operation : public base_operation
+   {
+      account_name_type             account;    /// Account whose authority to modify
+      account_name_type             revoker;    /// The account name of the revoker
+      authority_classification_type auth_class; /// The auth type to modify (owner, active, posting)
+      authority_type                auth;       /// The public key or account name of an authority
+
+      void validate()const;
+
+      void get_required_owner_authorities( flat_set< account_name_type >& a )const
+      { if( auth_class == STEEMIT_ACTIVE_AUTHORITY ) a.insert( account ); }
+
+      void get_required_active_authorities( flat_set< account_name_type >& a )const
+      { if( auth_class == STEEMIT_POSTING_AUTHORITY ) a.insert( account ); }
+   };
+
+
+   struct revoke_authority_operation : public base_operation
+   {
+      account_name_type             revoker;    /// The account name of the revoker
+      optional< account_name_type > account;    /// The account name to revoke an auth on. Left blank revokes all matching auths that can be revoked
+      authority_type                auth;       /// The public key or account name of an authority
+
+      void validate()const;
+
+      void get_required_active_authorities( flat_set< account_name_type >& a )const { a.insert( revoker ); }
    };
 
 
@@ -912,6 +941,9 @@ FC_REFLECT( steemit::protocol::account_update_operation,
             (posting)
             (memo_key)
             (json_metadata) )
+
+FC_REFLECT( steemit::protocol::add_authority_revoker_operation, (account)(revoker)(auth_class)(auth) )
+FC_REFLECT( steemit::protocol::revoke_authority_operation, (revoker)(account)(auth) )
 
 FC_REFLECT( steemit::protocol::transfer_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( steemit::protocol::transfer_to_vesting_operation, (from)(to)(amount) )

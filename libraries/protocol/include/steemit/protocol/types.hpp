@@ -69,6 +69,7 @@ namespace steemit {
       typedef fc::ecc::private_key                   private_key_type;
       typedef fc::sha256                             chain_id_type;
       typedef fc::fixed_string<>                     account_name_type;
+      typedef fc::fixed_string<>                     authority_classification_type;
       //   typedef std::string                            account_name_type;
 
       struct string_less

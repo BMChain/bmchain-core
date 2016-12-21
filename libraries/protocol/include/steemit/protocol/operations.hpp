@@ -58,6 +58,8 @@ namespace steemit { namespace protocol {
             decline_voting_rights_operation,
             reset_account_operation,
             set_reset_account_operation,
+            add_authority_revoker_operation,
+            revoke_authority_operation,
 
             /// virtual operations below this point
             fill_convert_request_operation,
