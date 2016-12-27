@@ -25,9 +25,6 @@
 #include <graphene/time/time.hpp>
 
 #include <fc/exception/exception.hpp>
-#include <fc/network/ntp.hpp>
-#include <fc/thread/mutex.hpp>
-#include <fc/thread/scoped_lock.hpp>
 
 #include <atomic>
 
@@ -40,12 +37,13 @@ time_discontinuity_signal_type time_discontinuity_signal;
 
 namespace detail
 {
-  std::atomic<fc::ntp*> ntp_service(nullptr);
-  fc::mutex ntp_service_initialization_mutex;
+//  std::atomic<fc::ntp*> ntp_service(nullptr);
+//  fc::mutex ntp_service_initialization_mutex;
 }
 
 fc::optional<fc::time_point> ntp_time()
 {
+   /*
   fc::ntp* actual_ntp_service = detail::ntp_service.load();
   if (!actual_ntp_service)
   {
@@ -57,13 +55,17 @@ fc::optional<fc::time_point> ntp_time()
       detail::ntp_service.store(actual_ntp_service);
     }
   }
-  return actual_ntp_service->get_time();
+  */
+  return fc::time_point::now();
+  //return actual_ntp_service->get_time();
 }
 
 void shutdown_ntp_time()
 {
+   /*
   fc::ntp* actual_ntp_service = detail::ntp_service.exchange(nullptr);
   delete actual_ntp_service;
+  */
 }
 
 fc::time_point now()
@@ -83,6 +85,7 @@ fc::time_point nonblocking_now()
   if (simulated_time)
     return fc::time_point() + fc::seconds(simulated_time + adjusted_time_sec);
 
+  /*
   fc::ntp* actual_ntp_service = detail::ntp_service.load();
   fc::optional<fc::time_point> current_ntp_time;
   if (actual_ntp_service)
@@ -91,20 +94,23 @@ fc::time_point nonblocking_now()
   if (current_ntp_time)
     return *current_ntp_time + fc::seconds(adjusted_time_sec);
   else
+    */
     return fc::time_point::now() + fc::seconds(adjusted_time_sec);
 }
 
 void update_ntp_time()
 {
-  detail::ntp_service.load()->request_now();
+  // detail::ntp_service.load()->request_now();
 }
 
+/*
 fc::microseconds ntp_error()
 {
   fc::optional<fc::time_point> current_ntp_time = ntp_time();
   FC_ASSERT( current_ntp_time, "We don't have NTP time!" );
   return *current_ntp_time - fc::time_point::now();
 }
+*/
 
 void start_simulated_time( const fc::time_point sim_time )
 {

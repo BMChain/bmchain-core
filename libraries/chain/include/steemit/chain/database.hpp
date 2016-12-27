@@ -11,13 +11,15 @@
 #include <steemit/protocol/protocol.hpp>
 
 //#include <graphene/db2/database.hpp>
-#include <fc/signals.hpp>
+#include <boost/signals2/signal.hpp>
 
 #include <fc/log/logger.hpp>
 
 #include <map>
 
 namespace steemit { namespace chain {
+
+   namespace bs2 = boost::signals2;
 
    using steemit::protocol::signed_transaction;
    using steemit::protocol::operation;
@@ -197,8 +199,8 @@ namespace steemit { namespace chain {
          /**
           *  This signal is emitted for plugins to process every operation after it has been fully applied.
           */
-         fc::signal<void(const operation_notification&)> pre_apply_operation;
-         fc::signal<void(const operation_notification&)> post_apply_operation;
+         bs2::signal<void(const operation_notification&)> pre_apply_operation;
+         bs2::signal<void(const operation_notification&)> post_apply_operation;
 
          /**
           *  This signal is emitted after all operations and virtual operation for a
@@ -208,30 +210,30 @@ namespace steemit { namespace chain {
           *  the write lock and may be in an "inconstant state" until after it is
           *  released.
           */
-         fc::signal<void(const signed_block&)>           applied_block;
+         bs2::signal<void(const signed_block&)>           applied_block;
 
          /**
           * This signal is emitted any time a new transaction is added to the pending
           * block state.
           */
-         fc::signal<void(const signed_transaction&)>     on_pending_transaction;
+         bs2::signal<void(const signed_transaction&)>     on_pending_transaction;
 
          /**
           * This signal is emitted any time a new transaction has been applied to the
           * chain state.
           */
-         fc::signal<void(const signed_transaction&)>     on_applied_transaction;
+         bs2::signal<void(const signed_transaction&)>     on_applied_transaction;
 
          /**
           *  Emitted After a block has been applied and committed.  The callback
           *  should not yield and should execute quickly.
           */
-         //fc::signal<void(const vector< graphene::db2::generic_id >&)> changed_objects;
+         //bs2::signal<void(const vector< graphene::db2::generic_id >&)> changed_objects;
 
          /** this signal is emitted any time an object is removed and contains a
           * pointer to the last value of every object that was removed.
           */
-         //fc::signal<void(const vector<const object*>&)>  removed_objects;
+         //bs2::signal<void(const vector<const object*>&)>  removed_objects;
 
          //////////////////// db_witness_schedule.cpp ////////////////////
 
@@ -458,7 +460,7 @@ namespace steemit { namespace chain {
          template< typename MultiIndexType >
          friend void add_plugin_index( database& db );
 
-         fc::signal< void() >          _plugin_index_signal;
+         bs2::signal< void() >          _plugin_index_signal;
 
          transaction_id_type           _current_trx_id;
          uint32_t                      _current_block_num    = 0;
