@@ -314,7 +314,7 @@ void net_plugin::plugin_initialize( const variables_map& options ) {
       auto fcep   = fc::ip::endpoint::from_string( lipstr );
       my->listen_endpoint = tcp::endpoint( boost::asio::ip::address_v4::from_string( (string)fcep.get_address() ), fcep.port() );
       
-      ilog( "configured to listen on ${ep}", ("ep", fcep) );
+      ilog( "configured net to listen on ${ep}", ("ep", fcep) );
 
       my->acceptor.reset( new tcp::acceptor( app().get_io_service() ) );
    }
