@@ -190,6 +190,7 @@ endif()
 # external_plugins needs to be compiled first because libraries/app depends on STEEMIT_EXTERNAL_PLUGINS being fully populated
 #add_subdirectory( external_plugins )
 add_subdirectory( libraries )
+add_subdirectory( plugins )
 #add_subdirectory( programs )
 
 #add_subdirectory( tests )
