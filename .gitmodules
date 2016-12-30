@@ -4,12 +4,12 @@
 [submodule "libraries/chainbase"]
 	path = libraries/chainbase
 	url = https://github.com/steemit/chainbase.git
-[submodule "libraries/appbase"]
-	path = libraries/appbase
-	url = git@github.com:steemit/appbase.git
 [submodule "libraries/protocol"]
 	path = libraries/protocol
 	url = git@github.com:steemit/steem_protocol.git
 [submodule "libraries/chain"]
 	path = libraries/chain
 	url = git@github.com:steemit/steem_chain.git
+[submodule "libraries/appbase"]
+	path = libraries/appbase
+	url = git@github.com:steemit/appbase.git
