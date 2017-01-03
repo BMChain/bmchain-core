@@ -8,7 +8,7 @@ using namespace steem;
 
 int main( int argc, char** argv ) 
 {
-   fc::set_thread_name( "main" );
+   //fc::set_thread_name( "main" );
    try {
       app().register_plugin<net_plugin>();
       app().register_plugin<http_plugin>();

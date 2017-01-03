@@ -104,7 +104,7 @@ namespace steem {
       if( my->listen_endpoint ) {
 
          my->http_thread = std::make_shared<std::thread>( [&](){ 
-            fc::set_thread_name( "http" );
+            // fc::set_thread_name( "http" );
             ilog( "start processing http thread" );
             try {
 
