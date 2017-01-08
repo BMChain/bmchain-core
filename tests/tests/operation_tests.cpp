@@ -5892,6 +5892,205 @@ BOOST_AUTO_TEST_CASE( decline_voting_rights_apply )
    FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE( add_authority_revoker_validate )
+{
+   try
+   {
+
+   }
+   FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( add_authority_revoker_authorities  )
+{
+   try
+   {
+     BOOST_TEST_MESSAGE( "Testing: add_authority_revoker authorities" );
+
+     ACTORS( (alice)(bob) );
+     generate_blocks( 60 / STEEMIT_BLOCK_INTERVAL );
+
+     add_authority_revoker_operation op;
+     op.account = "alice";
+     op.revoker = "bob";
+     op.auth_class = STEEMIT_POSTING_AUTHORITY;
+     op.key_auth = "alice"
+
+     signed_transaction tx;
+     tx.operations.push_back( op );
+     tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+
+     BOOST_TEST_MESSAGE( "--- Test failure when no signatures" );
+     STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_missing_posting_auth );
+
+     BOOST_TEST_MESSAGE( "--- Test failure when duplicate signatures" );
+     tx.sign( alice_private_key, db.get_chain_id() );
+     tx.sign( alice_private_key, db.get_chain_id() );
+     STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_duplicate_sig );
+
+     BOOST_TEST_MESSAGE( "--- Test success with private signature" );
+     tx.signatures.clear();
+     tx.sign( alice_private_key, db.get_chain_id() );
+     db.push_transaction( tx, 0 );
+
+     BOOST_TEST_MESSAGE( "--- Test failure when signed by an additional signature not in the creator's authority" );
+     tx.sign( bob_private_key, db.get_chain_id() );
+     STEEMIT_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_irrelevant_sig );
+
+     BOOST_TEST_MESSAGE( "--- Test failure when signed by a signature not in the creator's authority" );
+     tx.signatures.clear();
+     tx.sign( bob_private_key, db.get_chain_id() );
+     STEEMIT_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_missing_private_auth );
+
+     validate_database();
+  }
+  FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( add_authority_revoker_apply )
+{
+   try
+   {
+     BOOST_TEST_MESSAGE( "Testing: add_authority_revoker apply" );
+
+     ACTORS( (alice)(bob) );
+     generate_blocks( 60 / STEEMIT_BLOCK_INTERVAL );
+
+     add_authority_revoker_operation op;
+     op.account = "alice";
+     op.revoker = "bob";
+     op.auth_class = STEEMIT_POSTING_AUTHORITY;
+     op.key_auth = "alice";
+
+     signed_transaction tx;
+     tx.operations.push_back( op );
+     tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+
+     tx.sign( alice_private_key, db.get_chain_id() );
+     db.push_transaction( tx, 0 );
+
+     BOOST_TEST_MESSAGE( "--- Test if authority revoker is in index" );
+     auto* revoker = db.find< authority_revoker_object, by_account_key_auth >( boost::make_tuple( op.account, key, op.auth_class ) );
+     BOOST_REQUIRE(revoker!=nullptr);
+     BOOST_REQUIRE(revoker.revoker == op.revoker);
+
+
+     BOOST_TEST_MESSAGE( "--- Test removing authority revoker from index" );
+     generate_blocks( 1 )
+
+     tx.clear();
+     tx.operations.push_back( op );
+     tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+     tx.sign( alice_private_key, db.get_chain_id() );
+     db.push_transaction( tx, 0 );
+
+     revoker = db.find< authority_revoker_object, by_account_key_auth >( boost::make_tuple( op.account, key, op.auth_class ) );
+     BOOST_REQUIRE(revoker==nullptr);
+     validate_database();
+
+
+   }
+   FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( revoke_authority_validate )
+{
+   try
+   {
+
+   }
+   FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( revoke_authority_authorities )
+{
+  try
+  {
+    BOOST_TEST_MESSAGE( "Testing: add_authority_revoker authorities" );
+
+    ACTORS( (alice)(bob) );
+    generate_blocks( 60 / STEEMIT_BLOCK_INTERVAL );
+
+    revoke_authorities_operation op;
+    op.account = "alice";
+    op.revoker = "bob";
+    op.key_auth = alice_post_key;
+
+    signed_transaction tx;
+    tx.operations.push_back( op );
+    tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+
+    BOOST_TEST_MESSAGE( "--- Test failure when no signatures" );
+    STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_missing_posting_auth );
+
+    BOOST_TEST_MESSAGE( "--- Test failure when duplicate signatures" );
+    tx.sign( bob_private_key, db.get_chain_id() );
+    tx.sign( bob_private_key, db.get_chain_id() );
+    STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_duplicate_sig );
+
+    BOOST_TEST_MESSAGE( "--- Test success with private signature" );
+    tx.signatures.clear();
+    tx.sign( bob_private_key, db.get_chain_id() );
+    db.push_transaction( tx, 0 );
+
+    BOOST_TEST_MESSAGE( "--- Test failure when signed by an additional signature not in the creator's authority" );
+    tx.sign( alice_private_key, db.get_chain_id() );
+    STEEMIT_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_irrelevant_sig );
+
+    BOOST_TEST_MESSAGE( "--- Test failure when signed by a signature not in the creator's authority" );
+    tx.signatures.clear();
+    tx.sign( alice_private_key, db.get_chain_id() );
+    STEEMIT_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_missing_private_auth );
+
+    validate_database();
+ }
+ FC_LOG_AND_RETHROW()
+}
+
+
+BOOST_AUTO_TEST_CASE( revoke_authority_apply )
+{
+   try
+   {
+     ACTORS( (alice)(bob) );
+     generate_blocks( 60 / STEEMIT_BLOCK_INTERVAL );
+
+     add_authority_revoker_operation add_authority_op;
+     op.account = "alice";
+     op.revoker = "bob";
+     op.auth_class = STEEMIT_POSTING_AUTHORITY;
+     op.key_auth = "alice";
+     signed_transaction tx;
+
+     tx.operations.push_back( op );
+     tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+
+     tx.sign( alice_private_key, db.get_chain_id() );
+     db.push_transaction( add_authority_op, 0 );
+
+     generate_blocks(1);
+
+     revoke_authorities_operation op;
+     op.account = "alice";
+     op.revoker = "bob";
+     op.key_auth = alice_post_key;
+
+     tx.clear();
+     tx.operations.push_back( op );
+     tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+
+     tx.sign( bob_private_key, db.get_chain_id() );
+     db.push_transaction( tx, 0 );
+
+     for( auto a: alice.posting->account_auths ){
+       BOOST_REQUIRE(a != alice_post_key);
+     }
+     validate_database();
+   }
+   FC_LOG_AND_RETHROW()
+}
+
+
 BOOST_AUTO_TEST_CASE( account_bandwidth )
 {
    try
