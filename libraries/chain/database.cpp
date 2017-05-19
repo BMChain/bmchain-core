@@ -1106,10 +1106,10 @@ void database::adjust_proxied_witness_votes( const account_object& a, share_type
 void database::adjust_witness_votes( const account_object& a, share_type delta )
 {
    const auto& vidx = get_index< witness_vote_index >().indices().get< by_account_witness >();
-   auto itr = vidx.lower_bound( boost::make_tuple( a.id, witness_id_type() ) );
-   while( itr != vidx.end() && itr->account == a.id )
+   auto itr = vidx.lower_bound( boost::make_tuple( a.name, account_name_type() ) );
+   while( itr != vidx.end() && itr->account == a.name )
    {
-      adjust_witness_vote( get(itr->witness), delta );
+      adjust_witness_vote( get< witness_object, by_name >(itr->witness), delta );
       ++itr;
    }
 }
@@ -1143,8 +1143,8 @@ void database::adjust_witness_vote( const witness_object& witness, share_type de
 void database::clear_witness_votes( const account_object& a )
 {
    const auto& vidx = get_index< witness_vote_index >().indices().get<by_account_witness>();
-   auto itr = vidx.lower_bound( boost::make_tuple( a.id, witness_id_type() ) );
-   while( itr != vidx.end() && itr->account == a.id )
+   auto itr = vidx.lower_bound( boost::make_tuple( a.name, account_name_type() ) );
+   while( itr != vidx.end() && itr->account == a.name )
    {
       const auto& current = *itr;
       ++itr;
@@ -1284,8 +1284,8 @@ void database::update_owner_authority( const account_object& account, const auth
 
 void database::process_vesting_withdrawals()
 {
-   const auto& widx = get_index< account_index >().indices().get< by_next_vesting_withdrawal >();
-   const auto& didx = get_index< withdraw_vesting_route_index >().indices().get< by_withdraw_route >();
+   const auto& widx = get_index< account_index, by_next_vesting_withdrawal >();
+   const auto& didx = get_index< withdraw_vesting_route_index, by_withdraw_route >();
    auto current = widx.begin();
 
    const auto& cprops = get_dynamic_global_properties();
@@ -1312,8 +1312,8 @@ void database::process_vesting_withdrawals()
       asset total_steem_converted = asset( 0, STEEM_SYMBOL );
 
       // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
-      for( auto itr = didx.upper_bound( boost::make_tuple( from_account.id, account_id_type() ) );
-           itr != didx.end() && itr->from_account == from_account.id;
+      for( auto itr = didx.upper_bound( boost::make_tuple( from_account.name, account_name_type() ) );
+           itr != didx.end() && itr->from_account == from_account.name;
            ++itr )
       {
          if( itr->auto_vest )
@@ -1323,7 +1323,7 @@ void database::process_vesting_withdrawals()
 
             if( to_deposit > 0 )
             {
-               const auto& to_account = get(itr->to_account);
+               const auto& to_account = get< account_object, by_name >( itr->to_account );
 
                modify( to_account, [&]( account_object& a )
                {
@@ -1337,13 +1337,13 @@ void database::process_vesting_withdrawals()
          }
       }
 
-      for( auto itr = didx.upper_bound( boost::make_tuple( from_account.id, account_id_type() ) );
-           itr != didx.end() && itr->from_account == from_account.id;
+      for( auto itr = didx.upper_bound( boost::make_tuple( from_account.name, account_name_type() ) );
+           itr != didx.end() && itr->from_account == from_account.name;
            ++itr )
       {
          if( !itr->auto_vest )
          {
-            const auto& to_account = get(itr->to_account);
+            const auto& to_account = get< account_object, by_name >( itr->to_account );
 
             share_type to_deposit = ( ( fc::uint128_t ( to_withdraw.value ) * itr->percent ) / STEEMIT_100_PERCENT ).to_uint64();
             vests_deposited_as_steem += to_deposit;
@@ -2086,7 +2086,7 @@ void database::process_decline_voting_rights()
 
    while( itr != request_idx.end() && itr->effective_date <= head_block_time() )
    {
-      const auto& account = get(itr->account);
+      const auto& account = get< account_object, by_name >( itr->account );
 
       /// remove all current votes
       std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH+1> delta;
@@ -2097,7 +2097,7 @@ void database::process_decline_voting_rights()
 
       clear_witness_votes( account );
 
-      modify( get(itr->account), [&]( account_object& a )
+      modify( account, [&]( account_object& a )
       {
          a.can_vote = false;
          a.proxy = STEEMIT_PROXY_TO_SELF_ACCOUNT;
@@ -4170,10 +4170,10 @@ void database::retally_witness_votes()
       const auto& a = *itr;
 
       const auto& vidx = get_index<witness_vote_index>().indices().get<by_account_witness>();
-      auto wit_itr = vidx.lower_bound( boost::make_tuple( a.id, witness_id_type() ) );
-      while( wit_itr != vidx.end() && wit_itr->account == a.id )
+      auto wit_itr = vidx.lower_bound( boost::make_tuple( a.name, account_name_type() ) );
+      while( wit_itr != vidx.end() && wit_itr->account == a.name )
       {
-         adjust_witness_vote( get(wit_itr->witness), a.witness_vote_weight() );
+         adjust_witness_vote( get< witness_object, by_name >(wit_itr->witness), a.witness_vote_weight() );
          ++wit_itr;
       }
    }
@@ -4191,8 +4191,8 @@ void database::retally_witness_vote_counts( bool force )
       if( force || (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT  ) )
       {
         const auto& vidx = get_index< witness_vote_index >().indices().get< by_account_witness >();
-        auto wit_itr = vidx.lower_bound( boost::make_tuple( a.id, witness_id_type() ) );
-        while( wit_itr != vidx.end() && wit_itr->account == a.id )
+        auto wit_itr = vidx.lower_bound( boost::make_tuple( a.name, account_name_type() ) );
+        while( wit_itr != vidx.end() && wit_itr->account == a.name )
         {
            ++witnesses_voted_for;
            ++wit_itr;
