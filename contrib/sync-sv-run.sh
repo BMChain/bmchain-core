@@ -40,7 +40,7 @@ if [[ ! -z "$BLOCKCHAIN_TIME" ]]; then
     echo steemdsync: starting a new blockchainstate upload operation
     cd ${COMPRESSPATH:-$HOME}
     echo steemdsync: compressing blockchainstate...
-    tar cf blockchain.tar.bz2 --use-compress-prog=pbzip2 $HOME/blockchain
+    tar cf blockchain.tar.bz2 --use-compress-prog=pbzip2 -C $HOME blockchain
     if [[ ! $? -eq 0 ]]; then
       echo NOTIFYALERT! steemdsync was unable to compress shared memory file, check the logs.
       exit 1
