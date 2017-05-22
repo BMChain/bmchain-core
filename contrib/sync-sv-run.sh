@@ -41,6 +41,10 @@ if [[ ! -z "$BLOCKCHAIN_TIME" ]]; then
     cd ${COMPRESSPATH:-$HOME}
     echo steemdsync: compressing blockchainstate...
     tar cf blockchain.tar.bz2 --use-compress-prog=pbzip2 $HOME/blockchain
+    if [[ ! $? -eq 0 ]]; then
+      echo NOTIFYALERT! steemdsync was unable to compress shared memory file, check the logs.
+      exit 1
+    fi
     FILE_NAME=blockchain-$VERSION-`date '+%Y%m%d-%H%M%S'`.tar.bz2
     echo steemdsync: uploading $FILE_NAME to $S3_BUCKET
     aws s3 cp blockchain.tar.bz2 s3://$S3_BUCKET/$FILE_NAME
