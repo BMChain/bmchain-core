@@ -60,6 +60,7 @@ if [[ ! -z "$BLOCKCHAIN_TIME" ]]; then
     	exit 1
     fi
     # upload a current block_log
+    cd $HOME
     aws s3 cp blockchain/block_log s3://$S3_BUCKET/block_log-intransit
     aws s3 cp s3://$S3_BUCKET/block_log-intransit s3://$S3_BUCKET/block_log-latest
     # kill the container starting the process over again
