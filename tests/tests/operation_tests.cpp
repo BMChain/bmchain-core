@@ -1804,7 +1804,7 @@ BOOST_AUTO_TEST_CASE( account_witness_vote_apply )
       db.push_transaction( tx, 0 );
 
       BOOST_REQUIRE( sam_witness.votes == alice.vesting_shares.amount );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, alice.id ) ) != witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "alice" ) ) != witness_vote_idx.end() );
       validate_database();
 
       BOOST_TEST_MESSAGE( "--- Test revoke vote" );
@@ -1816,13 +1816,13 @@ BOOST_AUTO_TEST_CASE( account_witness_vote_apply )
 
       db.push_transaction( tx, 0 );
       BOOST_REQUIRE( sam_witness.votes.value == 0 );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, alice.id ) ) == witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "alice" ) ) == witness_vote_idx.end() );
 
       BOOST_TEST_MESSAGE( "--- Test failure when attempting to revoke a non-existent vote" );
 
       STEEMIT_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
       BOOST_REQUIRE( sam_witness.votes.value == 0 );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, alice.id ) ) == witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "alice" ) ) == witness_vote_idx.end() );
 
       BOOST_TEST_MESSAGE( "--- Test proxied vote" );
       proxy( "alice", "bob" );
@@ -1836,8 +1836,8 @@ BOOST_AUTO_TEST_CASE( account_witness_vote_apply )
       db.push_transaction( tx, 0 );
 
       BOOST_REQUIRE( sam_witness.votes == ( bob.proxied_vsf_votes_total() + bob.vesting_shares.amount ) );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, bob.id ) ) != witness_vote_idx.end() );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, alice.id ) ) == witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "bob" ) ) != witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "alice" ) ) == witness_vote_idx.end() );
 
       BOOST_TEST_MESSAGE( "--- Test vote from a proxied account" );
       tx.operations.clear();
@@ -1848,8 +1848,8 @@ BOOST_AUTO_TEST_CASE( account_witness_vote_apply )
       STEEMIT_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
 
       BOOST_REQUIRE( sam_witness.votes == ( bob.proxied_vsf_votes_total() + bob.vesting_shares.amount ) );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, bob.id ) ) != witness_vote_idx.end() );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, alice.id ) ) == witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "bob" ) ) != witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "alice" ) ) == witness_vote_idx.end() );
 
       BOOST_TEST_MESSAGE( "--- Test revoke proxied vote" );
       tx.operations.clear();
@@ -1862,8 +1862,8 @@ BOOST_AUTO_TEST_CASE( account_witness_vote_apply )
       db.push_transaction( tx, 0 );
 
       BOOST_REQUIRE( sam_witness.votes.value == 0 );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, bob.id ) ) == witness_vote_idx.end() );
-      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.id, alice.id ) ) == witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "bob" ) ) == witness_vote_idx.end() );
+      BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( "sam", "alice" ) ) == witness_vote_idx.end() );
 
       BOOST_TEST_MESSAGE( "--- Test failure when voting for a non-existent account" );
       tx.operations.clear();
@@ -5609,7 +5609,7 @@ BOOST_AUTO_TEST_CASE( decline_voting_rights_apply )
       db.push_transaction( tx, 0 );
 
       const auto& request_idx = db.get_index< decline_voting_rights_request_index >().indices().get< by_account >();
-      auto itr = request_idx.find( db.get_account( "alice" ).id );
+      auto itr = request_idx.find( "alice" );
       BOOST_REQUIRE( itr != request_idx.end() );
       BOOST_REQUIRE( itr->effective_date == db.head_block_time() + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD );
 
@@ -5630,7 +5630,7 @@ BOOST_AUTO_TEST_CASE( decline_voting_rights_apply )
       tx.sign( alice_private_key, db.get_chain_id() );
       db.push_transaction( tx, 0 );
 
-      itr = request_idx.find( db.get_account( "alice" ).id );
+      itr = request_idx.find( "alice" );
       BOOST_REQUIRE( itr == request_idx.end() );
 
 
@@ -5687,11 +5687,11 @@ BOOST_AUTO_TEST_CASE( decline_voting_rights_apply )
       BOOST_REQUIRE( !db.get_account( "alice" ).can_vote );
       validate_database();
 
-      itr = request_idx.find( db.get_account( "alice" ).id );
+      itr = request_idx.find( "alice" );
       BOOST_REQUIRE( itr == request_idx.end() );
 
       const auto& witness_idx = db.get_index< witness_vote_index >().indices().get< by_account_witness >();
-      auto witness_itr = witness_idx.find( boost::make_tuple( db.get_account( "alice" ).id, db.get_witness( "alice" ).id ) );
+      auto witness_itr = witness_idx.find( boost::make_tuple( "alice", "alice" ) );
       BOOST_REQUIRE( witness_itr == witness_idx.end() );
 
       tx.clear();
