@@ -101,7 +101,8 @@ if [[ "$USE_MULTICORE_READONLY" ]]; then
     PORT_NUM=8092
     cp /etc/nginx/healthcheck.conf.template /etc/nginx/healthcheck.conf
     CORES=$(nproc)
-    PROCESSES=$((CORES * 4))
+    # PROCESSES=$((CORES * 4))
+    PROCESSES=2
     for (( i=2; i<=$PROCESSES; i++ ))
       do
         echo server 127.0.0.1:$PORT_NUM\; >> /etc/nginx/healthcheck.conf
