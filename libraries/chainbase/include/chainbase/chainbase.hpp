@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chainbase/locks.hpp>
+
 #include <boost/interprocess/managed_mapped_file.hpp>
 #include <boost/interprocess/containers/map.hpp>
 #include <boost/interprocess/containers/set.hpp>
@@ -8,6 +10,7 @@
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/sync/interprocess_sharable_mutex.hpp>
+#include <boost/interprocess/sync/interprocess_upgradable_mutex.hpp>
 #include <boost/interprocess/sync/sharable_lock.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
 
@@ -77,10 +80,6 @@ namespace chainbase {
             return std::strcmp( a, b ) < 0;
          }
    };
-
-   typedef boost::interprocess::interprocess_sharable_mutex read_write_mutex;
-   typedef boost::interprocess::sharable_lock< read_write_mutex > read_lock;
-   typedef boost::unique_lock< read_write_mutex > write_lock;
 
    /**
     *  Object ID type that includes the type of the object it references
@@ -922,14 +921,14 @@ namespace chainbase {
          }
 
          template< typename Lambda >
-         auto with_read_lock( Lambda&& callback, uint64_t wait_micro = 1000000 ) -> decltype( (*(Lambda*)nullptr)() )
+         auto with_read_lock( Lambda&& callback, uint64_t wait_micro = 0 ) -> decltype( (*(Lambda*)nullptr)() )
          {
             read_lock lock( _rw_manager->current_lock(), bip::defer_lock_type() );
 #ifdef CHAINBASE_CHECK_LOCKING
             BOOST_ATTRIBUTE_UNUSED
             int_incrementer ii( _read_lock_count );
 #endif
-
+            
             if( !wait_micro )
             {
                lock.lock();
@@ -949,12 +948,12 @@ namespace chainbase {
             if( _read_only )
                BOOST_THROW_EXCEPTION( std::logic_error( "cannot acquire write lock on read-only process" ) );
 
-            write_lock lock( _rw_manager->current_lock(), boost::defer_lock_t() );
+            write_lock lock( _rw_manager->current_lock(), bip::defer_lock_type() );
 #ifdef CHAINBASE_CHECK_LOCKING
             BOOST_ATTRIBUTE_UNUSED
             int_incrementer ii( _write_lock_count );
 #endif
-
+            
             if( !wait_micro )
             {
                lock.lock();
@@ -965,7 +964,7 @@ namespace chainbase {
                {
                   _rw_manager->next_lock();
                   std::cerr << "Lock timeout, moving to lock " << _rw_manager->current_lock_num() << std::endl;
-                  lock = write_lock( _rw_manager->current_lock(), boost::defer_lock_t() );
+                  lock = write_lock( _rw_manager->current_lock(), bip::defer_lock_type() );
                }
             }
 
