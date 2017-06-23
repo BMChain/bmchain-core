@@ -921,14 +921,14 @@ namespace chainbase {
          }
 
          template< typename Lambda >
-         auto with_read_lock( Lambda&& callback, uint64_t wait_micro = 0 ) -> decltype( (*(Lambda*)nullptr)() )
+         auto with_read_lock( Lambda&& callback, uint64_t wait_micro = 1500000 ) -> decltype( (*(Lambda*)nullptr)() )
          {
             read_lock lock( _rw_manager->current_lock(), bip::defer_lock_type() );
 #ifdef CHAINBASE_CHECK_LOCKING
             BOOST_ATTRIBUTE_UNUSED
             int_incrementer ii( _read_lock_count );
 #endif
-            
+
             if( !wait_micro )
             {
                lock.lock();
@@ -953,7 +953,7 @@ namespace chainbase {
             BOOST_ATTRIBUTE_UNUSED
             int_incrementer ii( _write_lock_count );
 #endif
-            
+
             if( !wait_micro )
             {
                lock.lock();

@@ -10,7 +10,7 @@
 
 #include <atomic>
 
-namespace chainbase 
+namespace chainbase
 {
    namespace bip = boost::interprocess;
 
@@ -65,14 +65,17 @@ namespace chainbase
          bool result = _write_mutex.timed_lock( abs_time );
 
          if( !result )
-            return result;
+            return false;
 
          bip::interprocess_mutex cond_mutex;
          bip::scoped_lock< bip::interprocess_mutex > cond_lock( cond_mutex );
          result = cond_lock.owns();
 
          if( !result )
-            return result;
+         {
+            _write_mutex.unlock();
+            return false;
+         }
 
          while( result && _readers.load() > 0 )
             result = _read_cond.timed_wait( cond_lock, abs_time );
@@ -109,10 +112,10 @@ namespace chainbase
          if( result )
          {
             if( _readers.load() == ~0 )
-               return false;
+               result = false;
             else
                _readers++;
-            
+
             _write_mutex.unlock();
          }
 
@@ -129,7 +132,7 @@ namespace chainbase
                result = false;
             else
                _readers++;
-            
+
             _write_mutex.unlock();
          }
 
@@ -139,17 +142,16 @@ namespace chainbase
       void unlock_sharable()
       {
          _readers--;
-         if( _readers.load() == 0 )
-            _read_cond.notify_all();
+         _read_cond.notify_all();
       }
 
-      
+
       std::atomic< uint32_t >           _readers;
       bip::interprocess_recursive_mutex _write_mutex;
       bip::interprocess_condition       _read_cond;
    };
 
-   typedef interprocess_recursive_sharable_mutex read_write_mutex;
+   typedef bip::interprocess_sharable_mutex read_write_mutex;
    typedef bip::sharable_lock< read_write_mutex > read_lock;
    typedef bip::scoped_lock< read_write_mutex > write_lock;
 }
