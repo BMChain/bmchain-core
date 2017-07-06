@@ -38,7 +38,7 @@ if [[ ! -z  "$BLOCKCHAIN_TIME" ]]; then
     echo Status: 200
     echo Content-type:text/plain
     echo
-    echo Block age is less than 60 seconds old, this node is considered healthy.
+    echo Block age is ${BLOCK_AGE} seconds old, this node is considered healthy.
   else
     echo Status: 503
     echo Content-type:text/plain
