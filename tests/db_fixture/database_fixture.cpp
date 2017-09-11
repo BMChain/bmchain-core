@@ -196,12 +196,12 @@ string database_fixture::generate_anon_acct_name()
    return "anon-acct-x" + std::to_string( anon_acct_count++ );
 }
 
-void database_fixture::open_database()
+void database_fixture::open_database( bool apply_all_hardforks )
 {
    if( !data_dir ) {
       data_dir = fc::temp_directory( steemit::utilities::temp_directory_path() );
       db->_log_hardforks = false;
-      db->open( data_dir->path(), data_dir->path(), INITIAL_TEST_SUPPLY, 1024 * 1024 * 8, chainbase::database::read_write ); // 8 MB file for testing
+      db->open( data_dir->path(), data_dir->path(), INITIAL_TEST_SUPPLY, 1024 * 1024 * 8, chainbase::database::read_write, apply_all_hardforks ); // 8 MB file for testing
    }
 }
 
