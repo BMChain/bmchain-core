@@ -1,26 +1,3 @@
-/*
- * Copyright (c) 2017, Respective Authors.
- *
- * The MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 #include <steemit/plugins/witness/witness_plugin.hpp>
 #include <steemit/plugins/witness/witness_objects.hpp>
 #include <steemit/plugins/witness/witness_operations.hpp>
@@ -568,9 +545,7 @@ namespace detail {
 } // detail
 
 
-witness_plugin::witness_plugin() :
-   my( new detail::witness_plugin_impl( appbase::app().get_io_service() ) ) {}
-
+witness_plugin::witness_plugin() {}
 witness_plugin::~witness_plugin() {}
 
 void witness_plugin::set_program_options(
@@ -579,8 +554,8 @@ void witness_plugin::set_program_options(
 {
    string witness_id_example = "initwitness";
    cfg.add_options()
-         ("enable-stale-production", bpo::bool_switch()->notifier([this](bool e){my->_production_enabled = e;}), "Enable block production, even if the chain is stale.")
-         ("required-participation", bpo::bool_switch()->notifier([this](int e){my->_required_witness_participation = uint32_t(e*STEEM_1_PERCENT);}), "Percent of witnesses (0-99) that must be participating in order to produce blocks")
+         ("enable-stale-production", bpo::bool_switch()->default_value(false), "Enable block production, even if the chain is stale.")
+         ("required-participation", bpo::value< uint32_t >()->default_value( 33 ), "Percent of witnesses (0-99) that must be participating in order to produce blocks")
          ("witness,w", bpo::value<vector<string>>()->composing()->multitoken(),
             ("name of witness controlled by this node (e.g. " + witness_id_example + " )" ).c_str() )
          ("private-key", bpo::value<vector<string>>()->composing()->multitoken(), "WIF PRIVATE KEY to be used by one or more witnesses or miners" )
@@ -589,6 +564,8 @@ void witness_plugin::set_program_options(
 
 void witness_plugin::plugin_initialize(const boost::program_options::variables_map& options)
 { try {
+   my = std::make_unique< detail::witness_plugin_impl >( appbase::app().get_io_service() );
+
    STEEM_LOAD_VALUE_SET( options, "witness", my->_witnesses, steemit::protocol::account_name_type )
 
    if( options.count("private-key") )
@@ -600,6 +577,13 @@ void witness_plugin::plugin_initialize(const boost::program_options::variables_m
          FC_ASSERT( private_key.valid(), "unable to parse private key" );
          my->_private_keys[private_key->get_public_key()] = *private_key;
       }
+   }
+
+   my->_production_enabled = options.at( "enable-stale-production" ).as< bool >();
+
+   if( options.count( "required-participation" ) )
+   {
+      my->_required_witness_participation = STEEM_1_PERCENT * options.at( "required-participation" ).as< uint32_t >();
    }
 
    my->_custom_operation_interpreter = std::make_shared< generic_custom_operation_interpreter< witness_plugin_operation > >( my->_db );
