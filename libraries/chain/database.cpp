@@ -89,7 +89,10 @@ database_impl::database_impl( database& self )
    : _self(self), _evaluator_registry(self) {}
 
 database::database()
-   : _my( new database_impl(*this) ) {}
+   : _my( new database_impl(*this) )
+{
+   init_hardforks();
+}
 
 database::~database()
 {
@@ -139,13 +142,12 @@ void database::open( const fc::path& data_dir, const fc::path& shared_mem_dir, u
 
       with_read_lock( [&]()
       {
-         init_hardforks(); // Writes to local state, but reads from db
+         const auto& hardforks = get_hardfork_property_object();
+         FC_ASSERT( hardforks.last_hardfork <= STEEM_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("STEEM_NUM_HARDFORKS",STEEM_NUM_HARDFORKS) );
+         FC_ASSERT( _hardfork_versions[ hardforks.last_hardfork ] <= STEEM_BLOCKCHAIN_VERSION, "Blockchain version is older than last applied hardfork" );
+         FC_ASSERT( STEEM_BLOCKCHAIN_HARDFORK_VERSION >= STEEM_BLOCKCHAIN_VERSION );
+         FC_ASSERT( STEEM_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[ STEEM_NUM_HARDFORKS ] );
       });
-#ifdef IS_TEST_NET
-      if( before_applying_all_hardforks )
-         before_applying_all_hardforks();
-      set_hardfork( STEEM_BLOCKCHAIN_VERSION.minor() );
-#endif
    }
    FC_CAPTURE_LOG_AND_RETHROW( (data_dir)(shared_mem_dir)(shared_file_size) )
 }
@@ -2453,6 +2455,18 @@ void database::init_genesis( uint64_t init_supply )
       {
          wso.current_shuffled_witnesses[0] = STEEM_INIT_MINER_NAME;
       } );
+
+#ifdef IS_TEST_NET
+      // For every existing before the head_block_time (genesis time), apply the hardfork
+      // This allows the test net to launch with past hardforks and apply the next harfork when running
+      auto now = head_block_time();
+      for( size_t i = 0;
+           i <= STEEM_BLOCKCHAIN_VERSION.minor() && _hardfork_times[i] < now;
+           i++ )
+      {
+         set_hardfork( i, true );
+      }
+#endif
    }
    FC_CAPTURE_AND_RETHROW()
 }
@@ -3575,13 +3589,6 @@ void database::init_hardforks()
    _hardfork_times[ STEEM_HARDFORK_0_21 ] = fc::time_point_sec( STEEM_HARDFORK_0_21_TIME );
    _hardfork_versions[ STEEM_HARDFORK_0_21 ] = STEEM_HARDFORK_0_21_VERSION;
 #endif
-
-
-   const auto& hardforks = get_hardfork_property_object();
-   FC_ASSERT( hardforks.last_hardfork <= STEEM_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("STEEM_NUM_HARDFORKS",STEEM_NUM_HARDFORKS) );
-   FC_ASSERT( _hardfork_versions[ hardforks.last_hardfork ] <= STEEM_BLOCKCHAIN_VERSION, "Blockchain version is older than last applied hardfork" );
-   FC_ASSERT( STEEM_BLOCKCHAIN_HARDFORK_VERSION >= STEEM_BLOCKCHAIN_VERSION );
-   FC_ASSERT( STEEM_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[ STEEM_NUM_HARDFORKS ] );
 }
 
 void database::process_hardforks()

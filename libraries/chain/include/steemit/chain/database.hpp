@@ -412,8 +412,6 @@ namespace steemit { namespace chain {
          bool skip_price_feed_limit_check = true;
          bool skip_transaction_delta_check = true;
          bool disable_low_mem_warning = true;
-
-         std::function< void () > before_applying_all_hardforks;
 #endif
 
    protected:
