@@ -2,7 +2,7 @@
 #pragma once
 
 #include <steem/protocol/steem_operations.hpp>
-#include <steem/protocol/operation_util_impl.hpp>
+#include <steem/protocol/operation_util.hpp>
 #include <steem/protocol/types.hpp>
 
 #include <steem/chain/evaluator.hpp>
