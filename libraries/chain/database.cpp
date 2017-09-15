@@ -3799,8 +3799,8 @@ void database::apply_hardfork( uint32_t hardfork )
 #ifndef IS_TEST_NET
                rfo.recent_claims = STEEM_HF_17_RECENT_CLAIMS;
 #endif
-               rfo.author_reward_curve = curve_id::quadratic;
-               rfo.curation_reward_curve = curve_id::quadratic_curation;
+               rfo.author_reward_curve = utilities::curve_id::quadratic;
+               rfo.curation_reward_curve = utilities::curve_id::quadratic_curation;
             });
 
             // As a shortcut in payout processing, we use the id as an array index.
@@ -3873,8 +3873,8 @@ void database::apply_hardfork( uint32_t hardfork )
 #ifndef IS_TEST_NET
                rfo.recent_claims = STEEM_HF_19_RECENT_CLAIMS;
 #endif
-               rfo.author_reward_curve = curve_id::linear;
-               rfo.curation_reward_curve = curve_id::square_root;
+               rfo.author_reward_curve = utilities::curve_id::linear;
+               rfo.curation_reward_curve = utilities::curve_id::square_root;
             });
 
             /* Remove all 0 delegation objects */

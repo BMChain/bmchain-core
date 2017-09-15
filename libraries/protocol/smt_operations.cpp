@@ -192,7 +192,42 @@ void smt_cap_reveal_operation::validate()const {}
 void smt_refund_operation::validate()const {}
 void smt_setup_inflation_operation::validate()const {}
 void smt_set_setup_parameters_operation::validate()const {}
-void smt_set_runtime_parameters_operation::validate()const {}
+
+struct smt_set_runtime_parameters_operation_visitor
+{
+   smt_set_runtime_parameters_operation_visitor(){}
+
+   typedef void result_type;
+
+   void operator()( const smt_param_windows_v1& param_windows ) const
+   {
+      FC_ASSERT(  ( param_windows.cashout_window_seconds > ( param_windows.reverse_auction_window_seconds + SMT_UPVOTE_LOCKOUT ) ) &&
+                  ( param_windows.cashout_window_seconds < SMT_VESTING_WITHDRAW_INTERVAL_SECONDS ), "Cashout window second must be valid" );
+
+      FC_ASSERT( ( param_windows.reverse_auction_window_seconds + SMT_UPVOTE_LOCKOUT ) >= 0, "Reverse auction window seconds must be valid" );
+   }
+
+   void operator()( const smt_param_vote_regeneration_period_seconds_v1& vote_regeneration ) const
+   {
+      FC_ASSERT(  ( vote_regeneration.vote_regeneration_period_seconds > 0 ) &&
+                  ( vote_regeneration.vote_regeneration_period_seconds < SMT_VESTING_WITHDRAW_INTERVAL_SECONDS ), "Vote regeneration must be valid" );
+   }
+
+   void operator()( const smt_param_rewards_v1& param_rewards ) const
+   {
+      //Nothing to do.
+   }
+};
+
+void smt_set_runtime_parameters_operation::validate()const
+{
+   FC_ASSERT( is_valid_account_name( control_account ) );
+   FC_ASSERT( !runtime_parameters.empty() );
+
+   smt_set_runtime_parameters_operation_visitor visitor;
+   for( auto& param: runtime_parameters )
+      param.visit( visitor );
+}
 
 } }
 #endif

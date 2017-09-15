@@ -65,28 +65,28 @@ uint64_t get_rshare_reward( const comment_reward_context& ctx )
    } FC_CAPTURE_AND_RETHROW( (ctx) )
 }
 
-uint128_t evaluate_reward_curve( const uint128_t& rshares, const curve_id& curve, const uint128_t& content_constant )
+uint128_t evaluate_reward_curve( const uint128_t& rshares, const utilities::curve_id& curve, const uint128_t& content_constant )
 {
    uint128_t result = 0;
 
    switch( curve )
    {
-      case quadratic:
+      case utilities::quadratic:
          {
             uint128_t rshares_plus_s = rshares + content_constant;
             result = rshares_plus_s * rshares_plus_s - content_constant * content_constant;
          }
          break;
-      case quadratic_curation:
+      case utilities::quadratic_curation:
          {
             uint128_t two_alpha = content_constant * 2;
             result = uint128_t( rshares.lo, 0 ) / ( two_alpha + rshares );
          }
          break;
-      case linear:
+      case utilities::linear:
          result = rshares;
          break;
-      case square_root:
+      case utilities::square_root:
          result = approx_sqrt( rshares );
          break;
    }

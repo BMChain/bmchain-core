@@ -35,7 +35,7 @@ add_library( steem_protocol
            )
 
 add_dependencies( steem_protocol build_hardfork_hpp )
-target_link_libraries( steem_protocol fc )
+target_link_libraries( steem_protocol fc steem_utilities )
 target_include_directories( steem_protocol
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include" )
 

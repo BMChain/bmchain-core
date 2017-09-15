@@ -2,7 +2,11 @@
 
 #include <steem/protocol/base.hpp>
 #include <steem/protocol/asset.hpp>
+
+#include <steem/utilities/misc_utilities.hpp>
+
 #ifdef STEEM_ENABLE_SMT
+
 namespace steem { namespace protocol {
 
 /**
@@ -23,16 +27,6 @@ struct smt_elevate_account_operation : public base_operation
 
    void get_required_active_authorities( flat_set<account_name_type>& a )const
    { a.insert( account ); }
-};
-
-// TODO:  Rename these curves to match naming in manual.md
-// TODO:  Remove duplicate definition in steem::chain
-enum curve_id
-{
-   quadratic,
-   quadratic_curation,
-   linear,
-   square_root
 };
 
 struct smt_generation_unit
@@ -232,8 +226,8 @@ struct smt_param_rewards_v1
    uint128_t               content_constant = 0;
    uint16_t                percent_curation_rewards = 0;
    uint16_t                percent_content_rewards = 0;
-   curve_id                author_reward_curve;
-   curve_id                curation_reward_curve;
+   utilities::curve_id     author_reward_curve;
+   utilities::curve_id     curation_reward_curve;
 };
 
 typedef static_variant<
@@ -273,14 +267,6 @@ FC_REFLECT(
    (account)
    (fee)
    (extensions)
-)
-
-FC_REFLECT_ENUM(
-   steem::protocol::curve_id,
-   (quadratic)
-   (quadratic_curation)
-   (linear)
-   (square_root)
 )
 
 FC_REFLECT(

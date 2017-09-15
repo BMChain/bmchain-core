@@ -8,6 +8,7 @@
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 
+#include <steem/utilities/misc_utilities.hpp>
 
 namespace steem { namespace chain {
 
@@ -249,14 +250,6 @@ namespace steem { namespace chain {
          time_point_sec    effective_date;
    };
 
-   enum curve_id
-   {
-      quadratic,
-      quadratic_curation,
-      linear,
-      square_root
-   };
-
    class reward_fund_object : public object< reward_fund_object_type, reward_fund_object >
    {
       public:
@@ -276,8 +269,8 @@ namespace steem { namespace chain {
          uint128_t               content_constant = 0;
          uint16_t                percent_curation_rewards = 0;
          uint16_t                percent_content_rewards = 0;
-         curve_id                author_reward_curve;
-         curve_id                curation_reward_curve;
+         utilities::curve_id       author_reward_curve;
+         utilities::curve_id       curation_reward_curve;
    };
 
    struct by_price;
@@ -466,9 +459,6 @@ namespace steem { namespace chain {
 
 #include <steem/chain/comment_object.hpp>
 #include <steem/chain/account_object.hpp>
-
-FC_REFLECT_ENUM( steem::chain::curve_id,
-                  (quadratic)(quadratic_curation)(linear)(square_root))
 
 FC_REFLECT( steem::chain::limit_order_object,
              (id)(created)(expiration)(seller)(orderid)(for_sale)(sell_price) )
