@@ -21,7 +21,7 @@
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1451606400))
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(1451606400))
-#define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
+#define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*10) /// 1 hr /// bmchain
 #define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12 (STEEMIT_CASHOUT_WINDOW_SECONDS)
 #define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 (STEEMIT_CASHOUT_WINDOW_SECONDS)
 #define STEEMIT_SECOND_CASHOUT_WINDOW           (60*60*24*3) /// 3 days
@@ -106,7 +106,7 @@
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
 #define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
 
-#define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
+#define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(20)) // 5 minutes /// bmchain
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
 #define STEEMIT_POST_MAX_BANDWIDTH              (4*STEEMIT_100_PERCENT) // 2 posts per 1 days, average 1 every 12 hours
@@ -228,11 +228,11 @@
 #define STEEMIT_MAX_BLOCK_SIZE                  (STEEMIT_MAX_TRANSACTION_SIZE*STEEMIT_BLOCK_INTERVAL*2000)
 #define STEEMIT_MIN_BLOCK_SIZE                  115
 #define STEEMIT_BLOCKS_PER_HOUR                 (60*60/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_FEED_INTERVAL_BLOCKS            (STEEMIT_BLOCKS_PER_HOUR)
+#define STEEMIT_FEED_INTERVAL_BLOCKS            (STEEMIT_BLOCKS_PER_HOUR / 12) /// bmchain
 #define STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16   (24*7) /// 7 days * 24 hours per day
 #define STEEMIT_FEED_HISTORY_WINDOW             (12*7) // 3.5 days
 #define STEEMIT_MAX_FEED_AGE_SECONDS            (60*60*24*7) // 7 days
-#define STEEMIT_MIN_FEEDS                       (STEEMIT_MAX_WITNESSES/3) /// protects the network from conversions before price has been established
+#define STEEMIT_MIN_FEEDS                       (STEEMIT_MAX_WITNESSES/STEEMIT_MAX_WITNESSES) /// bmchain /// protects the network from conversions before price has been established
 #define STEEMIT_CONVERSION_DELAY_PRE_HF_16      (fc::days(7))
 #define STEEMIT_CONVERSION_DELAY                (fc::hours(STEEMIT_FEED_HISTORY_WINDOW)) //3.5 day conversion
 
@@ -269,3 +269,10 @@
 /// Represents the canonical root post parent account
 #define STEEMIT_ROOT_POST_PARENT                (account_name_type())
 ///@}
+
+#define BMCHAIN_INIT_HARDFORK                   10    // Hardfork to apply when creating a new chain
+#define BMCHAIN_VOTE_FOR_RATING                 4     // Necessary votes to uprating
+#define BMCHAIN_VOTE_FOR_REWARD                 4     // Necessary votes for post rewarding
+#define BMCHAIN_REWARDING_SYSTEM                true  // Enable bmchain rewarding system and desable default steem rewarding system
+#define BMCHAIN_DEFAULT_ACCOUNT_RATING          100   // Default rating for new accounts
+#define BMCHAIN_BASIC_UPRATING                  10
