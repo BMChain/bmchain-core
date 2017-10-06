@@ -1521,7 +1521,70 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
    {
       share_type claimed_reward = 0;
 
-      if( comment.net_rshares > 0 )
+      if (BMCHAIN_REWARDING_SYSTEM)
+      {
+         if (comment.reward_weight_bmchain > 0 && comment.net_votes >= BMCHAIN_VOTE_FOR_REWARD)
+         {
+            const auto &author = get_account(comment.author);
+
+            share_type total_beneficiary = 0;
+            share_type curation_tokens   = 0;
+            share_type author_tokens     = 10000 * (author.reputation_bmchain - BMCHAIN_DEFAULT_ACCOUNT_RATING) / BMCHAIN_DEFAULT_ACCOUNT_RATING;
+
+            adjust_balance(author, author_tokens);
+
+            std::pair<asset, asset> assets_payout(asset(0, SBD_SYMBOL), author_tokens);
+
+            adjust_total_payout(comment, assets_payout.first + to_sbd(assets_payout.second), to_sbd(asset(curation_tokens, STEEM_SYMBOL)), to_sbd(asset(total_beneficiary, STEEM_SYMBOL)));
+
+            push_virtual_operation(author_reward_operation(comment.author, to_string(comment.permlink), assets_payout.first, assets_payout.second, asset(0, STEEM_SYMBOL)));
+            push_virtual_operation(comment_reward_operation(comment.author, to_string(comment.permlink), to_sbd(asset(claimed_reward, STEEM_SYMBOL))));
+
+            modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& p )
+            {
+                p.current_supply           += asset( author_tokens, STEEM_SYMBOL );
+                p.virtual_supply           += asset( author_tokens, STEEM_SYMBOL );
+            });
+
+            if (author_tokens != 0) {
+                const auto &acc_idx = get_index<account_index>().indices().get<by_id>();
+                const auto &vote_idx = get_index<comment_vote_index>().indices().get<by_comment_voter>();
+                auto vote_itr = vote_idx.lower_bound(comment.id);
+                while (vote_itr != vote_idx.end() && vote_itr->comment == comment.id) {
+                    const auto &cur_vote = *vote_itr;
+                    ++vote_itr;
+
+                    auto acc_itr = acc_idx.begin();
+                    while (acc_itr != acc_idx.end()) {
+                        if (cur_vote.voter == acc_itr->id) {
+                            modify(*acc_itr, [&](account_object &a) {
+                                a.reputation_bmchain++;
+                            });
+                        }
+                        acc_itr++;
+                    }
+                }
+            }
+
+            modify(comment, [&](comment_object &c) {
+                c.reward_weight_bmchain = 0;
+            });
+         }
+         if (comment.reputation_weight_bmchain > 0 && comment.net_votes >= BMCHAIN_VOTE_FOR_RATING)
+         {
+            modify(get_account(comment.author), [&](account_object &a) {
+                a.reputation_bmchain += BMCHAIN_BASIC_UPRATING;
+            });
+            modify(comment, [&](comment_object &c) {
+                c.reputation_weight_bmchain = 0;
+            });
+         }
+
+         fill_comment_reward_context_local_state( ctx, comment );
+
+         claimed_reward = util::get_rshare_reward( ctx );
+      }
+      else if( comment.net_rshares > 0 )
       {
          fill_comment_reward_context_local_state( ctx, comment );
 
@@ -1554,29 +1617,29 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             author_tokens -= total_beneficiary;
 
-            auto sbd_steem     = ( author_tokens * comment.percent_steem_dollars ) / ( 2 * STEEMIT_100_PERCENT ) ;
+            auto sbd_steem = (author_tokens * comment.percent_steem_dollars) / (2 * STEEMIT_100_PERCENT);
             auto vesting_steem = author_tokens - sbd_steem;
 
-            const auto& author = get_account( comment.author );
-            auto vest_created = create_vesting( author, vesting_steem, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
-            auto sbd_payout = create_sbd( author, sbd_steem, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
+            const auto &author = get_account(comment.author);
+            auto vest_created = create_vesting(author, vesting_steem, has_hardfork(STEEMIT_HARDFORK_0_17__659));
+            auto sbd_payout = create_sbd(author, sbd_steem, has_hardfork(STEEMIT_HARDFORK_0_17__659));
 
             adjust_total_payout( comment, sbd_payout.first + to_sbd( sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ) ), to_sbd( asset( curation_tokens, STEEM_SYMBOL ) ), to_sbd( asset( total_beneficiary, STEEM_SYMBOL ) ) );
 
             push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), sbd_payout.first, sbd_payout.second, vest_created ) );
             push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), to_sbd( asset( claimed_reward, STEEM_SYMBOL ) ) ) );
 
-            #ifndef IS_LOW_MEM
-               modify( comment, [&]( comment_object& c )
-               {
-                  c.author_rewards += author_tokens;
-               });
+#ifndef IS_LOW_MEM
+            modify( comment, [&]( comment_object& c )
+            {
+                c.author_rewards += author_tokens;
+            });
 
-               modify( get_account( comment.author ), [&]( account_object& a )
-               {
-                  a.posting_rewards += author_tokens;
-               });
-            #endif
+            modify( get_account( comment.author ), [&]( account_object& a )
+            {
+                a.posting_rewards += author_tokens;
+            });
+#endif
 
          }
 
@@ -1584,34 +1647,32 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             adjust_rshares2( comment, util::evaluate_reward_curve( comment.net_rshares.value ), 0 );
       }
 
-      modify( comment, [&]( comment_object& c )
-      {
-         /**
-         * A payout is only made for positive rshares, negative rshares hang around
-         * for the next time this post might get an upvote.
-         */
-         if( c.net_rshares > 0 )
-            c.net_rshares = 0;
-         c.children_abs_rshares = 0;
-         c.abs_rshares  = 0;
-         c.vote_rshares = 0;
-         c.total_vote_weight = 0;
-         c.max_cashout_time = fc::time_point_sec::maximum();
 
-         if( has_hardfork( STEEMIT_HARDFORK_0_17__769 ) )
-         {
-            c.cashout_time = fc::time_point_sec::maximum();
-         }
-         else if( c.parent_author == STEEMIT_ROOT_POST_PARENT )
-         {
-            if( has_hardfork( STEEMIT_HARDFORK_0_12__177 ) && c.last_payout == fc::time_point_sec::min() )
-               c.cashout_time = head_block_time() + STEEMIT_SECOND_CASHOUT_WINDOW;
-            else
+       modify(comment, [&](comment_object &c) {
+           /**
+           * A payout is only made for positive rshares, negative rshares hang around
+           * for the next time this post might get an upvote.
+           */
+           if (c.net_rshares > 0)
+               c.net_rshares = 0;
+           c.children_abs_rshares = 0;
+           c.abs_rshares = 0;
+           c.vote_rshares = 0;
+           c.total_vote_weight = 0;
+           c.max_cashout_time = fc::time_point_sec::maximum();
+
+           if (has_hardfork(STEEMIT_HARDFORK_0_17__769)) {
                c.cashout_time = fc::time_point_sec::maximum();
-         }
+           } else if (c.parent_author == STEEMIT_ROOT_POST_PARENT) {
+               if (has_hardfork(STEEMIT_HARDFORK_0_12__177) && c.last_payout == fc::time_point_sec::min())
+                   c.cashout_time = head_block_time() + STEEMIT_SECOND_CASHOUT_WINDOW;
+               else
+                   c.cashout_time = fc::time_point_sec::maximum();
+           }
 
-         c.last_payout = head_block_time();
-      } );
+           c.last_payout = head_block_time();
+       });
+
 
       push_virtual_operation( comment_payout_update_operation( comment.author, to_string( comment.permlink ) ) );
 
@@ -1625,7 +1686,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
          {
             modify( cur_vote, [&]( comment_vote_object& cvo )
             {
-               cvo.num_changes = -1;
+                cvo.num_changes = -1;
             });
          }
          else
@@ -1646,7 +1707,7 @@ void database::process_comment_cashout()
    /// and people have had a week to start posting.  The first cashout will be the biggest because it
    /// will represent 2+ months of rewards.
    if( !has_hardfork( STEEMIT_FIRST_CASHOUT_TIME ) )
-      return;
+       return;
 
    const auto& gpo = get_dynamic_global_properties();
    util::comment_reward_context ctx;
@@ -2436,6 +2497,10 @@ void database::init_genesis( uint64_t init_supply )
       {
          wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
       } );
+
+#if BMCHAIN_INIT_HARDFORK != 0
+       set_hardfork(BMCHAIN_INIT_HARDFORK, true);
+#endif
    }
    FC_CAPTURE_AND_RETHROW()
 }
