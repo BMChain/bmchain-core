@@ -1692,6 +1692,16 @@ annotated_signed_transaction wallet_api::create_account( string creator, string 
    import_key( active.wif_priv_key );
    import_key( posting.wif_priv_key );
    import_key( memo.wif_priv_key );
+   /// BMCHAIN_REWARDING_SYSTEM
+   std::cerr << "Name account: " << new_account_name << "\n";
+   std::cerr << "Private owner key  : " << owner.wif_priv_key << "\n";
+   std::cerr << "Public owner key   : " << std::string(owner.pub_key) << "\n";
+   std::cerr << "Private active key : " << active.wif_priv_key << "\n";
+   std::cerr << "Public active key  : " << std::string(active.pub_key) << "\n";
+   std::cerr << "Private posting key: " << posting.wif_priv_key << "\n";
+   std::cerr << "Public posting key : " << std::string(posting.pub_key) << "\n";
+   std::cerr << "Private memo key   : " << memo.wif_priv_key << "\n";
+   std::cerr << "Public memo key    : " << std::string(memo.pub_key) << "\n";   
    return create_account_with_keys( creator, new_account_name, json_meta, owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast );
 } FC_CAPTURE_AND_RETHROW( (creator)(new_account_name)(json_meta) ) }
 
