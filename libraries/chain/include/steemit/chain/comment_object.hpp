@@ -99,6 +99,10 @@ namespace steemit { namespace chain {
          bool              allow_curation_rewards = true;
 
          bip::vector< beneficiary_route_type, allocator< beneficiary_route_type > > beneficiaries;
+
+         int16_t reputation_weight_bmchain = 100;
+         int16_t reward_weight_bmchain     = 100;
+
    };
 
 
@@ -252,7 +256,7 @@ FC_REFLECT( steemit::chain::comment_object,
              (children_abs_rshares)(cashout_time)(max_cashout_time)
              (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)(root_comment)
              (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
-             (beneficiaries)
+             (beneficiaries)(reputation_weight_bmchain)(reward_weight_bmchain)
           )
 CHAINBASE_SET_INDEX_TYPE( steemit::chain::comment_object, steemit::chain::comment_index )
 
