@@ -218,7 +218,8 @@ struct account_api_obj
       witnesses_voted_for( a.witnesses_voted_for ),
       last_post( a.last_post ),
       last_root_post( a.last_root_post ),
-      reputation_bmchain( a.reputation_bmchain )
+      reputation_bmchain( a.reputation_bmchain ),
+      categories_bmchain( a.categories_bmchain )
    {
       size_t n = a.proxied_vsf_votes.size();
       proxied_vsf_votes.reserve( n );
@@ -333,6 +334,7 @@ struct account_api_obj
    time_point_sec    last_post;
    time_point_sec    last_root_post;
    uint32_t          reputation_bmchain;
+   std::map<std::string, uint32_t> categories_bmchain;
 };
 
 struct owner_authority_history_api_obj
@@ -537,7 +539,7 @@ FC_REFLECT( steemit::app::account_api_obj,
              (proxied_vsf_votes)(witnesses_voted_for)
              (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
              (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)
-             (last_post)(last_root_post)(reputation_bmchain)
+             (last_post)(last_root_post)(reputation_bmchain)(categories_bmchain)
           )
 
 FC_REFLECT( steemit::app::owner_authority_history_api_obj,

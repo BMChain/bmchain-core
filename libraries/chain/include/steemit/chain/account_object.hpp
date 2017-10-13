@@ -111,6 +111,7 @@ namespace steemit { namespace chain {
          time_point_sec    last_root_post = fc::time_point_sec::min();
          uint32_t          post_bandwidth = 0;
          uint32_t          reputation_bmchain = 100;
+         std::map<std::string, uint32_t> categories_bmchain;
 
          /// This function should be used only when the account votes for a witness directly
          share_type        witness_vote_weight()const {
@@ -473,7 +474,7 @@ FC_REFLECT( steemit::chain::account_object,
              (curation_rewards)
              (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)
-             (last_post)(last_root_post)(post_bandwidth)(reputation_bmchain)
+             (last_post)(last_root_post)(post_bandwidth)(reputation_bmchain)(categories_bmchain)
           )
 CHAINBASE_SET_INDEX_TYPE( steemit::chain::account_object, steemit::chain::account_index )
 
