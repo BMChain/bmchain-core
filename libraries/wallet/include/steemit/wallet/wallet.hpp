@@ -868,7 +868,7 @@ class wallet_api
        * @param weight The weight [-100,100] of the vote
        * @param broadcast true if you wish to broadcast the transaction
        */
-      annotated_signed_transaction vote( string voter, string author, string permlink, int16_t weight, bool broadcast );
+      annotated_signed_transaction vote( string voter, string author, string permlink, int16_t weight, bool broadcast, string comment_bmchain = "" );
 
       /**
        * Sets the amount of time in the future until a transaction expires.
@@ -974,6 +974,10 @@ class wallet_api
       annotated_signed_transaction decline_voting_rights( string account, bool decline, bool broadcast );
 
       annotated_signed_transaction claim_reward_balance( string account, asset reward_steem, asset reward_sbd, asset reward_vests, bool broadcast );
+
+      discussion get_comment(string author, string permlink) const;
+
+
 };
 
 struct plain_keys {
@@ -1024,6 +1028,8 @@ FC_API( steemit::wallet::wallet_api,
         (get_account_history)
         (get_state)
         (get_withdraw_routes)
+        (get_comment)
+
 
         /// transaction api
         (create_account)

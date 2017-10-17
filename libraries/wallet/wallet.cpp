@@ -2276,7 +2276,7 @@ annotated_signed_transaction wallet_api::post_comment( string author, string per
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::vote( string voter, string author, string permlink, int16_t weight, bool broadcast )
+annotated_signed_transaction wallet_api::vote( string voter, string author, string permlink, int16_t weight, bool broadcast, string comment_bmchain )
 {
    FC_ASSERT( !is_locked() );
    FC_ASSERT( abs(weight) <= 100, "Weight must be between -100 and 100 and not 0" );
@@ -2286,6 +2286,7 @@ annotated_signed_transaction wallet_api::vote( string voter, string author, stri
    op.author = author;
    op.permlink = permlink;
    op.weight = weight * STEEMIT_1_PERCENT;
+   op.comment_bmchain = comment_bmchain;
 
    signed_transaction tx;
    tx.operations.push_back( op );
@@ -2476,6 +2477,13 @@ vector<extended_message_object>   wallet_api::get_outbox( string account, fc::ti
       result.back().message = try_decrypt_message( item );
    }
    return result;
+}
+
+discussion wallet_api::get_comment(string author, string permlink) const
+{
+   discussion comment = my->_remote_db->get_content( author, permlink );
+
+   return comment;
 }
 
 } } // steemit::wallet
