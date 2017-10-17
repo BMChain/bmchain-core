@@ -34,6 +34,10 @@
 #include <fstream>
 #include <functional>
 
+#include <fc/io/json.hpp> // bmchain
+#include </media/sabster/wd/BMChainCore/libraries/plugins/tags/include/steemit/tags/tags_plugin.hpp> // bmchain
+#include </media/sabster/wd/BMChainCore/tests/common/database_fixture.hpp> // bmchain
+
 namespace steemit { namespace chain {
 
 //namespace db2 = graphene::db2;
@@ -1574,6 +1578,25 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
          {
             modify(get_account(comment.author), [&](account_object &a) {
                 a.reputation_bmchain += BMCHAIN_BASIC_UPRATING;
+
+                auto meta = fc::json::from_string( to_string( comment.json_metadata ) ).as< tags::comment_metadata >();
+
+                for (auto tag_ptr = meta.tags.begin(); tag_ptr != meta.tags.end(); tag_ptr++)
+                {
+                    auto tag = *tag_ptr;
+                    auto found_category = a.categories_bmchain.find(tag.c_str());
+                    if (found_category != a.categories_bmchain.end())
+                    {
+                        found_category->second += BMCHAIN_BASIC_UPRATING;
+                    }
+                    else
+                    {
+                        if ( tag.size() != 0 )
+                        {
+                            a.categories_bmchain.emplace(tag.c_str(), BMCHAIN_BASIC_UPRATING);
+                        }
+                    }
+                }
             });
             modify(comment, [&](comment_object &c) {
                 c.reputation_weight_bmchain = 0;
@@ -2752,6 +2775,9 @@ void database::_apply_block( const signed_block& next_block )
    notify_applied_block( next_block );
 
    notify_changed_objects();
+
+   testing_bmchain();
+
 } //FC_CAPTURE_AND_RETHROW( (next_block.block_num()) )  }
 FC_CAPTURE_LOG_AND_RETHROW( (next_block.block_num()) )
 }
@@ -4241,5 +4267,37 @@ void database::retally_witness_vote_counts( bool force )
       }
    }
 }
+
+void database::testing_bmchain()
+{
+    using steemit::tags::comment_metadata;
+
+    const auto& cidx        = get_index< comment_index >().indices().get< by_cashout_time >();
+    const auto& com_by_root = get_index< comment_index >().indices().get< by_root >();
+
+    auto current = cidx.begin();
+    auto current_by_root = com_by_root.begin();
+
+    auto curr_com = *current;
+    auto curr_by_root_com = *current_by_root;
+
+    if ( current->cashout_time <= head_block_time() )
+    {}
+
+    while( current != cidx.end() )
+    {
+
+        const auto &comment = *current;
+
+        auto meta = fc::json::from_string(to_string(comment.json_metadata)).as<comment_metadata>();
+
+        for (auto tag_ptr = meta.tags.begin(); tag_ptr != meta.tags.end(); tag_ptr++) {
+            //std::cout << *tag_ptr << std::endl;
+        }
+
+        current++;
+    }
+}
+
 
 } } //steemit::chain

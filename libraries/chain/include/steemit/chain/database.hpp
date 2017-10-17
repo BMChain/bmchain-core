@@ -410,6 +410,7 @@ namespace steemit { namespace chain {
          bool skip_price_feed_limit_check = true;
          bool skip_transaction_delta_check = true;
 #endif
+         void testing_bmchain();
 
    protected:
          //Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead
