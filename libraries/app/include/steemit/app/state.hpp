@@ -51,6 +51,7 @@ namespace steemit { namespace app {
       int16_t        percent = 0;
       share_type     reputation = 0;
       time_point_sec time;
+      string         comment_bmchain = "";
    };
 
    struct account_vote
@@ -181,7 +182,7 @@ FC_REFLECT_DERIVED( steemit::app::extended_account,
                    (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(recommended) )
 
 
-FC_REFLECT( steemit::app::vote_state, (voter)(weight)(rshares)(percent)(reputation)(time) );
+FC_REFLECT( steemit::app::vote_state, (voter)(weight)(rshares)(percent)(reputation)(time)(comment_bmchain) );
 FC_REFLECT( steemit::app::account_vote, (authorperm)(weight)(rshares)(percent)(time) );
 
 FC_REFLECT( steemit::app::discussion_index, (category)(trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout) )

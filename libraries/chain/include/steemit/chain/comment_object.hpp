@@ -128,6 +128,7 @@ namespace steemit { namespace chain {
          int16_t           vote_percent = 0; ///< The percent weight of the vote
          time_point_sec    last_update; ///< The time of the last update of the vote
          int8_t            num_changes = 0;
+         string            comment_bmchain;
    };
 
    struct by_comment_voter;
@@ -261,6 +262,6 @@ FC_REFLECT( steemit::chain::comment_object,
 CHAINBASE_SET_INDEX_TYPE( steemit::chain::comment_object, steemit::chain::comment_index )
 
 FC_REFLECT( steemit::chain::comment_vote_object,
-             (id)(voter)(comment)(weight)(rshares)(vote_percent)(last_update)(num_changes)
+             (id)(voter)(comment)(weight)(rshares)(vote_percent)(last_update)(num_changes)(comment_bmchain)
           )
 CHAINBASE_SET_INDEX_TYPE( steemit::chain::comment_vote_object, steemit::chain::comment_vote_index )

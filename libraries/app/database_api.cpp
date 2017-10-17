@@ -1014,6 +1014,7 @@ vector<vote_state> database_api::get_active_votes( string author, string permlin
          vstate.rshares = itr->rshares;
          vstate.percent = itr->vote_percent;
          vstate.time = itr->last_update;
+         vstate.comment_bmchain = itr->comment_bmchain;
 
          if( my->_follow_api )
          {

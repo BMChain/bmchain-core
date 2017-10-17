@@ -218,14 +218,16 @@ struct account_api_obj
       witnesses_voted_for( a.witnesses_voted_for ),
       last_post( a.last_post ),
       last_root_post( a.last_root_post ),
-      reputation_bmchain( a.reputation_bmchain ),
-      categories_bmchain( a.categories_bmchain )
+      reputation_bmchain( a.reputation_bmchain )
    {
       size_t n = a.proxied_vsf_votes.size();
       proxied_vsf_votes.reserve( n );
       for( size_t i=0; i<n; i++ )
          proxied_vsf_votes.push_back( a.proxied_vsf_votes[i] );
 
+      for (auto cat_itr = a.categories_bmchain.begin(); cat_itr != a.categories_bmchain.end(); ++cat_itr)
+         categories_bmchain.emplace(cat_itr->first, cat_itr->second);
+      
       const auto& auth = db.get< account_authority_object, by_account >( name );
       owner = authority( auth.owner );
       active = authority( auth.active );

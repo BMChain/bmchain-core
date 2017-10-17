@@ -1317,6 +1317,7 @@ void vote_evaluator::do_apply( const vote_operation& o )
          cv.rshares = rshares;
          cv.vote_percent = o.weight;
          cv.last_update = _db.head_block_time();
+         cv.comment_bmchain = o.comment_bmchain;
 
          bool curation_reward_eligible = rshares > 0 && (comment.last_payout == fc::time_point_sec()) && comment.allow_curation_rewards;
 
@@ -1495,6 +1496,7 @@ void vote_evaluator::do_apply( const vote_operation& o )
          cv.last_update = _db.head_block_time();
          cv.weight = 0;
          cv.num_changes += 1;
+         cv.comment_bmchain = o.comment_bmchain;
       });
 
       if( !_db.has_hardfork( STEEMIT_HARDFORK_0_17__774) )
