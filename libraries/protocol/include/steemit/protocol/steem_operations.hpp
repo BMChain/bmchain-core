@@ -177,6 +177,7 @@ namespace steemit { namespace protocol {
       account_name_type    author;
       string               permlink;
       int16_t              weight = 0;
+      string               comment_bmchain = "";
 
       void validate()const;
       void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(voter); }
@@ -1001,7 +1002,7 @@ FC_REFLECT( steemit::protocol::witness_update_operation, (owner)(url)(block_sign
 FC_REFLECT( steemit::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( steemit::protocol::account_witness_proxy_operation, (account)(proxy) )
 FC_REFLECT( steemit::protocol::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata) )
-FC_REFLECT( steemit::protocol::vote_operation, (voter)(author)(permlink)(weight) )
+FC_REFLECT( steemit::protocol::vote_operation, (voter)(author)(permlink)(weight)(comment_bmchain) )
 FC_REFLECT( steemit::protocol::custom_operation, (required_auths)(id)(data) )
 FC_REFLECT( steemit::protocol::custom_json_operation, (required_auths)(required_posting_auths)(id)(json) )
 FC_REFLECT( steemit::protocol::custom_binary_operation, (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data) )
