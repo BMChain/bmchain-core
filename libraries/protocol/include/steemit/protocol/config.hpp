@@ -73,8 +73,8 @@
 #define STEEMIT_BLOCK_INTERVAL                  3
 #define STEEMIT_BLOCKS_PER_YEAR                 (365*24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 7)
-#define STEEMIT_START_MINER_VOTING_BLOCK        (STEEMIT_BLOCKS_PER_DAY * 30)
+#define STEEMIT_START_VESTING_BLOCK             1 // (STEEMIT_BLOCKS_PER_DAY * 7) // bmchain
+#define STEEMIT_START_MINER_VOTING_BLOCK        1200 // (STEEMIT_BLOCKS_PER_DAY * 30)
 
 #define STEEMIT_INIT_MINER_NAME                 "initminer"
 #define STEEMIT_NUM_INIT_MINERS                 1
@@ -215,7 +215,7 @@
 #define STEEMIT_MAX_PERMLINK_LENGTH             256
 #define STEEMIT_MAX_WITNESS_URL_LENGTH          2048
 
-#define STEEMIT_INIT_SUPPLY                     int64_t(0)
+#define STEEMIT_INIT_SUPPLY                     int64_t(200000000000ll)
 #define STEEMIT_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define STEEMIT_MAX_SIG_CHECK_DEPTH             2
 
@@ -270,9 +270,9 @@
 #define STEEMIT_ROOT_POST_PARENT                (account_name_type())
 ///@}
 
-#define BMCHAIN_INIT_HARDFORK                   10    // Hardfork to apply when creating a new chain
+#define BMCHAIN_INIT_HARDFORK                   19    // Hardfork to apply when creating a new chain
 #define BMCHAIN_VOTE_FOR_RATING                 4     // Necessary votes to uprating
 #define BMCHAIN_VOTE_FOR_REWARD                 4     // Necessary votes for post rewarding
-#define BMCHAIN_REWARDING_SYSTEM                true  // Enable bmchain rewarding system and desable default steem rewarding system
+#define BMCHAIN_REWARDING_SYSTEM                false // Enable bmchain rewarding system and desable default steem rewarding system
 #define BMCHAIN_DEFAULT_ACCOUNT_RATING          100   // Default rating for new accounts
 #define BMCHAIN_BASIC_UPRATING                  10
