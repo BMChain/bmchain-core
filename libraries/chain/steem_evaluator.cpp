@@ -478,7 +478,6 @@ void comment_evaluator::do_apply( const comment_operation& o )
       FC_ASSERT( !(auth.owner_challenged || auth.active_challenged ), "Operation cannot be processed because account is currently challenged." );
 
    comment_id_type id;
-
    const comment_object* parent = nullptr;
    if( o.parent_author != STEEMIT_ROOT_POST_PARENT )
    {

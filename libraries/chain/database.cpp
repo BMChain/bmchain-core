@@ -1859,17 +1859,17 @@ void database::process_comment_cashout()
  *  This method pays out vesting and reward shares every block, and liquidity shares once per day.
  *  This method does not pay out witnesses.
  */
-void process_funds_()
+void database::process_funds()
 {
-   /*const auto& props = get_dynamic_global_properties();
+   const auto& props = get_dynamic_global_properties();
    const auto& wso = get_witness_schedule_object();
 
    if( has_hardfork( STEEMIT_HARDFORK_0_16__551) )
    {
-      *//*
+      /*
       * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
       * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
-      *//*
+      */
       int64_t start_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_START_PERCENT );
       int64_t inflation_rate_adjustment = int64_t( (head_block_num()) / STEEMIT_INFLATION_NARROWING_PERIOD );
       int64_t inflation_rate_floor = int64_t( STEEMIT_INFLATION_RATE_STOP_PERCENT );
@@ -1933,7 +1933,7 @@ void process_funds_()
           p.current_supply += content_reward + witness_pay + vesting_reward;
           p.virtual_supply += content_reward + witness_pay + vesting_reward;
       } );
-   }*/
+   }
 }
 
 void database::process_savings_withdraws()
@@ -4299,7 +4299,7 @@ void database::testing_bmchain()
     }
 }
 
-void process_funds_bmchain() {
+void process_funds_bmchain_emittion_up_to_2100() {
    /*const auto &props = get_dynamic_global_properties();
    const auto &wso = get_witness_schedule_object();
 
@@ -4404,8 +4404,8 @@ void process_funds_bmchain() {
    }*/
 }
 
-void database::process_funds() {
-   const auto &props = get_dynamic_global_properties();
+void process_funds_bmchain_emittion_systems() {
+   /*const auto &props = get_dynamic_global_properties();
    const auto &wso = get_witness_schedule_object();
 
    int init_block = 16000000;
@@ -4414,10 +4414,10 @@ void database::process_funds() {
    auto virtual_supply_before = props.virtual_supply;
 
    if (props.head_block_number > step_2) {
-      /*
+      *//*
       * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
       * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
-      */
+      *//*
       int64_t start_inflation_rate = int64_t(STEEMIT_INFLATION_RATE_START_PERCENT);
       int64_t inflation_rate_adjustment = int64_t((init_block + head_block_num()) / STEEMIT_INFLATION_NARROWING_PERIOD);
       int64_t inflation_rate_floor = int64_t(STEEMIT_INFLATION_RATE_STOP_PERCENT);
@@ -4496,7 +4496,7 @@ void database::process_funds() {
       std::cout << " ves_rew: " << vesting_reward.amount.value;
       std::cout << " wit_rew: " << witness_pay.amount.value;
       std::cout << std::endl;
-   }
+   }*/
 }
 
 
