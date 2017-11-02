@@ -1622,6 +1622,13 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
          const share_type reward = util::get_rshare_reward( ctx );
          uint128_t reward_tokens = uint128_t( reward.value );
 
+          std::cout << "comment: " << comment.permlink.c_str();
+          std::cout << " total_rshares2: " << ctx.total_reward_shares2.lo;
+          std::cout << " rshares: " << ctx.rshares.value;
+          std::cout << " rfund: " << ctx.total_reward_fund_steem.amount.value;
+          std::cout << " reward: " << reward.value;
+          std::cout << std::endl;
+
          if( reward_tokens > 0 )
          {
             share_type curation_tokens = ( ( reward_tokens * get_curation_rewards_percent( comment ) ) / STEEMIT_100_PERCENT ).to_uint64();
@@ -1734,6 +1741,10 @@ void database::process_comment_cashout()
        return;
 
    const auto& gpo = get_dynamic_global_properties();
+
+   if (gpo.head_block_number <= 300)
+       return;
+
    util::comment_reward_context ctx;
    ctx.current_steem_price = get_feed_history().current_median_history;
 
@@ -1780,7 +1791,11 @@ void database::process_comment_cashout()
          if( current->net_rshares > 0 )
          {
             const auto& rf = get_reward_fund( *current );
-            funds[ rf.id._id ].recent_claims += util::evaluate_reward_curve( current->net_rshares.value, rf.author_reward_curve, rf.content_constant );
+             auto recent_claims = util::evaluate_reward_curve( current->net_rshares.value, rf.author_reward_curve, rf.content_constant );
+            funds[ rf.id._id ].recent_claims += recent_claims;
+             std::cout << "funds_recent_claims: " << funds[ rf.id._id ].recent_claims.lo;
+             std::cout << " recent_claims: " << recent_claims.lo;
+             std::cout << std::endl;
          }
 
          ++current;
@@ -1864,6 +1879,11 @@ void database::process_funds()
    const auto& props = get_dynamic_global_properties();
    const auto& wso = get_witness_schedule_object();
 
+   //bmchain, trace vests price
+   //auto virtual_supply_before = props.virtual_supply;
+   //auto price = props.get_vesting_share_price();
+   //std::cout << "#" << props.head_block_number << " vest_price: " << price.base.amount.value / price.quote.amount.value << std::endl;
+
    if( has_hardfork( STEEMIT_HARDFORK_0_16__551) )
    {
       /*
@@ -1885,7 +1905,7 @@ void database::process_funds()
       auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
       const auto& cwit = get_witness( props.current_witness );
-      witness_reward *= STEEMIT_MAX_WITNESSES;
+      /*witness_reward *= STEEMIT_MAX_WITNESSES;
 
       if( cwit.schedule == witness_object::timeshare )
          witness_reward *= wso.timeshare_weight;
@@ -1896,7 +1916,7 @@ void database::process_funds()
       else
          wlog( "Encountered unknown witness type for witness: ${w}", ("w", cwit.owner) );
 
-      witness_reward /= wso.witness_pay_normalization_factor;
+      witness_reward /= wso.witness_pay_normalization_factor;*/
 
       new_steem = content_reward + vesting_reward + witness_reward;
 
@@ -1911,6 +1931,15 @@ void database::process_funds()
 
       const auto& producer_reward = create_vesting( get_account( cwit.owner ), asset( witness_reward, STEEM_SYMBOL ) );
       push_virtual_operation( producer_reward_operation( cwit.owner, producer_reward ) );
+
+       /*std::cout << "#" << props.head_block_number;
+       std::cout << " vir_sup: " << props.virtual_supply.amount.value;
+       std::cout << " new_stm: " << props.virtual_supply.amount.value - virtual_supply_before.amount.value;
+       std::cout << " con_rew: " << content_reward.value;
+       std::cout << " ves_rew: " << vesting_reward.value;
+       std::cout << " wit_rew: " << witness_reward.value;
+       std::cout << " inf_rat: " << current_inflation_rate;
+       std::cout << std::endl;*/
    }
    else
    {

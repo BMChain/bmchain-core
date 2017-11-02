@@ -1049,7 +1049,6 @@ void account_witness_proxy_evaluator::do_apply( const account_witness_proxy_oper
    }
 }
 
-
 void account_witness_vote_evaluator::do_apply( const account_witness_vote_operation& o )
 {
    const auto& voter = _db.get_account( o.account );
@@ -1117,8 +1116,8 @@ void account_witness_vote_evaluator::do_apply( const account_witness_vote_operat
    }
 }
 
-void vote_evaluator::do_apply( const vote_operation& o )
-{ try {
+void vote_evaluator::do_apply( const vote_operation& o ) {
+try {
    const auto& comment = _db.get_comment( o.author, o.permlink );
    const auto& voter   = _db.get_account( o.voter );
 
@@ -1186,7 +1185,8 @@ void vote_evaluator::do_apply( const vote_operation& o )
    }
    FC_ASSERT( used_power <= current_power, "Account does not have enough power to vote." );
 
-   int64_t abs_rshares    = ((uint128_t(voter.effective_vesting_shares().amount.value) * used_power) / (STEEMIT_100_PERCENT)).to_uint64();
+   auto effective_vesting_shares = uint128_t(voter.effective_vesting_shares().amount.value);
+   int64_t abs_rshares    = ((effective_vesting_shares * used_power) / (STEEMIT_100_PERCENT)).to_uint64();
    if( !_db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) && abs_rshares == 0 ) abs_rshares = 1;
 
    if( _db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) )
@@ -1198,8 +1198,6 @@ void vote_evaluator::do_apply( const vote_operation& o )
       FC_ASSERT( abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || abs_rshares == 1, "Voting weight is too small, please accumulate more voting power or steem power." );
    }
 
-
-
    // Lazily delete vote
    if( itr != comment_vote_idx.end() && itr->num_changes == -1 )
    {
@@ -1209,6 +1207,13 @@ void vote_evaluator::do_apply( const vote_operation& o )
       _db.remove( *itr );
       itr = comment_vote_idx.end();
    }
+
+   // bmchain   
+   /*std::cout << "current_power: " << current_power;
+   std::cout << " used_power: " << used_power;
+   std::cout << " vesting_shares: " << voter.vesting_shares.amount.value; 
+   std::cout << " abs_rshares: " << abs_rshares;
+   std::cout << std::endl;*/
 
    if( itr == comment_vote_idx.end() )
    {
@@ -1527,7 +1532,6 @@ void custom_json_evaluator::do_apply( const custom_json_operation& o )
       elog( "Unexpected exception applying custom json evaluator." );
    }
 }
-
 
 void custom_binary_evaluator::do_apply( const custom_binary_operation& o )
 {

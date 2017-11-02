@@ -104,9 +104,9 @@
 #define STEEMIT_MAX_VOTE_CHANGES                5
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
-#define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
+#define STEEMIT_VOTE_DUST_THRESHOLD             (10000) /// bmchain, было 50000000
 
-#define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(20)) // 5 minutes /// bmchain
+#define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(0)) // 5 minutes /// bmchain
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 #define STEEMIT_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
 #define STEEMIT_POST_MAX_BANDWIDTH              (4*STEEMIT_100_PERCENT) // 2 posts per 1 days, average 1 every 12 hours
