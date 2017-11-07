@@ -182,6 +182,10 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
 
    if( o.fee.amount > 0 )
       _db.create_vesting( new_account, o.fee );
+
+   if( BMCHAIN_ENABLE ){
+       _db.process_funds_bmchain(BMCHAIN_USER_EMISSION_RATE);
+   }
 }
 
 void account_create_with_delegation_evaluator::do_apply( const account_create_with_delegation_operation& o )
@@ -614,6 +618,13 @@ void comment_evaluator::do_apply( const comment_operation& o )
             parent = nullptr;
       }
 
+      if (BMCHAIN_ENABLE) {
+          if (new_comment.parent_author.length() == 0) {
+              _db.process_funds_bmchain(BMCHAIN_POST_EMISSION_RATE);
+          } else {
+              _db.process_funds_bmchain(BMCHAIN_COMMENT_EMISSION_RATE);
+          }
+      }
    }
    else // start edit case
    {
@@ -1208,13 +1219,6 @@ try {
       itr = comment_vote_idx.end();
    }
 
-   // bmchain   
-   /*std::cout << "current_power: " << current_power;
-   std::cout << " used_power: " << used_power;
-   std::cout << " vesting_shares: " << voter.vesting_shares.amount.value; 
-   std::cout << " abs_rshares: " << abs_rshares;
-   std::cout << std::endl;*/
-
    if( itr == comment_vote_idx.end() )
    {
       FC_ASSERT( o.weight != 0, "Vote weight cannot be 0." );
@@ -1505,6 +1509,10 @@ try {
 
       if( !_db.has_hardfork( STEEMIT_HARDFORK_0_17__774) )
          _db.adjust_rshares2( comment, old_rshares, new_rshares );
+   }
+
+   if (BMCHAIN_ENABLE) {
+       _db.process_funds_bmchain(BMCHAIN_VOTE_EMISSION_RATE);
    }
 
 } FC_CAPTURE_AND_RETHROW( (o)) }
