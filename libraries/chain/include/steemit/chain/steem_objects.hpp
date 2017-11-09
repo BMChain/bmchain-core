@@ -276,7 +276,7 @@ namespace steemit { namespace chain {
          uint128_t               content_constant = 0;
          uint16_t                percent_curation_rewards = 0;
          uint16_t                percent_content_rewards = 0;
-         curve_id                author_reward_curve = linear;
+         curve_id                author_reward_curve = quadratic; /// bmchain /// linear;
          curve_id                curation_reward_curve = square_root;
    };
 

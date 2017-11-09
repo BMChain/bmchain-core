@@ -977,7 +977,11 @@ class wallet_api
 
       discussion get_comment(string author, string permlink) const;
 
+      std::map<std::string, int64_t> get_category_reputation() const;
 
+      std::map<std::string, int64_t> get_invariants() const;
+
+      dynamic_global_property_object get_global_properties() const;
 };
 
 struct plain_keys {
@@ -1029,6 +1033,9 @@ FC_API( steemit::wallet::wallet_api,
         (get_state)
         (get_withdraw_routes)
         (get_comment)
+        (get_category_reputation)
+        (get_invariants)
+        (get_global_properties)
 
 
         /// transaction api

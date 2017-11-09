@@ -1872,8 +1872,7 @@ vector< vesting_delegation_api_obj > database_api::get_vesting_delegations( stri
    });
 }
 
-vector< vesting_delegation_expiration_api_obj > database_api::get_expiring_vesting_delegations( string account, time_point_sec from, uint32_t limit )const
-{
+vector< vesting_delegation_expiration_api_obj > database_api::get_expiring_vesting_delegations( string account, time_point_sec from, uint32_t limit )const {
    FC_ASSERT( limit <= 1000 );
 
    return my->_db.with_read_lock( [&]()
@@ -1893,8 +1892,7 @@ vector< vesting_delegation_expiration_api_obj > database_api::get_expiring_vesti
    });
 }
 
-state database_api::get_state( string path )const
-{
+state database_api::get_state( string path )const {
    return my->_db.with_read_lock( [&]()
    {
       state _state;
@@ -2302,8 +2300,7 @@ state database_api::get_state( string path )const
    });
 }
 
-annotated_signed_transaction database_api::get_transaction( transaction_id_type id )const
-{
+annotated_signed_transaction database_api::get_transaction( transaction_id_type id )const {
 #ifdef SKIP_BY_TX_ID
    FC_ASSERT( false, "This node's operator has disabled operation indexing by transaction_id" );
 #else
@@ -2324,5 +2321,15 @@ annotated_signed_transaction database_api::get_transaction( transaction_id_type 
 #endif
 }
 
+std::map<std::string, int64_t> database_api::get_category_reputation() const{
+   std::map<std::string, int64_t> result;
+   my->_db.with_read_lock( [&](){
+       const auto& cidx = my->_db.get_index< comment_index >().indices().get< by_permlink >();
+       for (auto com = cidx.cbegin(); com != cidx.cend(); ++com){
+          result[com->category.c_str()] = result[com->category.c_str()] + com->author_rewards.value;
+       }
+   });   
+   return result;
+};
 
 } } // steemit::app

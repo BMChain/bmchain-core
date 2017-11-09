@@ -2316,8 +2316,7 @@ annotated_signed_transaction wallet_api::challenge( string challenger, string ch
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::prove( string challenged, bool broadcast )
-{
+annotated_signed_transaction wallet_api::prove( string challenged, bool broadcast ) {
    FC_ASSERT( !is_locked() );
 
    prove_authority_operation op;
@@ -2330,7 +2329,6 @@ annotated_signed_transaction wallet_api::prove( string challenged, bool broadcas
 
    return my->sign_transaction( tx, broadcast );
 }
-
 
 annotated_signed_transaction wallet_api::get_transaction( transaction_id_type id )const {
    return my->_remote_db->get_transaction( id );
@@ -2415,6 +2413,7 @@ annotated_signed_transaction      wallet_api::send_private_message( string from,
 
    return my->sign_transaction( tx, broadcast );
 }
+
 message_body wallet_api::try_decrypt_message( const message_api_obj& mo ) {
    message_body result;
 
@@ -2479,11 +2478,24 @@ vector<extended_message_object>   wallet_api::get_outbox( string account, fc::ti
    return result;
 }
 
-discussion wallet_api::get_comment(string author, string permlink) const
-{
+discussion wallet_api::get_comment(string author, string permlink) const {
    discussion comment = my->_remote_db->get_content( author, permlink );
-
    return comment;
+}
+
+std::map<std::string, int64_t> wallet_api::get_category_reputation() const{
+   std::map<std::string, int64_t> rep = my->_remote_db->get_category_reputation();
+   return rep;
+};
+
+std::map<std::string, int64_t> wallet_api::get_invariants() const{
+   std::map<std::string, int64_t> inv = {{"virtual_supply", 1000},{"current_supply", 2000},{"total_vesting_shares", 3000}};
+   return inv;
+}
+
+dynamic_global_property_object wallet_api::get_global_properties() const{
+   auto props = my->_remote_db->get_dynamic_global_properties();
+   return props;
 }
 
 } } // steemit::wallet

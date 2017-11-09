@@ -430,7 +430,7 @@ const savings_withdraw_object* database::find_savings_withdraw( const account_na
    return find< savings_withdraw_object, by_from_rid >( boost::make_tuple( owner, request_id ) );
 }
 
-const dynamic_global_property_object&database::get_dynamic_global_properties() const
+const dynamic_global_property_object & database::get_dynamic_global_properties() const
 { try {
    return get< dynamic_global_property_object >();
 } FC_CAPTURE_AND_RETHROW() }
@@ -1563,8 +1563,8 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             auto vesting_steem = author_tokens - sbd_steem;
 
             const auto &author = get_account(comment.author);
-            auto vest_created = create_vesting(author, vesting_steem, has_hardfork(STEEMIT_HARDFORK_0_17__659));
-            auto sbd_payout = create_sbd(author, sbd_steem, has_hardfork(STEEMIT_HARDFORK_0_17__659));
+            auto vest_created = create_vesting(author, vesting_steem);
+            auto sbd_payout = create_sbd(author, sbd_steem);
 
             adjust_total_payout( comment, sbd_payout.first + to_sbd( sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ) ), to_sbd( asset( curation_tokens, STEEM_SYMBOL ) ), to_sbd( asset( total_beneficiary, STEEM_SYMBOL ) ) );
 
@@ -1661,7 +1661,7 @@ void database::process_comment_cashout()
 
    const auto& gpo = get_dynamic_global_properties();
 
-   if (gpo.head_block_number <= 300)
+   if (gpo.head_block_number <= BMCHAIN_FIRST_PAYOUT_BLOCK)
        return;
 
    util::comment_reward_context ctx;
@@ -1684,7 +1684,7 @@ void database::process_comment_cashout()
          else
             decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF17;
 
-         rfo.recent_claims -= ( rfo.recent_claims * ( head_block_time() - rfo.last_update ).to_seconds() ) / decay_rate.to_seconds();
+         //rfo.recent_claims -= ( rfo.recent_claims * ( head_block_time() - rfo.last_update ).to_seconds() ) / decay_rate.to_seconds();
          rfo.last_update = head_block_time();
       });
 
@@ -1710,11 +1710,8 @@ void database::process_comment_cashout()
          if( current->net_rshares > 0 )
          {
             const auto& rf = get_reward_fund( *current );
-             auto recent_claims = util::evaluate_reward_curve( current->net_rshares.value, rf.author_reward_curve, rf.content_constant );
+            auto recent_claims = util::evaluate_reward_curve( current->net_rshares.value, rf.author_reward_curve, rf.content_constant );
             funds[ rf.id._id ].recent_claims += recent_claims;
-             std::cout << "funds_recent_claims: " << funds[ rf.id._id ].recent_claims.lo;
-             std::cout << " recent_claims: " << recent_claims.lo;
-             std::cout << std::endl;
          }
 
          ++current;
@@ -3028,7 +3025,8 @@ void database::update_virtual_supply()
       dgp.virtual_supply = dgp.current_supply
          + ( get_feed_history().current_median_history.is_null() ? asset( 0, STEEM_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
 
-      auto median_price = get_feed_history().current_median_history;
+      // неактуально, т.к. не будем использовать SBD
+      /*auto median_price = get_feed_history().current_median_history;
 
       if( !median_price.is_null() && has_hardfork( STEEMIT_HARDFORK_0_14__230 ) )
       {
@@ -3041,7 +3039,7 @@ void database::update_virtual_supply()
             dgp.sbd_print_rate = 0;
          else
             dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
-      }
+      }*/
    });
 } FC_CAPTURE_AND_RETHROW() }
 
@@ -3875,7 +3873,9 @@ void database::apply_hardfork( uint32_t hardfork )
 #ifndef IS_TEST_NET
                rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
 #endif
-               rfo.author_reward_curve = curve_id::linear;
+               rfo.recent_claims = 0; /// bmchain
+               //rfo.author_reward_curve = curve_id::linear;
+               rfo.author_reward_curve = curve_id::quadratic; /// bmchain
                rfo.curation_reward_curve = curve_id::square_root;
             });
 
@@ -4252,6 +4252,7 @@ void database::process_funds_bmchain(int64_t new_steem){
     });
     push_virtual_operation( producer_reward_operation( cwit.owner, asset( witness_reward, STEEM_SYMBOL ) ) );
 
+    /// global properties
     modify( props, [&]( dynamic_global_property_object& p )
     {
         p.current_supply += asset( new_steem, STEEM_SYMBOL );

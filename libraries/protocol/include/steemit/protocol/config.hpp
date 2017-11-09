@@ -53,12 +53,12 @@
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(1458838800))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12 (60*60*24)    /// 1 day
 #define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 (60*60*12)    /// 12 hours
-#define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
+#define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*5)       /// 10 minutes, bmchain /// (60*60*24*7)  /// 7 days
 #define STEEMIT_SECOND_CASHOUT_WINDOW           (60*60*24*30) /// 30 days
 #define STEEMIT_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24*14) /// 2 weeks
 #define STEEMIT_VOTE_CHANGE_LOCKOUT_PERIOD      (60*60*2)     /// 2 hours
 #define STEEMIT_UPVOTE_LOCKOUT_HF7              (fc::minutes(1))
-#define STEEMIT_UPVOTE_LOCKOUT_HF17             (fc::hours(12))
+#define STEEMIT_UPVOTE_LOCKOUT_HF17             (fc::minutes(1)) /// bmchain /// (fc::hours(12))
 
 #define STEEMIT_ORIGINAL_MIN_ACCOUNT_CREATION_FEE  100000
 #define STEEMIT_MIN_ACCOUNT_CREATION_FEE           0 /// 1 /// bmchain
@@ -228,7 +228,7 @@
 #define STEEMIT_MAX_BLOCK_SIZE                  (STEEMIT_MAX_TRANSACTION_SIZE*STEEMIT_BLOCK_INTERVAL*2000)
 #define STEEMIT_MIN_BLOCK_SIZE                  115
 #define STEEMIT_BLOCKS_PER_HOUR                 (60*60/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_FEED_INTERVAL_BLOCKS            (STEEMIT_BLOCKS_PER_HOUR / 12) /// bmchain
+#define STEEMIT_FEED_INTERVAL_BLOCKS            (STEEMIT_BLOCKS_PER_HOUR / 24) /// bmchain
 #define STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16   (24*7) /// 7 days * 24 hours per day
 #define STEEMIT_FEED_HISTORY_WINDOW             (12*7) // 3.5 days
 #define STEEMIT_MAX_FEED_AGE_SECONDS            (60*60*24*7) // 7 days
@@ -271,7 +271,9 @@
 ///@}
 
 #define BMCHAIN_ENABLE                          true
-#define BMCHAIN_INIT_HARDFORK                   19    /// Hardfork to apply when creating a new chain
+#define BMCHAIN_FIRST_PAYOUT_BLOCK              (20 * 10) /// 15 minutes
+
+#define BMCHAIN_INIT_HARDFORK                   19        /// Hardfork to apply when creating a new chain
 #define BMCHAIN_VOTE_EMISSION_RATE              50
 #define BMCHAIN_COMMENT_EMISSION_RATE           200
 #define BMCHAIN_POST_EMISSION_RATE              500

@@ -73,8 +73,9 @@ uint128_t evaluate_reward_curve( const uint128_t& rshares, const curve_id& curve
    {
       case quadratic:
          {
-            uint128_t rshares_plus_s = rshares + content_constant;
-            result = rshares_plus_s * rshares_plus_s - content_constant * content_constant;
+            //uint128_t rshares_plus_s = rshares + content_constant;
+            //result = rshares_plus_s * rshares_plus_s - content_constant * content_constant;
+            result = rshares * rshares;
          }
          break;
       case quadratic_curation:

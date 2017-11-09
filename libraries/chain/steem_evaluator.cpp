@@ -184,7 +184,14 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
       _db.create_vesting( new_account, o.fee );
 
    if( BMCHAIN_ENABLE ){
-       _db.process_funds_bmchain(BMCHAIN_USER_EMISSION_RATE);
+      auto new_steem = asset(BMCHAIN_USER_EMISSION_RATE, STEEM_SYMBOL);
+      _db.create_vesting(new_account, new_steem);
+      _db.modify( props, [&]( dynamic_global_property_object& props )
+      {
+          props.virtual_supply += new_steem;
+          props.current_supply += new_steem;
+      } );
+      //_db.process_funds_bmchain(BMCHAIN_USER_EMISSION_RATE);
    }
 }
 

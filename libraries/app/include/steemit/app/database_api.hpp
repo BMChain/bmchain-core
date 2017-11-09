@@ -408,6 +408,9 @@ class database_api
       ////////////////////////////
       void on_api_startup();
 
+      /// bmchain
+      std::map<std::string, int64_t> get_category_reputation() const;
+
    private:
       void set_pending_payout( discussion& d )const;
       void set_url( discussion& d )const;
@@ -539,4 +542,7 @@ FC_API(steemit::app::database_api,
    (get_witness_count)
    (get_active_witnesses)
    (get_miner_queue)
+
+   // bmchain
+   (get_category_reputation)
 )
