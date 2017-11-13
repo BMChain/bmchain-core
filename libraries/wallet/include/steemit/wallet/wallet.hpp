@@ -21,6 +21,7 @@ using steemit::app::discussion;
 using namespace steemit::private_message;
 
 typedef uint16_t transaction_handle_type;
+using cat_rep_type = std::map<string, unsigned long long>;
 
 struct memo_data {
 
@@ -977,9 +978,9 @@ class wallet_api
 
       discussion get_comment(string author, string permlink) const;
 
-      std::map<std::string, int64_t> get_category_reputation() const;
+      vector<pair<string, long long>> get_category_reputation() const;
 
-      std::map<std::string, int64_t> get_invariants() const;
+      cat_rep_type get_invariants() const;
 
       dynamic_global_property_object get_global_properties() const;
 };

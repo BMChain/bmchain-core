@@ -2483,13 +2483,21 @@ discussion wallet_api::get_comment(string author, string permlink) const {
    return comment;
 }
 
-std::map<std::string, int64_t> wallet_api::get_category_reputation() const{
-   std::map<std::string, int64_t> rep = my->_remote_db->get_category_reputation();
+vector<pair<string, long long>> wallet_api::get_category_reputation() const{
+
+   auto cat_rep = my->_remote_db->get_category_reputation();
+   auto cmp = [](pair<string, long long> elem1, pair<string, long long> elem2)->bool {
+       return elem1.second > elem2.second;
+   };
+
+   vector<pair<string, long long>> rep(cat_rep.begin(), cat_rep.end());
+   sort(rep.begin(), rep.end(), cmp);
+
    return rep;
 };
 
-std::map<std::string, int64_t> wallet_api::get_invariants() const{
-   std::map<std::string, int64_t> inv = {{"virtual_supply", 1000},{"current_supply", 2000},{"total_vesting_shares", 3000}};
+cat_rep_type wallet_api::get_invariants() const{
+   cat_rep_type inv = {{"virtual_supply", 1000},{"current_supply", 2000},{"total_vesting_shares", 3000}};
    return inv;
 }
 

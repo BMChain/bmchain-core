@@ -4,6 +4,7 @@
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/witness_objects.hpp>
 #include <steemit/chain/block_summary_object.hpp>
+#include <locale>
 
 #include <steemit/chain/util/reward.hpp>
 
@@ -37,10 +38,17 @@ inline void validate_permlink_0_1( const string& permlink )
 {
    FC_ASSERT( permlink.size() > STEEMIT_MIN_PERMLINK_LENGTH && permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "Permlink is not a valid size." );
 
+   //setlocale(LC_ALL, "rus");
+
    for( auto c : permlink )
    {
       switch( c )
       {
+         case '\320': case '\321': case '\260': case '\261': case '\262': case '\263': case '\264':
+         case '\265': case '\266': case '\267': case '\270': case '\271': case '\272': case '\273':
+         case '\274': case '\275': case '\276': case '\277': case '\200': case '\201': case '\202':
+         case '\203': case '\204': case '\205': case '\206': case '\207': case '\210': case '\211':
+         case '\212': case '\213': case '\214': case '\215': case '\216': case '\217': case '\221':
          case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i':
          case 'j': case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
          case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z': case '0':
