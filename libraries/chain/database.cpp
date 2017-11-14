@@ -4200,35 +4200,8 @@ void database::retally_witness_vote_counts( bool force )
    }
 }
 
-void database::testing_bmchain()
-{
-    using steemit::tags::comment_metadata;
+void database::testing_bmchain(){
 
-    const auto& cidx        = get_index< comment_index >().indices().get< by_cashout_time >();
-    const auto& com_by_root = get_index< comment_index >().indices().get< by_root >();
-
-    auto current = cidx.begin();
-    auto current_by_root = com_by_root.begin();
-
-    auto curr_com = *current;
-    auto curr_by_root_com = *current_by_root;
-
-    if ( current->cashout_time <= head_block_time() )
-    {}
-
-    while( current != cidx.end() )
-    {
-
-        const auto &comment = *current;
-
-        auto meta = fc::json::from_string(to_string(comment.json_metadata)).as<comment_metadata>();
-
-        for (auto tag_ptr = meta.tags.begin(); tag_ptr != meta.tags.end(); tag_ptr++) {
-            //std::cout << *tag_ptr << std::endl;
-        }
-
-        current++;
-    }
 }
 
 void database::process_funds_bmchain(int64_t new_steem){
