@@ -34,11 +34,6 @@
 #include <fstream>
 #include <functional>
 
-#include <fc/io/json.hpp> // bmchain
-#include </media/sabster/wd/BMChainCore/libraries/plugins/tags/include/steemit/tags/tags_plugin.hpp> // bmchain
-#include </media/sabster/wd/BMChainCore/tests/common/database_fixture.hpp> // bmchain
-#include <chrono>
-
 namespace steemit { namespace chain {
 
 //namespace db2 = graphene::db2;
