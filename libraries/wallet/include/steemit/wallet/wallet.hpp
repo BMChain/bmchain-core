@@ -983,6 +983,8 @@ class wallet_api
       cat_rep_type get_invariants() const;
 
       dynamic_global_property_object get_global_properties() const;
+
+      vector<pair<string, uint32_t>> get_best_authors(uint32_t limit)const;
 };
 
 struct plain_keys {
@@ -1037,6 +1039,7 @@ FC_API( steemit::wallet::wallet_api,
         (get_category_reputation)
         (get_invariants)
         (get_global_properties)
+        (get_best_authors)
 
 
         /// transaction api

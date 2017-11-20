@@ -247,6 +247,7 @@ namespace steemit { namespace chain {
    struct by_smd_balance;
    struct by_post_count;
    struct by_vote_count;
+   struct by_vesting_shares;
 
    /**
     * @ingroup object_index
@@ -311,6 +312,13 @@ namespace steemit { namespace chain {
                member< account_object, account_id_type, &account_object::id >
             >,
             composite_key_compare< std::greater< uint32_t >, std::less< account_id_type > >
+         >,
+         ordered_unique< tag< by_vesting_shares >,
+            composite_key< account_object,
+               member< account_object, asset, &account_object::vesting_shares >,
+               member< account_object, account_id_type, &account_object::id >
+            >,
+            composite_key_compare< std::greater< asset >, std::less< account_id_type > >
          >
       >,
       allocator< account_object >

@@ -235,6 +235,8 @@ class database_api
       vector< vesting_delegation_api_obj > get_vesting_delegations( string account, string from, uint32_t limit = 100 )const;
       vector< vesting_delegation_expiration_api_obj > get_expiring_vesting_delegations( string account, time_point_sec from, uint32_t limit = 100 )const;
 
+      vector<pair<string, uint32_t>> get_best_authors(uint32_t limit)const;
+
       ///////////////
       // Witnesses //
       ///////////////
@@ -509,6 +511,7 @@ FC_API(steemit::app::database_api,
    (get_savings_withdraw_to)
    (get_vesting_delegations)
    (get_expiring_vesting_delegations)
+   (get_best_authors)
 
    // Market
    (get_order_book)

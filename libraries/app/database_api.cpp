@@ -53,6 +53,7 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       vector<optional<account_api_obj>> lookup_account_names(const vector<string>& account_names)const;
       set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit)const;
       uint64_t get_account_count()const;
+      vector<pair<string, uint32_t>> get_best_authors(uint32_t limit)const;
 
       // Witnesses
       vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids)const;
@@ -599,6 +600,31 @@ optional< account_bandwidth_api_obj > database_api::get_account_bandwidth( strin
 
    return result;
 }
+
+vector<pair<string, uint32_t>> database_api::get_best_authors(uint32_t limit)const {
+    return my->_db.with_read_lock([&]() {
+        return my->get_best_authors(limit);
+    });
+}
+
+vector<pair<string, uint32_t>> database_api_impl::get_best_authors(uint32_t limit)const {
+    FC_ASSERT(limit <= 1000);
+    const auto &accounts_by_vesting = _db.get_index<account_index>().indices().get<by_vesting_shares>();
+    vector<pair<string, uint32_t>> result;
+
+    for (auto itr = accounts_by_vesting.begin();
+         limit-- && itr != accounts_by_vesting.end();
+         ++itr) {
+        result.push_back({itr->name, itr->vesting_shares.amount.value});
+    }
+
+    sort(result.begin(), result.end(),
+         [](pair<string, uint32_t> elem1, pair<string, uint32_t> elem2){
+             return elem1.second > elem2.second;});
+
+    return result;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
