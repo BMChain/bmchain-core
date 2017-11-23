@@ -413,6 +413,10 @@ class database_api
       /// bmchain
       std::map<std::string, int64_t> get_category_reputation() const;
 
+      vector<discussion> get_comments(string author, string permlink)const;
+
+      void set_last_comments(discussion & disc, int32_t limit) const;
+
    private:
       void set_pending_payout( discussion& d )const;
       void set_url( discussion& d )const;
@@ -535,6 +539,7 @@ FC_API(steemit::app::database_api,
    (get_content_replies)
    (get_discussions_by_author_before_date)
    (get_replies_by_last_update)
+   (get_comments)
 
 
    // Witnesses

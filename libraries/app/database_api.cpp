@@ -1395,8 +1395,7 @@ comment_id_type database_api::get_parent( const discussion_query& query )const
    });
 }
 
-vector<discussion> database_api::get_discussions_by_payout( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_payout( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1410,8 +1409,7 @@ vector<discussion> database_api::get_discussions_by_payout( const discussion_que
    });
 }
 
-vector<discussion> database_api::get_post_discussions_by_payout( const discussion_query& query )const
-{
+vector<discussion> database_api::get_post_discussions_by_payout( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1425,8 +1423,7 @@ vector<discussion> database_api::get_post_discussions_by_payout( const discussio
    });
 }
 
-vector<discussion> database_api::get_comment_discussions_by_payout( const discussion_query& query )const
-{
+vector<discussion> database_api::get_comment_discussions_by_payout( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1440,8 +1437,7 @@ vector<discussion> database_api::get_comment_discussions_by_payout( const discus
    });
 }
 
-vector<discussion> database_api::get_discussions_by_promoted( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_promoted( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1455,8 +1451,7 @@ vector<discussion> database_api::get_discussions_by_promoted( const discussion_q
    });
 }
 
-vector<discussion> database_api::get_discussions_by_trending( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_trending( const discussion_query& query )const {
 
    return my->_db.with_read_lock( [&]()
    {
@@ -1467,12 +1462,15 @@ vector<discussion> database_api::get_discussions_by_trending( const discussion_q
       const auto& tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_trending>();
       auto tidx_itr = tidx.lower_bound( boost::make_tuple( tag, parent, std::numeric_limits<double>::max() )  );
 
-      return get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body, []( const comment_api_obj& c ) { return c.net_rshares <= 0; } );
+      auto discussions = get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body, []( const comment_api_obj& c ) { return c.net_rshares <= 0; } );
+      for (auto & disc : discussions){
+         set_last_comments(disc, 3);
+      }
+      return discussions;
    });
 }
 
-vector<discussion> database_api::get_discussions_by_created( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_created( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1482,12 +1480,15 @@ vector<discussion> database_api::get_discussions_by_created( const discussion_qu
       const auto& tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_created>();
       auto tidx_itr = tidx.lower_bound( boost::make_tuple( tag, parent, fc::time_point_sec::maximum() )  );
 
-      return get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body );
+      auto discussions = get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body );
+      for (auto & disc : discussions){
+         set_last_comments(disc, 3);
+      }
+      return discussions;
    });
 }
 
-vector<discussion> database_api::get_discussions_by_active( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_active( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1501,8 +1502,7 @@ vector<discussion> database_api::get_discussions_by_active( const discussion_que
    });
 }
 
-vector<discussion> database_api::get_discussions_by_cashout( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_cashout( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1518,8 +1518,7 @@ vector<discussion> database_api::get_discussions_by_cashout( const discussion_qu
    });
 }
 
-vector<discussion> database_api::get_discussions_by_votes( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_votes( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1529,12 +1528,15 @@ vector<discussion> database_api::get_discussions_by_votes( const discussion_quer
       const auto& tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_net_votes>();
       auto tidx_itr = tidx.lower_bound( boost::make_tuple( tag, parent, std::numeric_limits<int32_t>::max() )  );
 
-      return get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body );
+      auto discussions = get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body );
+      for (auto & disc : discussions){
+         set_last_comments(disc, 3);
+      }
+      return discussions;
    });
 }
 
-vector<discussion> database_api::get_discussions_by_children( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_children( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1548,8 +1550,7 @@ vector<discussion> database_api::get_discussions_by_children( const discussion_q
    });
 }
 
-vector<discussion> database_api::get_discussions_by_hot( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_hot( const discussion_query& query )const {
 
    return my->_db.with_read_lock( [&]()
    {
@@ -1560,12 +1561,15 @@ vector<discussion> database_api::get_discussions_by_hot( const discussion_query&
       const auto& tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_hot>();
       auto tidx_itr = tidx.lower_bound( boost::make_tuple( tag, parent, std::numeric_limits<double>::max() )  );
 
-      return get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body, []( const comment_api_obj& c ) { return c.net_rshares <= 0; } );
+      auto discussions = get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body, []( const comment_api_obj& c ) { return c.net_rshares <= 0; } );
+      for (auto & disc : discussions){
+         set_last_comments(disc, 3);
+      }
+      return discussions;
    });
 }
 
-vector<discussion> database_api::get_discussions_by_feed( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_feed( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1614,8 +1618,7 @@ vector<discussion> database_api::get_discussions_by_feed( const discussion_query
    });
 }
 
-vector<discussion> database_api::get_discussions_by_blog( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_blog( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       query.validate();
@@ -1686,8 +1689,7 @@ vector<discussion> database_api::get_discussions_by_blog( const discussion_query
    });
 }
 
-vector<discussion> database_api::get_discussions_by_comments( const discussion_query& query )const
-{
+vector<discussion> database_api::get_discussions_by_comments( const discussion_query& query )const {
    return my->_db.with_read_lock( [&]()
    {
       vector< discussion > result;
@@ -1712,8 +1714,8 @@ vector<discussion> database_api::get_discussions_by_comments( const discussion_q
 
       while( result.size() < query.limit && comment_itr != t_idx.end() )
       {
-         if( comment_itr->author != start_author )
-            break;
+         //if( comment_itr->author != start_author )
+         //   break;
          if( comment_itr->parent_author.size() > 0 )
          {
             try
@@ -1740,8 +1742,7 @@ vector<discussion> database_api::get_discussions_by_comments( const discussion_q
  *  any accounts referenced by authors.
  *
  */
-void database_api::recursively_fetch_content( state& _state, discussion& root, set<string>& referenced_accounts )const
-{
+void database_api::recursively_fetch_content( state& _state, discussion& root, set<string>& referenced_accounts )const {
    return my->_db.with_read_lock( [&]()
    {
       try
@@ -1770,8 +1771,7 @@ void database_api::recursively_fetch_content( state& _state, discussion& root, s
    });
 }
 
-vector<account_name_type> database_api::get_miner_queue()const
-{
+vector<account_name_type> database_api::get_miner_queue()const {
    return my->_db.with_read_lock( [&]()
    {
       vector<account_name_type> result;
@@ -1787,8 +1787,7 @@ vector<account_name_type> database_api::get_miner_queue()const
    });
 }
 
-vector< account_name_type > database_api::get_active_witnesses()const
-{
+vector< account_name_type > database_api::get_active_witnesses()const {
    return my->_db.with_read_lock( [&]()
    {
       const auto& wso = my->_db.get_witness_schedule_object();
@@ -1802,8 +1801,7 @@ vector< account_name_type > database_api::get_active_witnesses()const
 }
 
 vector<discussion>  database_api::get_discussions_by_author_before_date(
-    string author, string start_permlink, time_point_sec before_date, uint32_t limit )const
-{
+    string author, string start_permlink, time_point_sec before_date, uint32_t limit )const {
    return my->_db.with_read_lock( [&]()
    {
       try
@@ -1846,8 +1844,7 @@ vector<discussion>  database_api::get_discussions_by_author_before_date(
    });
 }
 
-vector< savings_withdraw_api_obj > database_api::get_savings_withdraw_from( string account )const
-{
+vector< savings_withdraw_api_obj > database_api::get_savings_withdraw_from( string account )const {
    return my->_db.with_read_lock( [&]()
    {
       vector<savings_withdraw_api_obj> result;
@@ -1861,8 +1858,8 @@ vector< savings_withdraw_api_obj > database_api::get_savings_withdraw_from( stri
       return result;
    });
 }
-vector< savings_withdraw_api_obj > database_api::get_savings_withdraw_to( string account )const
-{
+
+vector< savings_withdraw_api_obj > database_api::get_savings_withdraw_to( string account )const {
    return my->_db.with_read_lock( [&]()
    {
       vector<savings_withdraw_api_obj> result;
@@ -1877,8 +1874,7 @@ vector< savings_withdraw_api_obj > database_api::get_savings_withdraw_to( string
    });
 }
 
-vector< vesting_delegation_api_obj > database_api::get_vesting_delegations( string account, string from, uint32_t limit )const
-{
+vector< vesting_delegation_api_obj > database_api::get_vesting_delegations( string account, string from, uint32_t limit )const {
    FC_ASSERT( limit <= 1000 );
 
    return my->_db.with_read_lock( [&]()
@@ -2357,5 +2353,46 @@ std::map<std::string, int64_t> database_api::get_category_reputation() const{
    });   
    return result;
 };
+
+vector<discussion> database_api::get_comments(string author, string permlink)const{
+    vector<discussion> result;
+    /*my->_db.with_read_lock( [&](){
+        discussion_query q;
+        q.tag = "";
+        q.limit = 20;
+        q.truncate_body = 1024;
+        q.start_author = author;
+        q.start_permlink = permlink;
+        result = my->_db.get_discussions_by_comments(q);
+    });*/
+    return result;
+}
+
+void database_api::set_last_comments(discussion & disc, int32_t limit) const {
+   const auto &com_by_root = my->_db.get_index<comment_index>().indices().get<by_root>();
+   auto itr = com_by_root.lower_bound(disc.id);
+   if (itr != com_by_root.end()) {
+      cout << "post: " << itr->permlink.c_str() << endl;
+      auto current_comment = ++itr;
+      while (current_comment != com_by_root.end()
+             && itr->root_comment == current_comment->root_comment
+             && limit--) {
+         comment_api_obj comment(*current_comment);
+         disc.comments.push_back(comment_api_obj(comment));
+         cout << "   com: " << current_comment->permlink.c_str() << endl;
+         ++current_comment;
+      }
+
+      auto sort_lamda = [](const comment_api_obj &elem1, const comment_api_obj &elem2) {
+          return elem1.last_update > elem2.last_update;
+      };
+
+      if (disc.comments.size() > limit) {
+         partial_sort(disc.comments.begin(), disc.comments.begin() + limit, disc.comments.end(), sort_lamda);
+      } else {
+         sort(disc.comments.begin(), disc.comments.end(), sort_lamda);
+      }
+   }
+}
 
 } } // steemit::app

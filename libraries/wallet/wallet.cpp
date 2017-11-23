@@ -2478,7 +2478,7 @@ vector<extended_message_object>   wallet_api::get_outbox( string account, fc::ti
    return result;
 }
 
-discussion wallet_api::get_comment(string author, string permlink) const {
+discussion wallet_api::get_post(string author, string permlink) const {
    discussion comment = my->_remote_db->get_content( author, permlink );
    return comment;
 }
@@ -2511,5 +2511,25 @@ vector<pair<string, uint32_t>> wallet_api::get_best_authors(uint32_t limit)const
    return best_authors;
 };
 
+vector<discussion> wallet_api::get_comments(string author, string permlink)const {
+   discussion_query q;
+   q.tag = "";
+   q.limit = 20;
+   q.truncate_body = 1024;
+   q.start_author = author;
+   q.start_permlink = permlink;
+   auto comments = my->_remote_db->get_discussions_by_comments(q);
+   return comments;
+}
+
+vector<discussion> wallet_api::get_hot_discussions()const {
+   discussion_query q;
+   q.tag = "";
+   q.limit = 20;
+   q.truncate_body = 1024;
+   auto hot_discussions = my->_remote_db->get_discussions_by_hot(q);
+   return hot_discussions;
+}
+        
 } } // steemit::wallet
 

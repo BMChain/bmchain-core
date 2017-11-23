@@ -976,7 +976,7 @@ class wallet_api
 
       annotated_signed_transaction claim_reward_balance( string account, asset reward_steem, asset reward_sbd, asset reward_vests, bool broadcast );
 
-      discussion get_comment(string author, string permlink) const;
+      discussion get_post(string author, string permlink) const;
 
       vector<pair<string, long long>> get_category_reputation() const;
 
@@ -985,6 +985,10 @@ class wallet_api
       dynamic_global_property_object get_global_properties() const;
 
       vector<pair<string, uint32_t>> get_best_authors(uint32_t limit)const;
+
+      vector<discussion> get_comments(string author, string permlink)const;
+
+      vector<discussion> get_hot_discussions()const;
 };
 
 struct plain_keys {
@@ -1035,12 +1039,13 @@ FC_API( steemit::wallet::wallet_api,
         (get_account_history)
         (get_state)
         (get_withdraw_routes)
-        (get_comment)
+        (get_post)
         (get_category_reputation)
         (get_invariants)
         (get_global_properties)
         (get_best_authors)
-
+        (get_comments)
+        (get_hot_discussions)
 
         /// transaction api
         (create_account)

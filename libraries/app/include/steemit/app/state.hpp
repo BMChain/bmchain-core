@@ -79,6 +79,7 @@ namespace steemit { namespace app {
       vector<account_name_type>   reblogged_by;
       optional<account_name_type> first_reblogged_by;
       optional<time_point_sec>    first_reblogged_on;
+      vector<comment_api_obj>     comments;
    };
 
    /**
@@ -187,7 +188,7 @@ FC_REFLECT( steemit::app::account_vote, (authorperm)(weight)(rshares)(percent)(t
 
 FC_REFLECT( steemit::app::discussion_index, (category)(trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout) )
 FC_REFLECT( steemit::app::tag_index, (trending) )
-FC_REFLECT_DERIVED( steemit::app::discussion, (steemit::app::comment_api_obj), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on) )
+FC_REFLECT_DERIVED( steemit::app::discussion, (steemit::app::comment_api_obj), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on)(comments) )
 
 FC_REFLECT( steemit::app::state, (current_route)(props)(tag_idx)(tags)(content)(accounts)(pow_queue)(witnesses)(discussion_idx)(witness_schedule)(feed_price)(error)(market_data) )
 
