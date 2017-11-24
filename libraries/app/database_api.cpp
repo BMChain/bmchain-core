@@ -2371,27 +2371,30 @@ vector<discussion> database_api::get_comments(string author, string permlink)con
 void database_api::set_last_comments(discussion & disc, int32_t limit) const {
    const auto &com_by_root = my->_db.get_index<comment_index>().indices().get<by_root>();
    auto itr = com_by_root.lower_bound(disc.id);
-   if (itr != com_by_root.end()) {
-      cout << "post: " << itr->permlink.c_str() << endl;
+   if (itr != com_by_root.end() && itr->children > 0) {
+      //cout << "post: " << itr->permlink.c_str() << endl;
+      vector<comment_api_obj> comment_buf;
       auto current_comment = ++itr;
       while (current_comment != com_by_root.end()
              && itr->root_comment == current_comment->root_comment
-             && limit--) {
+             && current_comment->depth > 0) {
          comment_api_obj comment(*current_comment);
-         disc.comments.push_back(comment_api_obj(comment));
+         comment_buf.push_back(comment_api_obj(comment));
          cout << "   com: " << current_comment->permlink.c_str() << endl;
          ++current_comment;
       }
 
       auto sort_lamda = [](const comment_api_obj &elem1, const comment_api_obj &elem2) {
-          return elem1.last_update > elem2.last_update;
+          return elem1.created > elem2.created;
       };
 
-      if (disc.comments.size() > limit) {
-         partial_sort(disc.comments.begin(), disc.comments.begin() + limit, disc.comments.end(), sort_lamda);
+      if (comment_buf.size() > limit) {
+         partial_sort(comment_buf.begin(), comment_buf.begin() + limit, comment_buf.end(), sort_lamda);
       } else {
-         sort(disc.comments.begin(), disc.comments.end(), sort_lamda);
+         sort(comment_buf.begin(), comment_buf.end(), sort_lamda);
       }
+
+      copy(comment_buf.begin(), comment_buf.begin()+limit, back_inserter(disc.comments));
    }
 }
 
