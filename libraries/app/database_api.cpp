@@ -1463,9 +1463,8 @@ vector<discussion> database_api::get_discussions_by_trending( const discussion_q
       auto tidx_itr = tidx.lower_bound( boost::make_tuple( tag, parent, std::numeric_limits<double>::max() )  );
 
       auto discussions = get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body, []( const comment_api_obj& c ) { return c.net_rshares <= 0; } );
-      for (auto & disc : discussions){
-         set_last_comments(disc, 3);
-      }
+      set_last_comments(discussions, 3);
+
       return discussions;
    });
 }
@@ -1481,9 +1480,8 @@ vector<discussion> database_api::get_discussions_by_created( const discussion_qu
       auto tidx_itr = tidx.lower_bound( boost::make_tuple( tag, parent, fc::time_point_sec::maximum() )  );
 
       auto discussions = get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body );
-      for (auto & disc : discussions){
-         set_last_comments(disc, 3);
-      }
+      set_last_comments(discussions, 3);
+
       return discussions;
    });
 }
@@ -1529,9 +1527,8 @@ vector<discussion> database_api::get_discussions_by_votes( const discussion_quer
       auto tidx_itr = tidx.lower_bound( boost::make_tuple( tag, parent, std::numeric_limits<int32_t>::max() )  );
 
       auto discussions = get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body );
-      for (auto & disc : discussions){
-         set_last_comments(disc, 3);
-      }
+      set_last_comments(discussions, 3);
+
       return discussions;
    });
 }
@@ -1562,9 +1559,8 @@ vector<discussion> database_api::get_discussions_by_hot( const discussion_query&
       auto tidx_itr = tidx.lower_bound( boost::make_tuple( tag, parent, std::numeric_limits<double>::max() )  );
 
       auto discussions = get_discussions( query, tag, parent, tidx, tidx_itr, query.truncate_body, []( const comment_api_obj& c ) { return c.net_rshares <= 0; } );
-      for (auto & disc : discussions){
-         set_last_comments(disc, 3);
-      }
+      set_last_comments(discussions, 3);
+
       return discussions;
    });
 }
@@ -2368,34 +2364,43 @@ vector<discussion> database_api::get_comments(string author, string permlink)con
     return result;
 }
 
-void database_api::set_last_comments(discussion & disc, int32_t limit) const {
+void database_api::set_last_comments(vector<discussion> & discussions, int32_t limit) const {
    const auto &com_by_root = my->_db.get_index<comment_index>().indices().get<by_root>();
-   auto itr = com_by_root.lower_bound(disc.id);
-   if (itr != com_by_root.end() && itr->children > 0) {
-      //cout << "post: " << itr->permlink.c_str() << endl;
-      vector<comment_api_obj> comment_buf;
-      auto current_comment = ++itr;
-      while (current_comment != com_by_root.end()
-             && itr->root_comment == current_comment->root_comment
-             && current_comment->depth > 0) {
-         comment_api_obj comment(*current_comment);
-         comment_buf.push_back(comment_api_obj(comment));
-         cout << "   com: " << current_comment->permlink.c_str() << endl;
-         ++current_comment;
-      }
+   vector<comment_api_obj> comment_buf;
 
-      auto sort_lamda = [](const comment_api_obj &elem1, const comment_api_obj &elem2) {
-          return elem1.created > elem2.created;
-      };
+   for (auto & disc : discussions) {
 
-      if (comment_buf.size() > limit) {
-         partial_sort(comment_buf.begin(), comment_buf.begin() + limit, comment_buf.end(), sort_lamda);
-      } else {
-         sort(comment_buf.begin(), comment_buf.end(), sort_lamda);
-      }
+       auto itr = com_by_root.lower_bound(disc.id);
 
-      copy(comment_buf.begin(), comment_buf.begin()+limit, back_inserter(disc.comments));
+       if (itr != com_by_root.end() && itr->children > 0) {
+
+           //cout << "post: " << itr->permlink.c_str() << endl;
+           comment_buf.clear();
+           auto current_comment = ++itr;
+
+           while (current_comment != com_by_root.end()
+                  && itr->root_comment == current_comment->root_comment
+                  && current_comment->depth > 0) {
+               comment_api_obj comment(*current_comment);
+               comment_buf.push_back(move(comment));
+               //cout << "   com: " << current_comment->permlink.c_str() << endl;
+               ++current_comment;
+           }
+
+           auto sort_lamda = [](const comment_api_obj &elem1, const comment_api_obj &elem2) {
+               return elem1.created > elem2.created;
+           };
+
+           if (comment_buf.size() > limit) {
+               partial_sort(comment_buf.begin(), comment_buf.begin() + limit, comment_buf.end(), sort_lamda);
+               copy(comment_buf.begin(), comment_buf.begin() + limit, back_inserter(disc.comments));
+           } else {
+               sort(comment_buf.begin(), comment_buf.end(), sort_lamda);
+               disc.comments = move(comment_buf);
+           }
+       }
    }
+
 }
 
 } } // steemit::app

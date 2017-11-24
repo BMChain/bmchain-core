@@ -415,7 +415,7 @@ class database_api
 
       vector<discussion> get_comments(string author, string permlink)const;
 
-      void set_last_comments(discussion & disc, int32_t limit) const;
+      void set_last_comments(vector<discussion> & discussions, int32_t limit) const;
 
    private:
       void set_pending_payout( discussion& d )const;
