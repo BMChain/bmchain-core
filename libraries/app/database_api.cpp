@@ -2380,7 +2380,7 @@ void database_api::set_last_comments(vector<discussion> & discussions, int32_t l
 
            while (current_comment != com_by_root.end()
                   && itr->root_comment == current_comment->root_comment
-                  && current_comment->depth > 0) {
+                  && current_comment->depth == 1) {
                comment_api_obj comment(*current_comment);
                comment_buf.push_back(move(comment));
                //cout << "   com: " << current_comment->permlink.c_str() << endl;
