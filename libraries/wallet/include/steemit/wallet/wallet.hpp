@@ -984,7 +984,7 @@ class wallet_api
 
       dynamic_global_property_object get_global_properties() const;
 
-      vector<pair<string, uint32_t>> get_best_authors(uint32_t limit)const;
+      vector<best_author> get_best_authors(uint32_t limit)const;
 
       vector<discussion> get_comments(string author, string permlink)const;
 

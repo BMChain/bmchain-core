@@ -2506,7 +2506,7 @@ dynamic_global_property_object wallet_api::get_global_properties() const{
    return props;
 }
 
-vector<pair<string, uint32_t>> wallet_api::get_best_authors(uint32_t limit)const{
+vector<best_author> wallet_api::get_best_authors(uint32_t limit)const{
    auto best_authors = my->_remote_db->get_best_authors(limit);
    return best_authors;
 };

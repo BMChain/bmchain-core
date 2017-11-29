@@ -53,7 +53,7 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       vector<optional<account_api_obj>> lookup_account_names(const vector<string>& account_names)const;
       set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit)const;
       uint64_t get_account_count()const;
-      vector<pair<string, uint32_t>> get_best_authors(uint32_t limit)const;
+      vector<best_author> get_best_authors(uint32_t limit)const;
 
       // Witnesses
       vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids)const;
@@ -601,26 +601,37 @@ optional< account_bandwidth_api_obj > database_api::get_account_bandwidth( strin
    return result;
 }
 
-vector<pair<string, uint32_t>> database_api::get_best_authors(uint32_t limit)const {
+vector<best_author> database_api::get_best_authors(uint32_t limit)const {
     return my->_db.with_read_lock([&]() {
         return my->get_best_authors(limit);
     });
 }
 
-vector<pair<string, uint32_t>> database_api_impl::get_best_authors(uint32_t limit)const {
+vector<best_author> database_api_impl::get_best_authors(uint32_t limit)const {
     FC_ASSERT(limit <= 1000);
     const auto &accounts_by_vesting = _db.get_index<account_index>().indices().get<by_vesting_shares>();
-    vector<pair<string, uint32_t>> result;
+    const auto &comments_by_author  = _db.get_index<comment_index>().indices().get<by_author_created>();
+
+    vector<best_author> result;
 
     for (auto itr = accounts_by_vesting.begin();
          limit-- && itr != accounts_by_vesting.end();
          ++itr) {
-        result.push_back({itr->name, itr->vesting_shares.amount.value});
-    }
+        auto comment_itr = comments_by_author.find(itr->name);
+        auto pred = [&](const comment_object & com_obj){
+                return (com_obj.author == itr->name) && (com_obj.depth == 0);};
+        auto com_itr = std::find_if(comment_itr, comments_by_author.end(), pred);
+        best_author ba = {itr->name,
+                          itr->vesting_shares.amount.value,
+                          to_string(itr->json_metadata),
+                          to_string(com_itr->permlink),
+                          to_string(com_itr->title)};
+        result.push_back(std::move(ba));
+   }
 
     sort(result.begin(), result.end(),
-         [](pair<string, uint32_t> elem1, pair<string, uint32_t> elem2){
-             return elem1.second > elem2.second;});
+         [](best_author & elem1, best_author & elem2){
+             return elem1.reputation > elem2.reputation;});
 
     return result;
 }

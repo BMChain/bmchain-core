@@ -68,6 +68,15 @@ struct withdraw_route
    bool                 auto_vest;
 };
 
+struct best_author
+{
+    string     name;
+    uint32_t   reputation;
+    string     json_metadata;
+    string     permlink;
+    string     title;
+};
+
 enum withdraw_route_type
 {
    incoming,
@@ -235,7 +244,7 @@ class database_api
       vector< vesting_delegation_api_obj > get_vesting_delegations( string account, string from, uint32_t limit = 100 )const;
       vector< vesting_delegation_expiration_api_obj > get_expiring_vesting_delegations( string account, time_point_sec from, uint32_t limit = 100 )const;
 
-      vector<pair<string, uint32_t>> get_best_authors(uint32_t limit)const;
+      vector<best_author> get_best_authors(uint32_t limit)const;
 
       ///////////////
       // Witnesses //
@@ -453,6 +462,8 @@ FC_REFLECT( steemit::app::liquidity_balance, (account)(weight) );
 FC_REFLECT( steemit::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) );
 
 FC_REFLECT( steemit::app::discussion_query, (tag)(filter_tags)(select_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit) );
+
+FC_REFLECT( steemit::app::best_author, (name)(reputation)(json_metadata)(permlink)(title) );
 
 FC_REFLECT_ENUM( steemit::app::withdraw_route_type, (incoming)(outgoing)(all) );
 
