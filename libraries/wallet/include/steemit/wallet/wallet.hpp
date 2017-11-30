@@ -988,7 +988,9 @@ class wallet_api
 
       vector<discussion> get_comments(string author, string permlink)const;
 
-      vector<discussion> get_hot_discussions()const;
+      vector<discussion> get_discussions_by_hot()const;
+
+      vector<discussion> get_discussions_by_blog(string author, uint32_t limit)const;
 };
 
 struct plain_keys {
@@ -1045,7 +1047,8 @@ FC_API( steemit::wallet::wallet_api,
         (get_global_properties)
         (get_best_authors)
         (get_comments)
-        (get_hot_discussions)
+        (get_discussions_by_hot)
+        (get_discussions_by_blog)
 
         /// transaction api
         (create_account)

@@ -2522,13 +2522,23 @@ vector<discussion> wallet_api::get_comments(string author, string permlink)const
    return comments;
 }
 
-vector<discussion> wallet_api::get_hot_discussions()const {
+vector<discussion> wallet_api::get_discussions_by_hot()const {
    discussion_query q;
    q.tag = "";
    q.limit = 20;
    q.truncate_body = 1024;
    auto hot_discussions = my->_remote_db->get_discussions_by_hot(q);
    return hot_discussions;
+}
+
+vector<discussion> wallet_api::get_discussions_by_blog(string author, uint32_t limit)const {
+    discussion_query q;
+    q.tag = author;
+    q.limit = limit;
+    q.truncate_body = 1024;
+    //q.start_author = author;
+    auto hot_discussions = my->_remote_db->get_discussions_by_blog(q);
+    return hot_discussions;
 }
         
 } } // steemit::wallet

@@ -2390,10 +2390,11 @@ void database_api::set_last_comments(vector<discussion> & discussions, int32_t l
            auto current_comment = ++itr;
 
            while (current_comment != com_by_root.end()
-                  && itr->root_comment == current_comment->root_comment
-                  && current_comment->depth == 1) {
-               comment_api_obj comment(*current_comment);
-               comment_buf.push_back(move(comment));
+                  && itr->root_comment == current_comment->root_comment) {
+               if (current_comment->depth == 1){
+                   comment_api_obj comment(*current_comment);
+                   comment_buf.push_back(move(comment));
+               }
                //cout << "   com: " << current_comment->permlink.c_str() << endl;
                ++current_comment;
            }
