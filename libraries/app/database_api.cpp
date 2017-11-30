@@ -2392,7 +2392,6 @@ void database_api::set_last_comments(vector<discussion> & discussions, int32_t l
            while (current_comment != com_by_root.end()
                   && itr->root_comment == current_comment->root_comment) {
                if (current_comment->depth == 1){
-
                    comment_api_obj comment(*current_comment);
                    comment_buf.push_back(move(comment));
                }
