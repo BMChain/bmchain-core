@@ -2415,4 +2415,38 @@ void database_api::set_last_comments(vector<discussion> & discussions, int32_t l
 
 }
 
+statistic database_api::get_statistic()const{
+    const auto& props    = my->_db.get_dynamic_global_properties();
+    const auto& acc_idx  = my->_db.get_index<account_index>().indices().get<by_id>();
+    const auto& com_idx  = my->_db.get_index<comment_index>().indices().get<by_id>();
+    const auto& vote_idx = my->_db.get_index<comment_vote_index>().indices().get<by_id>();
+
+    statistic stat;
+    stat.users    = acc_idx.size();
+    stat.posts    = count_if(com_idx.cbegin(), com_idx.cend(), [](const comment_object& com){return com.depth == 0;});
+    stat.comments = count_if(com_idx.cbegin(), com_idx.cend(), [](const comment_object& com){return com.depth > 0;});
+    stat.votes    = vote_idx.size();
+    stat.current_supply = props.current_supply;
+
+    return stat;
+}
+
+vector<block_statistic> database_api::get_block_statistic(uint32_t limit, uint32_t limit_block_size)const{
+    vector<block_statistic> result;
+    auto gpo = get_dynamic_global_properties();
+    auto head_block = gpo.head_block_number;
+    for (uint32_t i = 1; i <= head_block; ++i){
+       if (auto block = get_block(i)){
+           block_statistic stat;
+           stat.block_id  = i;
+           stat.transactions = block->transactions.size();
+           stat.block_size = fc::raw::pack_size(static_cast<signed_block>(*block));
+           if (stat.transactions >= limit && stat.block_size >= limit_block_size) {
+               result.push_back(std::move(stat));
+           }
+       }
+    }
+    return result;
+}
+
 } } // steemit::app

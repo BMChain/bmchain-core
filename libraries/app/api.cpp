@@ -241,12 +241,17 @@ namespace steemit { namespace app {
           return (*_app._remote_net_api)->broadcast_transaction_synchronous( trx );
        }
        else
-       {
+       {           
           promise<fc::variant>::ptr prom( new fc::promise<fc::variant>() );
           broadcast_transaction_with_callback( [=]( const fc::variant& v ){
              prom->set_value(v);
           }, trx );
-          return future<fc::variant>(prom).wait();
+          if ( BMCHAIN_STRESS_TESTING ) {
+              return fc::variant();              
+          }
+           else{
+              return future<fc::variant>(prom).wait();
+          }          
        }
     }
 

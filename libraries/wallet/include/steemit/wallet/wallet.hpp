@@ -991,6 +991,11 @@ class wallet_api
       vector<discussion> get_discussions_by_hot()const;
 
       vector<discussion> get_discussions_by_blog(string author, uint32_t limit)const;
+
+      statistic get_statistic()const;
+
+      vector<block_statistic> get_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
+
 };
 
 struct plain_keys {
@@ -1113,6 +1118,11 @@ FC_API( steemit::wallet::wallet_api,
         (get_active_witnesses)
         (get_miner_queue)
         (get_transaction)
+
+        /// statistic
+        (get_statistic)
+        (get_block_statistic)
+
       )
 
 FC_REFLECT( steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted) )

@@ -275,6 +275,10 @@ namespace detail {
          if( _options->count( "disable_get_block" ) )
             _self->_disable_get_block = true;
 
+         if ( BMCHAIN_STRESS_TESTING ){
+            _self->_read_only = false;
+         }   
+            
          if( !read_only )
          {
             _self->_read_only = false;

@@ -694,11 +694,17 @@ public:
 
       if( broadcast ) {
          try {
-            auto result = _remote_net_broadcast->broadcast_transaction_synchronous( tx );
-            annotated_signed_transaction rtrx(tx);
-            rtrx.block_num = result.get_object()["block_num"].as_uint64();
-            rtrx.transaction_num = result.get_object()["trx_num"].as_uint64();
-            return rtrx;
+             if ( BMCHAIN_STRESS_TESTING ){
+                 auto result = _remote_net_broadcast->broadcast_transaction_synchronous( tx );
+                 return tx;
+             }
+             else{
+                 auto result = _remote_net_broadcast->broadcast_transaction_synchronous( tx );
+                 annotated_signed_transaction rtrx(tx);
+                 rtrx.block_num = result.get_object()["block_num"].as_uint64();
+                 rtrx.transaction_num = result.get_object()["trx_num"].as_uint64();
+                 return rtrx;
+             }
          }
          catch (const fc::exception& e)
          {
@@ -2536,10 +2542,19 @@ vector<discussion> wallet_api::get_discussions_by_blog(string author, uint32_t l
     q.tag = author;
     q.limit = limit;
     q.truncate_body = 1024;
-    //q.start_author = author;
     auto hot_discussions = my->_remote_db->get_discussions_by_blog(q);
     return hot_discussions;
 }
-        
+
+statistic wallet_api::get_statistic()const{
+    auto result = my->_remote_db->get_statistic();
+    return result;
+}
+
+vector<block_statistic> wallet_api::get_block_statistic(uint32_t limit, uint32_t limit_block_size)const{
+    auto result = my->_remote_db->get_block_statistic(limit, limit_block_size);
+    return result;
+}
+
 } } // steemit::wallet
 
