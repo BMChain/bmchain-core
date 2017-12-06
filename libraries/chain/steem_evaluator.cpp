@@ -1283,7 +1283,9 @@ try {
          avg_cashout_sec = ( cur_cashout_time_sec * old_root_abs_rshares + new_cashout_time_sec * abs_rshares ) / ( old_root_abs_rshares + abs_rshares );
       }
 
-      FC_ASSERT( abs_rshares > 0, "Cannot vote with 0 rshares." );
+       if ( !BMCHAIN_STRESS_TESTING ) {
+           FC_ASSERT(abs_rshares > 0, "Cannot vote with 0 rshares.");
+       }
 
       auto old_vote_rshares = comment.vote_rshares;
 
