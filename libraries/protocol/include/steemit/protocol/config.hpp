@@ -103,8 +103,8 @@
 #define STEEMIT_VOTE_REGENERATION_SECONDS       (5*60*60*24) // 5 day
 #define STEEMIT_MAX_VOTE_CHANGES                5
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
-#define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
-#define STEEMIT_VOTE_DUST_THRESHOLD             (10000) /// bmchain, было 50000000
+#define STEEMIT_MIN_VOTE_INTERVAL_SEC           0 /// bmchain stess-testing, было 3
+#define STEEMIT_VOTE_DUST_THRESHOLD             (0) /// bmchain stess-testing, было 50000000
 
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(0)) // 5 minutes  /// bmchain
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(0)) // 20 seconds /// bmchain
@@ -271,7 +271,7 @@
 ///@}
 
 #define BMCHAIN_ENABLE                          true
-#define BMCHAIN_STRESS_TESTING                  false
+#define BMCHAIN_STRESS_TESTING                  true
 #define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*2)) /// 2 days
 
 #define BMCHAIN_INIT_HARDFORK                   19        /// Hardfork to apply when creating a new chain

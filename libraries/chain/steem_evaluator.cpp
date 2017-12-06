@@ -1188,7 +1188,10 @@ try {
 
    int64_t regenerated_power = (STEEMIT_100_PERCENT * elapsed_seconds) / STEEMIT_VOTE_REGENERATION_SECONDS;
    int64_t current_power     = std::min( int64_t(voter.voting_power + regenerated_power), int64_t(STEEMIT_100_PERCENT) );
-   FC_ASSERT( current_power > 0, "Account currently does not have voting power." );
+   // remove any restrictions on voting to do stress-testing
+   if ( !BMCHAIN_STRESS_TESTING ) {
+      FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
+   }
 
    int64_t  abs_weight    = abs(o.weight);
    int64_t  used_power    = (current_power * abs_weight) / STEEMIT_100_PERCENT;
@@ -1197,7 +1200,9 @@ try {
 
    // used_power = (current_power * abs_weight / STEEMIT_100_PERCENT) * (reserve / max_vote_denom)
    // The second multiplication is rounded up as of HF 259
-   int64_t max_vote_denom = dgpo.vote_power_reserve_rate * STEEMIT_VOTE_REGENERATION_SECONDS / (60*60*24);
+   // bmchain stess-testing
+   //int64_t max_vote_denom = dgpo.vote_power_reserve_rate * STEEMIT_VOTE_REGENERATION_SECONDS / (60*60*24);
+   int64_t max_vote_denom = 10;
    FC_ASSERT( max_vote_denom > 0 );
 
    if( !_db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) )
@@ -1215,13 +1220,15 @@ try {
    int64_t abs_rshares    = ((effective_vesting_shares * used_power) / (STEEMIT_100_PERCENT)).to_uint64();
    if( !_db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) && abs_rshares == 0 ) abs_rshares = 1;
 
-   if( _db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) )
-   {
-      FC_ASSERT( abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || o.weight == 0, "Voting weight is too small, please accumulate more voting power or steem power." );
-   }
-   else if( _db.has_hardfork( STEEMIT_HARDFORK_0_13__248 ) )
-   {
-      FC_ASSERT( abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || abs_rshares == 1, "Voting weight is too small, please accumulate more voting power or steem power." );
+   // remove any restrictions on voting to do stress-testing
+   if (!BMCHAIN_STRESS_TESTING) {
+       if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
+           FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || o.weight == 0,
+                     "Voting weight is too small, please accumulate more voting power or steem power.");
+       } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
+           FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || abs_rshares == 1,
+                     "Voting weight is too small, please accumulate more voting power or steem power.");
+       }
    }
 
    // Lazily delete vote
