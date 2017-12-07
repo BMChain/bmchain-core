@@ -996,6 +996,8 @@ class wallet_api
 
       vector<block_statistic> get_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
 
+      total_block_statistic get_total_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
+
 };
 
 struct plain_keys {
@@ -1122,7 +1124,7 @@ FC_API( steemit::wallet::wallet_api,
         /// statistic
         (get_statistic)
         (get_block_statistic)
-
+        (get_total_block_statistic)
       )
 
 FC_REFLECT( steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted) )

@@ -93,6 +93,20 @@ struct block_statistic
    uint32_t block_size;
 };
 
+struct total_block_statistic
+{
+    uint32_t head_block_id;
+    uint32_t block_amount;
+    uint32_t max_transactions;
+    uint32_t min_transactions;
+    uint32_t average_transactions;
+    uint32_t total_transactions;
+    uint32_t max_block_size;
+    uint32_t min_block_size;
+    uint32_t average_block_size;
+    uint32_t total_block_size;
+};
+
 enum withdraw_route_type
 {
    incoming,
@@ -440,11 +454,13 @@ class database_api
 
       vector<discussion> get_comments(string author, string permlink)const;
 
-      void set_last_comments(vector<discussion> & discussions, int32_t limit)const;
+      void set_last_comments(vector<discussion> & discussions, uint32_t limit)const;
 
       statistic get_statistic()const;
 
       vector<block_statistic> get_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
+
+      total_block_statistic get_total_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
 
    private:
       void set_pending_payout( discussion& d )const;
@@ -486,6 +502,7 @@ FC_REFLECT( steemit::app::discussion_query, (tag)(filter_tags)(select_tags)(sele
 FC_REFLECT( steemit::app::best_author, (name)(reputation)(json_metadata)(permlink)(title) );
 FC_REFLECT( steemit::app::statistic, (users)(posts)(comments)(votes)(current_supply) );
 FC_REFLECT( steemit::app::block_statistic, (transactions)(block_id)(block_size) );
+FC_REFLECT( steemit::app::total_block_statistic, (head_block_id)(block_amount)(max_transactions)(min_transactions)(average_transactions)(total_transactions)(max_block_size)(min_block_size)(average_block_size)(total_block_size));
 
 FC_REFLECT_ENUM( steemit::app::withdraw_route_type, (incoming)(outgoing)(all) );
 
@@ -586,6 +603,7 @@ FC_API(steemit::app::database_api,
 
    (get_statistic)
    (get_block_statistic)
+   (get_total_block_statistic)
 
    // bmchain
    (get_category_reputation)

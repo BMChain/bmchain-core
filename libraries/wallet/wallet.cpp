@@ -1707,7 +1707,7 @@ annotated_signed_transaction wallet_api::create_account( string creator, string 
    std::cerr << "Private posting key: " << posting.wif_priv_key << "\n";
    std::cerr << "Public posting key : " << std::string(posting.pub_key) << "\n";
    std::cerr << "Private memo key   : " << memo.wif_priv_key << "\n";
-   std::cerr << "Public memo key    : " << std::string(memo.pub_key) << "\n";   
+   std::cerr << "Public memo key    : " << std::string(memo.pub_key) << "\n";
    return create_account_with_keys( creator, new_account_name, json_meta, owner.pub_key, active.pub_key, posting.pub_key, memo.pub_key, broadcast );
 } FC_CAPTURE_AND_RETHROW( (creator)(new_account_name)(json_meta) ) }
 
@@ -1782,7 +1782,7 @@ annotated_signed_transaction wallet_api::vote_for_witness(string voting_account,
 void wallet_api::check_memo( const string& memo, const account_api_obj& account )const
 {
    vector< public_key_type > keys;
-      
+
    try
    {
       // Check if memo is a private key
@@ -2553,6 +2553,11 @@ statistic wallet_api::get_statistic()const{
 
 vector<block_statistic> wallet_api::get_block_statistic(uint32_t limit, uint32_t limit_block_size)const{
     auto result = my->_remote_db->get_block_statistic(limit, limit_block_size);
+    return result;
+}
+
+total_block_statistic wallet_api::get_total_block_statistic(uint32_t limit, uint32_t limit_block_size)const{
+    auto result = my->_remote_db->get_total_block_statistic(limit, limit_block_size);
     return result;
 }
 

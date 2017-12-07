@@ -2375,7 +2375,7 @@ vector<discussion> database_api::get_comments(string author, string permlink)con
     return result;
 }
 
-void database_api::set_last_comments(vector<discussion> & discussions, int32_t limit) const {
+void database_api::set_last_comments(vector<discussion> & discussions, uint32_t limit) const {
    const auto &com_by_root = my->_db.get_index<comment_index>().indices().get<by_root>();
    vector<comment_api_obj> comment_buf;
 
@@ -2447,6 +2447,41 @@ vector<block_statistic> database_api::get_block_statistic(uint32_t limit, uint32
        }
     }
     return result;
+}
+
+total_block_statistic database_api::get_total_block_statistic(uint32_t limit, uint32_t limit_block_size)const{
+    using namespace placeholders;
+    auto gpo = get_dynamic_global_properties();
+    vector<block_statistic> bs = get_block_statistic(limit, limit_block_size);
+
+    auto max_min_trans = minmax_element(bs.cbegin(), bs.cend(),
+                                       [](const block_statistic & stat1, const block_statistic & stat2){ return stat1.transactions < stat2.transactions; });
+    uint32_t total_trans = accumulate(bs.cbegin(), bs.cend(),
+                                      0,
+                                      bind(plus<uint32_t>(),
+                                           placeholders::_1,
+                                           bind(&block_statistic::transactions, placeholders::_2)));
+    auto max_min_size = minmax_element(bs.cbegin(), bs.cend(),
+                                        [](const block_statistic & stat1, const block_statistic & stat2){ return stat1.block_size < stat2.block_size; });
+    uint32_t total_size = accumulate(bs.cbegin(), bs.cend(),
+                                     0,
+                                     bind(plus<uint32_t>(),
+                                          placeholders::_1,
+                                          bind(&block_statistic::block_size, placeholders::_2)));
+
+    total_block_statistic total_block_stat;
+    total_block_stat.head_block_id        = gpo.head_block_number;
+    total_block_stat.block_amount         = bs.size();
+    total_block_stat.max_transactions     = max_min_trans.second->transactions;
+    total_block_stat.min_transactions     = max_min_trans.first->transactions;
+    total_block_stat.total_transactions   = total_trans;
+    total_block_stat.average_transactions = total_trans / total_block_stat.block_amount;
+    total_block_stat.max_block_size       = max_min_size.second->block_size;
+    total_block_stat.min_block_size       = max_min_size.first->block_size;
+    total_block_stat.total_block_size     = total_size;
+    total_block_stat.average_block_size   = total_size / total_block_stat.block_amount;
+
+    return total_block_stat;
 }
 
 } } // steemit::app
