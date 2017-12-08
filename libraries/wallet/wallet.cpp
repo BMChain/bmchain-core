@@ -2502,11 +2502,6 @@ vector<pair<string, long long>> wallet_api::get_category_reputation() const{
    return rep;
 };
 
-cat_rep_type wallet_api::get_invariants() const{
-   cat_rep_type inv = {{"virtual_supply", 1000},{"current_supply", 2000},{"total_vesting_shares", 3000}};
-   return inv;
-}
-
 dynamic_global_property_object wallet_api::get_global_properties() const{
    auto props = my->_remote_db->get_dynamic_global_properties();
    return props;
@@ -2516,17 +2511,6 @@ vector<best_author> wallet_api::get_best_authors(uint32_t limit)const{
    auto best_authors = my->_remote_db->get_best_authors(limit);
    return best_authors;
 };
-
-vector<discussion> wallet_api::get_comments(string author, string permlink)const {
-   discussion_query q;
-   q.tag = "";
-   q.limit = 20;
-   q.truncate_body = 1024;
-   q.start_author = author;
-   q.start_permlink = permlink;
-   auto comments = my->_remote_db->get_discussions_by_comments(q);
-   return comments;
-}
 
 vector<discussion> wallet_api::get_discussions_by_hot()const {
    discussion_query q;

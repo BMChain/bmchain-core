@@ -20,9 +20,6 @@ namespace steemit { namespace wallet {
 using steemit::app::discussion;
 using namespace steemit::private_message;
 
-typedef uint16_t transaction_handle_type;
-using cat_rep_type = std::map<string, unsigned long long>;
-
 struct memo_data {
 
    static optional<memo_data> from_string( string str ) {
@@ -49,8 +46,6 @@ struct memo_data {
       return '#'+base58;
    }
 };
-
-
 
 struct brain_key_info
 {
@@ -980,13 +975,9 @@ class wallet_api
 
       vector<pair<string, long long>> get_category_reputation() const;
 
-      cat_rep_type get_invariants() const;
-
       dynamic_global_property_object get_global_properties() const;
 
       vector<best_author> get_best_authors(uint32_t limit)const;
-
-      vector<discussion> get_comments(string author, string permlink)const;
 
       vector<discussion> get_discussions_by_hot()const;
 
@@ -1049,10 +1040,8 @@ FC_API( steemit::wallet::wallet_api,
         (get_withdraw_routes)
         (get_post)
         (get_category_reputation)
-        (get_invariants)
         (get_global_properties)
         (get_best_authors)
-        (get_comments)
         (get_discussions_by_hot)
         (get_discussions_by_blog)
 
