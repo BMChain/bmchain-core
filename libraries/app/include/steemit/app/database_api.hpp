@@ -79,10 +79,12 @@ struct best_author
 
 struct statistic
 {
-    uint32_t users;
-    uint32_t posts;
-    uint32_t comments;
-    uint32_t votes;
+    fc::time_point_sec begin;
+    fc::time_point_sec end;
+    uint32_t users    = 0;
+    uint32_t posts    = 0;
+    uint32_t comments = 0;
+    uint32_t votes    = 0;
     asset    current_supply = asset( 0, STEEM_SYMBOL );
 };
 
@@ -456,7 +458,7 @@ class database_api
 
       void set_last_comments(vector<discussion> & discussions, uint32_t limit)const;
 
-      statistic get_statistic()const;
+      statistic get_statistic(const string & begin, const string & end)const;
 
       vector<block_statistic> get_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
 
@@ -500,7 +502,7 @@ FC_REFLECT( steemit::app::withdraw_route, (from_account)(to_account)(percent)(au
 FC_REFLECT( steemit::app::discussion_query, (tag)(filter_tags)(select_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit) );
 
 FC_REFLECT( steemit::app::best_author, (name)(reputation)(json_metadata)(permlink)(title) );
-FC_REFLECT( steemit::app::statistic, (users)(posts)(comments)(votes)(current_supply) );
+FC_REFLECT( steemit::app::statistic, (begin)(end)(users)(posts)(comments)(votes)(current_supply) );
 FC_REFLECT( steemit::app::block_statistic, (transactions)(block_id)(block_size) );
 FC_REFLECT( steemit::app::total_block_statistic, (head_block_id)(block_amount)(max_transactions)(min_transactions)(average_transactions)(total_transactions)(max_block_size)(min_block_size)(average_block_size)(total_block_size));
 

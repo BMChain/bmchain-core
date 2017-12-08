@@ -2546,8 +2546,8 @@ vector<discussion> wallet_api::get_discussions_by_blog(string author, uint32_t l
     return hot_discussions;
 }
 
-statistic wallet_api::get_statistic()const{
-    auto result = my->_remote_db->get_statistic();
+statistic wallet_api::get_statistic(const string & begin, const string & end)const{
+    auto result = my->_remote_db->get_statistic(begin, end);
     return result;
 }
 

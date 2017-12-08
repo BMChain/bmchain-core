@@ -2415,18 +2415,45 @@ void database_api::set_last_comments(vector<discussion> & discussions, uint32_t 
 
 }
 
-statistic database_api::get_statistic()const{
+statistic database_api::get_statistic(const string & begin, const string & end)const{
+    auto time_begin = fc::time_point_sec::min();
+    auto time_end = fc::time_point_sec::maximum();
+    if (begin != "") {
+        time_begin = time_point_sec(time_point::from_iso_string(begin));
+    }
+    if (end != "") {
+        time_end = time_point_sec(time_point::from_iso_string(end));
+    }
+
     const auto& props    = my->_db.get_dynamic_global_properties();
     const auto& acc_idx  = my->_db.get_index<account_index>().indices().get<by_id>();
     const auto& com_idx  = my->_db.get_index<comment_index>().indices().get<by_id>();
     const auto& vote_idx = my->_db.get_index<comment_vote_index>().indices().get<by_id>();
 
     statistic stat;
-    stat.users    = acc_idx.size();
-    stat.posts    = count_if(com_idx.cbegin(), com_idx.cend(), [](const comment_object& com){return com.depth == 0;});
-    stat.comments = count_if(com_idx.cbegin(), com_idx.cend(), [](const comment_object& com){return com.depth > 0;});
-    stat.votes    = vote_idx.size();
+    stat.begin = time_begin;
+    stat.end = time_end;
     stat.current_supply = props.current_supply;
+
+    if (time_begin == fc::time_point_sec::min() && time_end == fc::time_point_sec::maximum()) {
+        stat.users = acc_idx.size();
+        stat.posts = count_if(com_idx.cbegin(), com_idx.cend(),
+                              [](const comment_object &com) { return com.depth == 0; });
+        stat.comments = count_if(com_idx.cbegin(), com_idx.cend(),
+                                 [](const comment_object &com) { return com.depth > 0; });
+        stat.votes = vote_idx.size();
+        stat.end = fc::time_point_sec::min();
+    }
+    else {
+        stat.users = count_if(acc_idx.cbegin(), acc_idx.cend(),
+                              [time_begin, time_end](const account_object &acc){ return acc.created >= time_begin && acc.created <= time_end; });
+        stat.posts = count_if(com_idx.cbegin(), com_idx.cend(),
+                              [time_begin, time_end](const comment_object &com) { return com.depth == 0 && com.created >= time_begin && com.created <= time_end; });
+        stat.comments = count_if(com_idx.cbegin(), com_idx.cend(),
+                                 [time_begin, time_end](const comment_object &com) {  return com.depth > 0 && com.created >= time_begin && com.created <= time_end; });
+        stat.votes = count_if(vote_idx.cbegin(), vote_idx.cend(),
+                                [time_begin, time_end](const comment_vote_object &vote) {  return vote.last_update >= time_begin && vote.last_update <= time_end; });
+    }
 
     return stat;
 }

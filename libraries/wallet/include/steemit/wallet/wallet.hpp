@@ -992,12 +992,11 @@ class wallet_api
 
       vector<discussion> get_discussions_by_blog(string author, uint32_t limit)const;
 
-      statistic get_statistic()const;
+      statistic get_statistic(const string & begin, const string & end)const;
 
       vector<block_statistic> get_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
 
       total_block_statistic get_total_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
-
 };
 
 struct plain_keys {
