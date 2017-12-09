@@ -271,7 +271,7 @@
 ///@}
 
 #define BMCHAIN_ENABLE                          true
-#define BMCHAIN_STRESS_TESTING                  false
+#define BMCHAIN_STRESS_TESTING                  true
 #define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*2)) /// 2 days
 
 #define BMCHAIN_INIT_HARDFORK                   19        /// Hardfork to apply when creating a new chain
