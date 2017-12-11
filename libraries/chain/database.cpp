@@ -1583,14 +1583,6 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
          if( !has_hardfork( STEEMIT_HARDFORK_0_17__774 ) )
             adjust_rshares2( comment, util::evaluate_reward_curve( comment.net_rshares.value ), 0 );
-
-          std::cout << "comment: " << comment.permlink.c_str();
-          std::cout << " total_rshares2: " << ctx.total_reward_shares2.lo;
-          std::cout << " rshares: " << ctx.rshares.value;
-          std::cout << " rfund: " << ctx.total_reward_fund_steem.amount.value;
-          std::cout << " reward: " << reward.value;
-          std::cout << std::endl;
-
       }
 
 
@@ -1637,8 +1629,11 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
          }
          else
          {
-#ifdef CLEAR_VOTES
-            remove( cur_vote );
+#ifdef CLEAR_VOTE
+            // it's bad way, bun I can't fix it fast.
+            if (cur_vote != 463){
+               remove(cur_vote);
+            }
 #endif
          }
       }
