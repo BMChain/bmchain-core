@@ -531,6 +531,11 @@ void tags_plugin::plugin_initialize(const boost::program_options::variables_map&
 
 void tags_plugin::plugin_startup()
 {
+    auto ov = steemit::tags::detail::operation_visitor( database() );
+    const auto & cidx = database().get_index< comment_index >().indices().get< by_permlink >();
+    for (auto idx = cidx.cbegin(); idx != cidx.cend(); ++idx){
+        ov.update_tags(*idx, true);
+    }
 }
 
 } } /// steemit::tags
