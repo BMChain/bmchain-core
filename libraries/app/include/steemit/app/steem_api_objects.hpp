@@ -331,6 +331,8 @@ struct account_api_obj
 
    time_point_sec    last_post;
    time_point_sec    last_root_post;
+
+   map<string, int32_t> reputation_by_categories; /// for bmchain
 };
 
 struct owner_authority_history_api_obj
@@ -536,6 +538,7 @@ FC_REFLECT( steemit::app::account_api_obj,
              (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
              (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)
              (last_post)(last_root_post)
+             (reputation_by_categories)
           )
 
 FC_REFLECT( steemit::app::owner_authority_history_api_obj,

@@ -75,6 +75,8 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       // signal handlers
       void on_applied_block( const chain::signed_block& b );
 
+      map<string, int32_t> get_reputation_by_categories(const account_object & acc) const;
+
       std::function<void(const fc::variant&)> _block_applied_callback;
 
       steemit::chain::database&                _db;
@@ -382,6 +384,8 @@ vector< extended_account > database_api_impl::get_accounts( vector< string > nam
          {
             results.back().reputation = _follow_api->get_account_reputations( itr->name, 1 )[0].reputation;
          }
+
+         results.back().reputation_by_categories = get_reputation_by_categories(*itr);
 
          auto vitr = vidx.lower_bound( boost::make_tuple( itr->id, witness_id_type() ) );
          while( vitr != vidx.end() && vitr->account == itr->id ) {
@@ -2510,5 +2514,16 @@ total_block_statistic database_api::get_total_block_statistic(uint32_t limit, ui
 
     return total_block_stat;
 }
+
+map<string, int32_t> database_api_impl::get_reputation_by_categories(const account_object & author) const{
+    map<string, int32_t> result;
+    const auto & com_idx = _db.get_index<comment_index>().indices().get<by_author_created>();
+    auto itr = com_idx.lower_bound( boost::make_tuple( author.name, time_point_sec::maximum() ) );
+    while (itr != com_idx.end() && itr->author == author.name){
+        result[itr->category.c_str()] = result[itr->category.c_str()] + itr->author_rewards.value;
+        ++itr;
+    }
+    return result;
+};
 
 } } // steemit::app
