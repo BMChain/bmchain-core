@@ -2413,6 +2413,8 @@ annotated_signed_transaction      wallet_api::send_private_message( string from,
 
    op.data = fc::raw::pack( pmo );
 
+   auto op_temp = fc::raw::unpack<private_message_operation>(op.data);
+
    signed_transaction tx;
    tx.operations.push_back( op );
    tx.validate();
@@ -2465,6 +2467,7 @@ message_body wallet_api::try_decrypt_message( const message_api_obj& mo ) {
 vector<extended_message_object>   wallet_api::get_inbox( string account, fc::time_point newest, uint32_t limit ) {
    FC_ASSERT( !is_locked() );
    vector<extended_message_object> result;
+   my->use_remote_message_api();
    auto remote_result = (*my->_remote_message_api)->get_inbox( account, newest, limit );
    for( const auto& item : remote_result ) {
       result.emplace_back( item );

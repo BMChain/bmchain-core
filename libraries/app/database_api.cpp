@@ -2523,6 +2523,14 @@ map<string, int32_t> database_api_impl::get_reputation_by_categories(const accou
         result[itr->category.c_str()] = result[itr->category.c_str()] + itr->author_rewards.value;
         ++itr;
     }
+    int32_t distr_base = accumulate(result.cbegin(), result.cend(), 0, bind(plus<uint32_t>(),
+                                                                            placeholders::_1,
+                                                                            bind(&map<string, int32_t>::value_type::second, placeholders::_2)));
+    if (distr_base != 0) {
+       for (auto rep : result) {
+          rep.second = rep.second / distr_base * author.vesting_shares.amount.value;
+       }
+    }
     return result;
 };
 
