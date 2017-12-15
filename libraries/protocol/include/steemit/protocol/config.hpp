@@ -70,7 +70,7 @@
 
 #endif
 
-#define STEEMIT_BLOCK_INTERVAL                  2
+#define STEEMIT_BLOCK_INTERVAL                  3
 #define STEEMIT_BLOCKS_PER_YEAR                 (365*24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_START_VESTING_BLOCK             1 // (STEEMIT_BLOCKS_PER_DAY * 7) // bmchain
@@ -271,7 +271,7 @@
 ///@}
 
 #define BMCHAIN_ENABLE                          true
-#define BMCHAIN_STRESS_TESTING                  true
+#define BMCHAIN_STRESS_TESTING                  false
 #define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*2)) /// 2 days
 
 #define BMCHAIN_INIT_HARDFORK                   19        /// Hardfork to apply when creating a new chain
