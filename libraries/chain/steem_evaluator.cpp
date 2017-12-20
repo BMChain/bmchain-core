@@ -4,6 +4,9 @@
 #include <steemit/chain/steem_objects.hpp>
 #include <steemit/chain/witness_objects.hpp>
 #include <steemit/chain/block_summary_object.hpp>
+#include <steemit/private_message/private_message_evaluators.hpp>
+#include <steemit/private_message/private_message_operations.hpp>
+#include <steemit/private_message/private_message_plugin.hpp>
 #include <locale>
 
 #include <steemit/chain/util/reward.hpp>
@@ -1533,7 +1536,30 @@ try {
 
 } FC_CAPTURE_AND_RETHROW( (o)) }
 
-void custom_evaluator::do_apply( const custom_operation& o ){}
+void custom_evaluator::do_apply( const custom_operation& o ){
+    using namespace steemit::private_message;
+    if (o.id == 777){
+       database& d = db();
+       std::shared_ptr< custom_operation_interpreter > eval = d.get_custom_json_evaluator( "private_message" );
+       if( !eval )
+          return;
+
+       const auto pmo = fc::raw::unpack<private_message_operation>(o.data);
+
+       try{
+          eval->apply( o );
+       }
+       catch( const fc::exception& e )
+       {
+          if( d.is_producing() )
+             throw e;
+       }
+       catch(...)
+       {
+          elog( "Unexpected exception applying custom json evaluator." );
+       }
+    }
+}
 
 void custom_json_evaluator::do_apply( const custom_json_operation& o )
 {

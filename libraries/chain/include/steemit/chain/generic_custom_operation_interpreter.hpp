@@ -12,8 +12,13 @@
 
 #include <fc/variant.hpp>
 
+#include <steemit/private_message/private_message_operations.hpp>
+#include <steemit/private_message/private_message_plugin.hpp>
+
 #include <string>
 #include <vector>
+
+using namespace steemit::private_message;
 
 namespace steemit { namespace chain {
 
@@ -49,7 +54,7 @@ class generic_custom_operation_interpreter
          }
 
          FC_ASSERT( inner_owner == outer_owner );
-         FC_ASSERT( inner_active == outer_active );
+         //FC_ASSERT( inner_active == outer_active );
          FC_ASSERT( inner_posting == outer_posting );
          FC_ASSERT( inner_other == outer_other );
 
@@ -103,6 +108,26 @@ class generic_custom_operation_interpreter
             apply_operations( custom_operations, operation( outer_o ) );
          }
          FC_CAPTURE_AND_RETHROW( (outer_o) )
+      }
+
+      virtual void apply( const protocol::custom_operation& outer_o ) override
+      {
+          try
+          {
+              vector< CustomOperationType > custom_operations;
+
+              try
+              {
+                  custom_operations = fc::raw::unpack< vector< CustomOperationType > >( outer_o.data );
+              }
+              catch ( fc::exception& )
+              {
+                  custom_operations.push_back( fc::static_variant<private_message_operation>(fc::raw::unpack< private_message_operation >( outer_o.data ) ) );
+              }
+
+              apply_operations( custom_operations, operation( outer_o ) );
+          }
+          FC_CAPTURE_AND_RETHROW( (outer_o) )
       }
 
       virtual std::shared_ptr< graphene::schema::abstract_schema > get_operation_schema() override

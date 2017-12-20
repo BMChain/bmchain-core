@@ -2701,8 +2701,6 @@ void database::_apply_block( const signed_block& next_block )
 
    notify_changed_objects();
 
-   testing_bmchain();
-
 } //FC_CAPTURE_AND_RETHROW( (next_block.block_num()) )  }
 FC_CAPTURE_LOG_AND_RETHROW( (next_block.block_num()) )
 }
@@ -4194,10 +4192,6 @@ void database::retally_witness_vote_counts( bool force )
          } );
       }
    }
-}
-
-void database::testing_bmchain(){
-
 }
 
 void database::process_funds_bmchain(int64_t new_steem){
