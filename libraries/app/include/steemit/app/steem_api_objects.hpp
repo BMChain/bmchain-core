@@ -90,12 +90,19 @@ struct comment_api_obj
       percent_steem_dollars( o.percent_steem_dollars ),
       allow_replies( o.allow_replies ),
       allow_votes( o.allow_votes ),
-      allow_curation_rewards( o.allow_curation_rewards )
+      allow_curation_rewards( o.allow_curation_rewards ),
+      unique( o.unique ),
+      encrypted( o.encrypted ),
+      private_post( o.private_post ),
+      owner( o.owner ),
+      checksum( o.checksum ),
+      price( o.price )
    {
-      for( auto& route : o.beneficiaries )
-      {
+      for( auto& route : o.beneficiaries ){
          beneficiaries.push_back( route );
       }
+      encrypted_body.resize(o.encrypted_body.size());
+      std::copy(o.encrypted_body.begin(), o.encrypted_body.end(), encrypted_body.begin());
    }
 
    comment_api_obj(){}
@@ -144,6 +151,16 @@ struct comment_api_obj
    bool              allow_votes = false;
    bool              allow_curation_rewards = false;
    vector< beneficiary_route_type > beneficiaries;
+
+   bool unique = false;
+
+   /// encrypted content
+   bool encrypted    = false;
+   bool private_post = false;
+   account_name_type owner;
+   std::vector<char>       encrypted_body;
+   uint32_t          checksum = 0;
+   asset             price = asset(0, STEEM_SYMBOL);
 };
 
 struct tag_api_obj
@@ -507,6 +524,28 @@ struct dynamic_global_property_api_obj : public dynamic_global_property_object
    uint128_t   max_virtual_bandwidth = 0;
 };
 
+struct content_order_api_obj
+{
+    content_order_api_obj(const chain::content_order_object& o ) :
+            id(o.id),
+            sent_time(o.sent_time),
+            author(o.author),
+            permlink(to_string(o.permlink)),
+            customer(o.owner),
+            price(o.price)
+    {}
+
+    content_order_api_obj() {}
+
+    content_order_id_type id;
+
+    time_point_sec    sent_time;
+    account_name_type author;
+    std::string       permlink;
+    account_name_type customer;
+    asset             price = asset( 0, STEEM_SYMBOL );
+};
+
 } } // steemit::app
 
 FC_REFLECT( steemit::app::comment_api_obj,
@@ -519,6 +558,8 @@ FC_REFLECT( steemit::app::comment_api_obj,
              (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)
              (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
              (beneficiaries)
+             (unique)
+             (encrypted)(private_post)(owner)(encrypted_body)(checksum)(price)
           )
 
 FC_REFLECT( steemit::app::account_api_obj,
@@ -604,3 +645,12 @@ FC_REFLECT_DERIVED( steemit::app::dynamic_global_property_api_obj, (steemit::cha
                      (average_block_size)
                      (max_virtual_bandwidth)
                   )
+
+FC_REFLECT( steemit::app::content_order_api_obj,
+             (id)
+             (sent_time)
+             (author)
+             (permlink)
+             (customer)
+             (price)
+           )

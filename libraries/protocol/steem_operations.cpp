@@ -546,4 +546,22 @@ namespace steemit { namespace protocol {
       FC_ASSERT( vesting_shares >= asset( 0, VESTS_SYMBOL ), "Delegation cannot be negative" );
    }
 
+   void content_order_create_operation::validate()const
+   {
+      validate_account_name(author);
+      validate_account_name(owner);
+      FC_ASSERT(author != owner, "You cannot sell content to yourself");
+      FC_ASSERT(is_asset_type( price, STEEM_SYMBOL ), "Price must be BMT" );
+   }
+
+   void content_order_cancel_operation::validate()const
+   {
+      validate_account_name(customer);
+   }
+
+   void content_order_apply_operation::validate()const
+   {
+      validate_account_name(author);
+   }
+
 } } // steemit::protocol

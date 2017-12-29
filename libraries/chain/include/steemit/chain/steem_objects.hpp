@@ -280,6 +280,30 @@ namespace steemit { namespace chain {
          curve_id                curation_reward_curve = square_root;
    };
 
+
+   class content_order_object : public object< content_order_object_type, content_order_object >
+   {
+      public:
+         content_order_object() = delete;
+
+         template< typename Constructor, typename Allocator >
+         content_order_object( Constructor&& c, allocator< Allocator > a ) : permlink(a)
+         {
+            c( *this );
+         }
+
+         enum order_status{open, close};
+
+         id_type           id;
+
+         time_point_sec    sent_time;
+         account_name_type author;
+         shared_string     permlink;
+         account_name_type owner;
+         asset             price = asset( 0, STEEM_SYMBOL );
+         order_status      status = order_status::open;
+   };
+
    struct by_price;
    struct by_expiration;
    struct by_account;
@@ -484,6 +508,30 @@ namespace steemit { namespace chain {
       allocator< reward_fund_object >
    > reward_fund_index;
 
+   struct by_author;
+   struct by_customer;
+   struct by_sent_time;
+   typedef multi_index_container<
+      content_order_object,
+      indexed_by<
+         ordered_unique< tag< by_id >, member< content_order_object, content_order_id_type, &content_order_object::id > >,
+         ordered_unique< tag< by_author >,
+            composite_key< content_order_object,
+               member< content_order_object, account_name_type,  &content_order_object::author >,
+               member< content_order_object, content_order_id_type,  &content_order_object::id >
+            >
+         >,
+         ordered_unique< tag< by_customer >,
+            composite_key< content_order_object,
+               member< content_order_object, account_name_type,  &content_order_object::owner >,
+               member< content_order_object, content_order_id_type,  &content_order_object::id >
+            >
+         >,
+         ordered_unique< tag< by_sent_time >, member< content_order_object, time_point_sec, &content_order_object::sent_time > >
+      >,
+      allocator< content_order_object >
+   > content_order_index;
+
 } } // steemit::chain
 
 #include <steemit/chain/comment_object.hpp>
@@ -540,3 +588,10 @@ FC_REFLECT( steemit::chain::reward_fund_object,
             (curation_reward_curve)
          )
 CHAINBASE_SET_INDEX_TYPE( steemit::chain::reward_fund_object, steemit::chain::reward_fund_index )
+
+FC_REFLECT( steemit::chain::content_order_object,
+            (id)(author)(permlink)(owner)(price)(status) )
+CHAINBASE_SET_INDEX_TYPE( steemit::chain::content_order_object, steemit::chain::content_order_index )
+
+FC_REFLECT_ENUM( steemit::chain::content_order_object::order_status,
+                 (open)(close))

@@ -727,6 +727,7 @@ class wallet_api
       /**
        *  @param request_id the id used in transfer_from_savings
        *  @param from the account that initiated the transfer
+       *  @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction cancel_transfer_from_savings( string from, uint32_t request_id, bool broadcast = false );
 
@@ -988,6 +989,20 @@ class wallet_api
       vector<block_statistic> get_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
 
       total_block_statistic get_total_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
+
+      annotated_signed_transaction post_crypto_comment( string author, string permlink, string category, string title, string body, string crypto_body, asset price, string json, bool broadcast );
+
+      annotated_signed_transaction create_content_order( string onwer, string author, string permlink, asset price, string json_metadata, bool broadcast);
+
+      annotated_signed_transaction cancel_content_order(string author, uint32_t id, bool broadcast);
+
+      annotated_signed_transaction apply_content_order(string author, uint32_t id, bool broadcast);
+
+      vector<content_order_api_obj> get_content_orders(string customer, string author);
+
+      vector< discussion > get_encrypted_posts(string author, string owner, uint32_t limit);
+
+      std::string try_decrypt_content( const extended_encrypted_content& content );
 };
 
 struct plain_keys {
@@ -1113,6 +1128,14 @@ FC_API( steemit::wallet::wallet_api,
         (get_statistic)
         (get_block_statistic)
         (get_total_block_statistic)
+
+        /// encrypted content
+        (post_crypto_comment)
+        (create_content_order)
+        (cancel_content_order)
+        (apply_content_order)
+        (get_content_orders)
+        (get_encrypted_posts)
       )
 
 FC_REFLECT( steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted) )

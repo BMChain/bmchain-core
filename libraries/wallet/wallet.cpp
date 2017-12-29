@@ -964,7 +964,7 @@ public:
 
    flat_map<string, operation>             _prototype_ops;
 
-   static_variant_map _operation_which_map = create_static_variant_map< operation >();
+   //static_variant_map _operation_which_map = create_static_variant_map< operation >();
 
 #ifdef __unix__
    mode_t                  _old_umask;
@@ -2413,8 +2413,6 @@ annotated_signed_transaction      wallet_api::send_private_message( string from,
 
    op.data = fc::raw::pack( pmo );
 
-   auto op_temp = fc::raw::unpack<private_message_operation>(op.data);
-
    signed_transaction tx;
    tx.operations.push_back( op );
    tx.validate();
@@ -2444,7 +2442,6 @@ message_body wallet_api::try_decrypt_message( const message_api_obj& mo ) {
       if( !priv_key ) return result;
       shared_secret = priv_key->get_shared_secret( mo.to_memo_key );
    }
-
 
    fc::sha512::encoder enc;
    fc::raw::pack( enc, mo.sent_time );
@@ -2529,8 +2526,8 @@ vector<discussion> wallet_api::get_discussions_by_blog(string author, uint32_t l
     q.tag = author;
     q.limit = limit;
     q.truncate_body = 1024;
-    auto hot_discussions = my->_remote_db->get_discussions_by_blog(q);
-    return hot_discussions;
+    auto discussions = my->_remote_db->get_discussions_by_blog(q);
+    return discussions;
 }
 
 statistic wallet_api::get_statistic(const string & begin, const string & end)const{
@@ -2546,6 +2543,203 @@ vector<block_statistic> wallet_api::get_block_statistic(uint32_t limit, uint32_t
 total_block_statistic wallet_api::get_total_block_statistic(uint32_t limit, uint32_t limit_block_size)const{
     auto result = my->_remote_db->get_total_block_statistic(limit, limit_block_size);
     return result;
+}
+
+annotated_signed_transaction wallet_api::post_crypto_comment( string author, string permlink, string category, string title, string body, string crypto_body, asset price, string json, bool broadcast ){
+    FC_ASSERT( !is_locked() );
+
+    auto author_obj = get_account( author );
+    auto priv_key = wif_to_key( get_private_key( author_obj.memo_key ) );
+    FC_ASSERT( priv_key, "unable to find private key for memo" );
+    fc::sha512::encoder enc;
+    fc::raw::pack( enc, priv_key );
+    auto encrypt_key = enc.result();
+    auto hash_encrypt_key = fc::sha256::hash( encrypt_key );
+    auto checksum = hash_encrypt_key._hash[0];
+
+    vector<char> plain_text = fc::raw::pack( crypto_body );
+    auto encrypted_body = fc::aes_encrypt( encrypt_key, plain_text );
+
+    extended_encrypted_content obj;
+    obj.to_memo_key     = author_obj.memo_key;
+    obj.from_memo_key   = author_obj.memo_key;
+    obj.checksum        = checksum;
+    obj.encrypted_body  = encrypted_body;
+
+    auto decrypted = try_decrypt_content(obj);
+
+    encrypted_content_operation op;
+    op.parent_permlink = category;
+    op.author          = author;
+    op.permlink        = permlink;
+    op.title           = title;
+    op.body            = body;
+    op.json_metadata   = json;
+    op.encrypted_body  = encrypted_body;
+    op.checksum        = checksum;
+    op.price           = price;
+
+    signed_transaction tx;
+    tx.operations.push_back( op );
+    tx.validate();
+
+    return my->sign_transaction( tx, broadcast );
+}
+
+annotated_signed_transaction wallet_api::create_content_order( string owner, string author, string permlink, asset price, string json_metadata, bool broadcast){
+    FC_ASSERT( !is_locked() );
+    content_order_create_operation op;
+    op.author    = author;
+    op.permlink  = permlink;
+    op.owner     = owner;
+    op.price     = price;
+
+    signed_transaction tx;
+    tx.operations.push_back( op );
+    tx.validate();
+
+    return my->sign_transaction( tx, broadcast );
+}
+
+annotated_signed_transaction wallet_api::cancel_content_order(string author, uint32_t id, bool broadcast){
+   content_order_cancel_operation op;
+   op.customer = author;
+   op.orderid = id;
+
+   signed_transaction tx;
+   tx.operations.push_back( op );
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
+
+annotated_signed_transaction wallet_api::apply_content_order(string author, uint32_t id, bool broadcast){
+    FC_ASSERT( !is_locked() );
+
+    vector<content_order_api_obj> orders = my->_remote_db->get_content_orders("", author);
+    auto order = find_if(orders.cbegin(), orders.cend(), [=](const content_order_api_obj & cont){ return cont.id == id; });
+
+    FC_ASSERT( order != orders.cend(), "unable to find content order for id" );
+
+    discussion post = my->_remote_db->get_content(author, order->permlink);
+    auto auth = get_account(author);
+    auto customer = get_account(order->customer);
+
+    extended_encrypted_content obj_enc;
+    obj_enc.from_memo_key = auth.memo_key;
+    obj_enc.to_memo_key = auth.memo_key;
+    obj_enc.checksum = post.checksum;
+    obj_enc.encrypted_body = post.encrypted_body;
+
+    auto crypto_content = try_decrypt_content(obj_enc);
+
+    auto priv_key = wif_to_key(get_private_key(auth.memo_key));
+    FC_ASSERT(priv_key, "unable to find private key for memo");
+    auto shared_secret = priv_key->get_shared_secret(customer.memo_key);
+    fc::sha512::encoder enc;
+    fc::raw::pack(enc, shared_secret);
+    auto encrypt_key = enc.result();
+    auto hash_encrypt_key = fc::sha256::hash(encrypt_key);
+    auto checksum = hash_encrypt_key._hash[0];
+
+    vector<char> plain_text = fc::raw::pack(crypto_content);
+    auto encrypted_body = fc::aes_encrypt(encrypt_key, plain_text);
+
+    extended_encrypted_content obj;
+    obj.to_memo_key = customer.memo_key;
+    obj.from_memo_key = auth.memo_key;
+    obj.checksum = checksum;
+    obj.encrypted_body = encrypted_body;
+    auto decrypted = try_decrypt_content(obj);
+
+    encrypted_content_operation op;
+    op.parent_permlink = post.category;
+    op.author = author;
+    op.permlink = post.permlink + order->customer;
+    op.title = post.title;
+    op.body = post.body;
+    op.json_metadata = post.json_metadata;
+    op.encrypted_body = encrypted_body;
+    op.checksum = checksum;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
+vector<content_order_api_obj> wallet_api::get_content_orders(string customer, string author){
+    auto result = my->_remote_db->get_content_orders(customer, author);
+    return result;
+}
+
+vector< discussion > wallet_api::get_encrypted_posts(string author, string owner, uint32_t limit){
+    discussion_query q;
+    q.tag = author;
+    q.limit = limit;
+    q.truncate_body = 1024;
+    auto discussions = my->_remote_db->get_encrypted_discussions_by_author(q);
+
+    for (discussion & disc : discussions){
+        auto auth = get_account( author );
+
+        extended_encrypted_content obj;
+        obj.from_memo_key = auth.memo_key;
+        obj.to_memo_key = auth.memo_key;
+        obj.checksum = disc.checksum;
+        obj.encrypted_body = disc.encrypted_body;
+
+        disc.decrypted_content = try_decrypt_content(obj);
+    }
+
+    return discussions;
+}
+
+std::string wallet_api::try_decrypt_content( const extended_encrypted_content& content ){
+   std::string result;
+   fc::sha512 shared_secret;
+   fc::sha512::encoder enc;
+
+   auto it = my->_keys.find(content.from_memo_key);
+   if (it != my->_keys.end() && (content.to_memo_key == content.from_memo_key)){
+       auto priv_key = wif_to_key( it->second );
+       if( !priv_key ){
+           return result; }
+       fc::raw::pack( enc, priv_key );
+   }
+   else if ( it == my->_keys.end() )
+   {
+      it = my->_keys.find(content.to_memo_key);
+      if( it == my->_keys.end() )
+      {
+         wlog( "unable to find keys" );
+         return result;
+      }
+      auto priv_key = wif_to_key( it->second );
+      if( !priv_key ) return result;
+      shared_secret = priv_key->get_shared_secret( content.from_memo_key );
+      fc::raw::pack( enc, shared_secret );
+   } else {
+      auto priv_key = wif_to_key( it->second );
+      if( !priv_key ) return result;
+      shared_secret = priv_key->get_shared_secret( content.to_memo_key );
+      fc::raw::pack( enc, shared_secret );
+   }
+
+   auto encrypt_key = enc.result();
+
+   uint32_t check = fc::sha256::hash( encrypt_key )._hash[0];
+
+   if( content.checksum != check )
+      return result;
+
+   auto decrypt_data = fc::aes_decrypt( encrypt_key, content.encrypted_body );
+   try {
+      return fc::raw::unpack< std::string >( decrypt_data );
+   } catch ( ... ) {
+      return result;
+   }
 }
 
 } } // steemit::wallet

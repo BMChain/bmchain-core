@@ -70,11 +70,11 @@ struct withdraw_route
 
 struct best_author
 {
-    string     name;
-    uint32_t   reputation;
-    string     json_metadata;
-    string     permlink;
-    string     title;
+    string        name;
+    fc::uint128_t reputation;
+    string        json_metadata;
+    string        permlink;
+    string        title;
 };
 
 struct statistic
@@ -451,7 +451,7 @@ class database_api
       ////////////////////////////
       void on_api_startup();
 
-      /// bmchain
+      /// Bmchain
       std::map<std::string, int64_t> get_category_reputation() const;
 
       vector<discussion> get_comments(string author, string permlink)const;
@@ -463,6 +463,15 @@ class database_api
       vector<block_statistic> get_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
 
       total_block_statistic get_total_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
+
+      /// Encrypted content
+      vector<discussion> get_encrypted_discussions_by_author( const discussion_query& query )const;
+
+      vector<discussion> get_encrypted_discussions_by_owner( const discussion_query& query )const;
+
+      vector<content_order_api_obj> get_content_orders(string customer, string author)const;
+
+      optional<content_order_api_obj> get_content_order_by_id(uint32_t id)const;
 
    private:
       void set_pending_payout( discussion& d )const;
@@ -603,10 +612,17 @@ FC_API(steemit::app::database_api,
    (get_active_witnesses)
    (get_miner_queue)
 
+   // Statistic
    (get_statistic)
    (get_block_statistic)
    (get_total_block_statistic)
 
-   // bmchain
+   // Bmchain
    (get_category_reputation)
+
+   // Encrypted content
+   (get_encrypted_discussions_by_author)
+   (get_encrypted_discussions_by_owner)
+   (get_content_orders)
+   (get_content_order_by_id)
 )

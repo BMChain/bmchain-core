@@ -243,7 +243,6 @@ vector< account_reputation > follow_api_impl::get_account_reputations( string lo
    FC_ASSERT( limit <= 1000, "Cannot retrieve more than 1000 account reputations at a time." );
 
    const auto& acc_idx = app.chain_database()->get_index< account_index >().indices().get< by_name >();
-   const auto& rep_idx = app.chain_database()->get_index< reputation_index >().indices().get< by_account >();
 
    auto acc_itr = acc_idx.lower_bound( lower_bound_name );
 
@@ -252,12 +251,9 @@ vector< account_reputation > follow_api_impl::get_account_reputations( string lo
 
    while( acc_itr != acc_idx.end() && results.size() < limit )
    {
-      auto itr = rep_idx.find( acc_itr->name );
       account_reputation rep;
-
       rep.account = acc_itr->name;
       rep.reputation = acc_itr->vesting_shares.amount.value;
-      //rep.reputation = itr != rep_idx.end() ? itr->reputation : 0;
 
       results.push_back( rep );
 

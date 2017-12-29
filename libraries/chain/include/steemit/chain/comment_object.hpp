@@ -8,7 +8,6 @@
 
 #include <boost/multi_index/composite_key.hpp>
 
-
 namespace steemit { namespace chain {
 
    using protocol::beneficiary_route_type;
@@ -44,7 +43,7 @@ namespace steemit { namespace chain {
       public:
          template< typename Constructor, typename Allocator >
          comment_object( Constructor&& c, allocator< Allocator > a )
-            :category( a ), parent_permlink( a ), permlink( a ), title( a ), body( a ), json_metadata( a ), beneficiaries( a )
+            :category( a ), parent_permlink( a ), permlink( a ), title( a ), body( a ), json_metadata( a ), beneficiaries( a ), encrypted_body( a )
          {
             c( *this );
          }
@@ -101,8 +100,15 @@ namespace steemit { namespace chain {
          bip::vector< beneficiary_route_type, allocator< beneficiary_route_type > > beneficiaries;
 
          bool unique = false;
-   };
 
+         /// encrypted content
+         bool encrypted    = false;
+         bool private_post = false;
+         account_name_type owner;
+         buffer_type       encrypted_body;
+         uint32_t          checksum = 0;
+         asset             price = asset(0, STEEM_SYMBOL);
+   };
 
    /**
     * This index maintains the set of voter/comment pairs that have been used, voters cannot
@@ -112,7 +118,7 @@ namespace steemit { namespace chain {
    {
       public:
          template< typename Constructor, typename Allocator >
-         comment_vote_object( Constructor&& c, allocator< Allocator > a )
+         comment_vote_object( Constructor&& c, allocator< Allocator > a ) : comment_bmchain(a)
          {
             c( *this );
          }
@@ -126,7 +132,7 @@ namespace steemit { namespace chain {
          int16_t           vote_percent = 0; ///< The percent weight of the vote
          time_point_sec    last_update; ///< The time of the last update of the vote
          int8_t            num_changes = 0;
-         string            comment_bmchain;
+         shared_string     comment_bmchain;
    };
 
    struct by_comment_voter;
@@ -264,7 +270,9 @@ FC_REFLECT( steemit::chain::comment_object,
              (children_abs_rshares)(cashout_time)(max_cashout_time)
              (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)(root_comment)
              (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
-             (beneficiaries)(unique)
+             (beneficiaries)
+             (unique)
+             (encrypted)(private_post)(owner)(encrypted_body)(checksum)(price)
           )
 CHAINBASE_SET_INDEX_TYPE( steemit::chain::comment_object, steemit::chain::comment_index )
 

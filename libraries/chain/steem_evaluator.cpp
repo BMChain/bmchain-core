@@ -488,30 +488,25 @@ void comment_options_evaluator::do_apply( const comment_options_operation& o )
 
 void comment_evaluator::do_apply( const comment_operation& o )
 { try {
-   if( _db.has_hardfork( STEEMIT_HARDFORK_0_5__55 ) )
-      FC_ASSERT( o.title.size() + o.body.size() + o.json_metadata.size(), "Cannot update comment because nothing appears to be changing." );
+   FC_ASSERT( o.title.size() + o.body.size() + o.json_metadata.size(), "Cannot update comment because nothing appears to be changing." );
 
    const auto& by_permlink_idx = _db.get_index< comment_index >().indices().get< by_permlink >();
    auto itr = by_permlink_idx.find( boost::make_tuple( o.author, o.permlink ) );
-
    const auto& auth = _db.get_account( o.author ); /// prove it exists
 
-   if( _db.has_hardfork( STEEMIT_HARDFORK_0_10 ) )
-      FC_ASSERT( !(auth.owner_challenged || auth.active_challenged ), "Operation cannot be processed because account is currently challenged." );
+   FC_ASSERT( !(auth.owner_challenged || auth.active_challenged ), "Operation cannot be processed because account is currently challenged." );
 
    comment_id_type id;
    const comment_object* parent = nullptr;
    if( o.parent_author != STEEMIT_ROOT_POST_PARENT )
    {
       parent = &_db.get_comment( o.parent_author, o.parent_permlink );
-      if( !_db.has_hardfork( STEEMIT_HARDFORK_0_17__767 ) )
-         FC_ASSERT( parent->depth < STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",STEEMIT_MAX_COMMENT_DEPTH_PRE_HF17) );
-      else
-         FC_ASSERT( parent->depth < STEEMIT_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",STEEMIT_MAX_COMMENT_DEPTH) );
+      FC_ASSERT( parent->depth < STEEMIT_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",STEEMIT_MAX_COMMENT_DEPTH) );
    }
 
-   if( ( _db.has_hardfork( STEEMIT_HARDFORK_0_17__926 ) ) && o.json_metadata.size() )
-      FC_ASSERT( fc::is_utf8( o.json_metadata ), "JSON Metadata must be UTF-8" );
+   if( o.json_metadata.size() ) {
+       FC_ASSERT(fc::is_utf8(o.json_metadata), "JSON Metadata must be UTF-8");
+   }
 
    auto now = _db.head_block_time();
 
@@ -520,39 +515,17 @@ void comment_evaluator::do_apply( const comment_operation& o )
       if( o.parent_author != STEEMIT_ROOT_POST_PARENT )
       {
          FC_ASSERT( _db.get( parent->root_comment ).allow_replies, "The parent comment has disabled replies." );
-         if( _db.has_hardfork( STEEMIT_HARDFORK_0_12__177 ) && !_db.has_hardfork( STEEMIT_HARDFORK_0_17__869 ) )
-            FC_ASSERT( _db.calculate_discussion_payout_time( *parent ) != fc::time_point_sec::maximum(), "Discussion is frozen." );
       }
-
-      if( _db.has_hardfork( STEEMIT_HARDFORK_0_12__176 ) )
-      {
-         if( o.parent_author == STEEMIT_ROOT_POST_PARENT )
-             FC_ASSERT( ( now - auth.last_root_post ) >= STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now",now)("last_root_post", auth.last_root_post) );
-         else
-             FC_ASSERT( (now - auth.last_post) >= STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now",now)("auth.last_post",auth.last_post) );
+      if( o.parent_author == STEEMIT_ROOT_POST_PARENT ) {
+          FC_ASSERT((now - auth.last_root_post) >= STEEMIT_MIN_ROOT_COMMENT_INTERVAL,
+                    "You may only post once every 5 minutes.", ("now", now)("last_root_post", auth.last_root_post));
       }
-      else if( _db.has_hardfork( STEEMIT_HARDFORK_0_6__113 ) )
-      {
-         if( o.parent_author == STEEMIT_ROOT_POST_PARENT )
-             FC_ASSERT( (now - auth.last_post) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now",now)("auth.last_post",auth.last_post) );
-         else
-             FC_ASSERT( (now - auth.last_post) > STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now",now)("auth.last_post",auth.last_post) );
+      else {
+          FC_ASSERT((now - auth.last_post) >= STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.",
+                    ("now", now)("auth.last_post", auth.last_post));
       }
-      else
-      {
-         FC_ASSERT( (now - auth.last_post) > fc::seconds(60), "You may only post once per minute.", ("now",now)("auth.last_post",auth.last_post) );
-      }
-
       uint16_t reward_weight = STEEMIT_100_PERCENT;
       uint64_t post_bandwidth = auth.post_bandwidth;
-
-      if( _db.has_hardfork( STEEMIT_HARDFORK_0_12__176 ) && !_db.has_hardfork( STEEMIT_HARDFORK_0_17__733 ) && o.parent_author == STEEMIT_ROOT_POST_PARENT )
-      {
-         uint64_t post_delta_time = std::min( _db.head_block_time().sec_since_epoch() - auth.last_root_post.sec_since_epoch(), STEEMIT_POST_AVERAGE_WINDOW );
-         uint32_t old_weight = uint32_t( ( post_bandwidth * ( STEEMIT_POST_AVERAGE_WINDOW - post_delta_time ) ) / STEEMIT_POST_AVERAGE_WINDOW );
-         post_bandwidth = ( old_weight + STEEMIT_100_PERCENT );
-         reward_weight = uint16_t( std::min( ( STEEMIT_POST_WEIGHT_CONSTANT * STEEMIT_100_PERCENT ) / ( post_bandwidth * post_bandwidth ), uint64_t( STEEMIT_100_PERCENT ) ) );
-      }
 
       _db.modify( auth, [&]( account_object& a ) {
          if( o.parent_author == STEEMIT_ROOT_POST_PARENT )
@@ -566,11 +539,8 @@ void comment_evaluator::do_apply( const comment_operation& o )
 
       const auto& new_comment = _db.create< comment_object >( [&]( comment_object& com )
       {
-         if( _db.has_hardfork( STEEMIT_HARDFORK_0_1 ) )
-         {
-            validate_permlink_0_1( o.parent_permlink );
-            validate_permlink_0_1( o.permlink );
-         }
+         validate_permlink_0_1( o.parent_permlink );
+         validate_permlink_0_1( o.permlink );
 
          com.author = o.author;
          from_string( com.permlink, o.permlink );
@@ -587,9 +557,7 @@ void comment_evaluator::do_apply( const comment_operation& o )
             from_string( com.parent_permlink, o.parent_permlink );
             from_string( com.category, o.parent_permlink );
             com.root_comment = com.id;
-            com.cashout_time = _db.has_hardfork( STEEMIT_HARDFORK_0_12__177 ) ?
-               _db.head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 :
-               fc::time_point_sec::maximum();
+            com.cashout_time = _db.head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
          }
          else
          {
@@ -601,10 +569,15 @@ void comment_evaluator::do_apply( const comment_operation& o )
             com.cashout_time = fc::time_point_sec::maximum();
          }
 
-         if( _db.has_hardfork( STEEMIT_HARDFORK_0_17__769 ) )
-         {
-            com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
-         }
+         com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
+
+         /*com.encrypted = !o.encrypted_body.empty();
+         if (com.encrypted) {
+             com.checksum = o.checksum;
+             com.price    = o.price;
+             com.encrypted_body.resize(o.encrypted_body.size());
+             std::copy(o.encrypted_body.begin(), o.encrypted_body.end(), com.encrypted_body.begin());
+         }*/
 
          #ifndef IS_LOW_MEM
             from_string( com.title, o.title );
@@ -707,6 +680,189 @@ void comment_evaluator::do_apply( const comment_operation& o )
 
    } // end EDIT case
 
+} FC_CAPTURE_AND_RETHROW( (o) ) }
+
+void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o )
+{try{
+    FC_ASSERT(o.title.size() + o.body.size() + o.json_metadata.size(),
+              "Cannot update comment because nothing appears to be changing.");
+
+    const auto &by_permlink_idx = _db.get_index<comment_index>().indices().get<by_permlink>();
+    auto itr = by_permlink_idx.find(boost::make_tuple(o.author, o.permlink));
+    const auto &auth = _db.get_account(o.author); /// prove it exists
+
+    FC_ASSERT(!(auth.owner_challenged || auth.active_challenged),
+              "Operation cannot be processed because account is currently challenged.");
+
+    comment_id_type id;
+    const comment_object *parent = nullptr;
+    if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
+        parent = &_db.get_comment(o.parent_author, o.parent_permlink);
+        FC_ASSERT(parent->depth < STEEMIT_MAX_COMMENT_DEPTH,
+                  "Comment is nested ${x} posts deep, maximum depth is ${y}.",
+                  ("x", parent->depth)("y", STEEMIT_MAX_COMMENT_DEPTH));
+    }
+
+    if (o.json_metadata.size()) {
+        FC_ASSERT(fc::is_utf8(o.json_metadata), "JSON Metadata must be UTF-8");
+    }
+
+    auto now = _db.head_block_time();
+
+    if (itr == by_permlink_idx.end()) {
+        if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
+            FC_ASSERT(_db.get(parent->root_comment).allow_replies, "The parent comment has disabled replies.");
+        }
+        if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
+            FC_ASSERT((now - auth.last_root_post) >= STEEMIT_MIN_ROOT_COMMENT_INTERVAL,
+                      "You may only post once every 5 minutes.", ("now", now)("last_root_post", auth.last_root_post));
+        } else {
+            FC_ASSERT((now - auth.last_post) >= STEEMIT_MIN_REPLY_INTERVAL,
+                      "You may only comment once every 20 seconds.",
+                      ("now", now)("auth.last_post", auth.last_post));
+        }
+        uint16_t reward_weight = STEEMIT_100_PERCENT;
+        uint64_t post_bandwidth = auth.post_bandwidth;
+
+        _db.modify(auth, [&](account_object &a) {
+            if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
+                a.last_root_post = now;
+                a.post_bandwidth = uint32_t(post_bandwidth);
+            }
+            a.last_post = now;
+            a.post_count++;
+        });
+
+        const auto &new_comment = _db.create<comment_object>([&](comment_object &com) {
+            validate_permlink_0_1(o.parent_permlink);
+            validate_permlink_0_1(o.permlink);
+
+            com.author = o.author;
+            from_string(com.permlink, o.permlink);
+            com.last_update = _db.head_block_time();
+            com.created = com.last_update;
+            com.active = com.last_update;
+            com.last_payout = fc::time_point_sec::min();
+            com.max_cashout_time = fc::time_point_sec::maximum();
+            com.reward_weight = reward_weight;
+
+            if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
+                com.parent_author = "";
+                from_string(com.parent_permlink, o.parent_permlink);
+                from_string(com.category, o.parent_permlink);
+                com.root_comment = com.id;
+                com.cashout_time = _db.head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+            } else {
+                com.parent_author = parent->author;
+                com.parent_permlink = parent->permlink;
+                com.depth = parent->depth + 1;
+                com.category = parent->category;
+                com.root_comment = parent->root_comment;
+                com.cashout_time = fc::time_point_sec::maximum();
+            }
+
+            com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
+
+            com.encrypted = !o.encrypted_body.empty();
+            if (com.encrypted) {
+                com.checksum = o.checksum;
+                com.price    = o.price;
+                com.encrypted_body.resize(o.encrypted_body.size());
+                std::copy(o.encrypted_body.begin(), o.encrypted_body.end(), com.encrypted_body.begin());
+            }
+
+#ifndef IS_LOW_MEM
+            from_string(com.title, o.title);
+            if (o.body.size() < 1024 * 1024 * 128) {
+                from_string(com.body, o.body);
+            }
+            if (fc::is_utf8(o.json_metadata))
+                from_string(com.json_metadata, o.json_metadata);
+            else
+                wlog("Comment ${a}/${p} contains invalid UTF-8 metadata", ("a", o.author)("p", o.permlink));
+#endif
+        });
+
+        id = new_comment.id;
+
+/// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
+        auto now = _db.head_block_time();
+        while (parent) {
+            _db.modify(*parent, [&](comment_object &p) {
+                p.children++;
+                p.active = now;
+            });
+#ifndef IS_LOW_MEM
+            if (parent->parent_author != STEEMIT_ROOT_POST_PARENT)
+                parent = &_db.get_comment(parent->parent_author, parent->parent_permlink);
+            else
+#endif
+                parent = nullptr;
+        }
+
+        if (BMCHAIN_ENABLE) {
+            if (new_comment.parent_author.length() == 0) {
+                _db.process_funds_bmchain(BMCHAIN_POST_EMISSION_RATE);
+            } else {
+                _db.process_funds_bmchain(BMCHAIN_COMMENT_EMISSION_RATE);
+            }
+        }
+    } else // start edit case
+    {
+        const auto &comment = *itr;
+
+        if (!_db.has_hardfork(STEEMIT_HARDFORK_0_17__772)) {
+            if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__306))
+                FC_ASSERT(_db.calculate_discussion_payout_time(comment) != fc::time_point_sec::maximum(),
+                          "The comment is archived.");
+            else if (_db.has_hardfork(STEEMIT_HARDFORK_0_10))
+                FC_ASSERT(comment.last_payout == fc::time_point_sec::min(), "Can only edit during the first 24 hours.");
+        }
+        _db.modify(comment, [&](comment_object &com) {
+            com.last_update = _db.head_block_time();
+            com.active = com.last_update;
+            strcmp_equal equal;
+
+            if (!parent) {
+                FC_ASSERT(com.parent_author == account_name_type(), "The parent of a comment cannot change.");
+                FC_ASSERT(equal(com.parent_permlink, o.parent_permlink), "The permlink of a comment cannot change.");
+            } else {
+                FC_ASSERT(com.parent_author == o.parent_author, "The parent of a comment cannot change.");
+                FC_ASSERT(equal(com.parent_permlink, o.parent_permlink), "The permlink of a comment cannot change.");
+            }
+
+#ifndef IS_LOW_MEM
+            if (o.title.size()) from_string(com.title, o.title);
+            if (o.json_metadata.size()) {
+                if (fc::is_utf8(o.json_metadata))
+                    from_string(com.json_metadata, o.json_metadata);
+                else
+                    wlog("Comment ${a}/${p} contains invalid UTF-8 metadata", ("a", o.author)("p", o.permlink));
+            }
+
+            if (o.body.size()) {
+                try {
+                    diff_match_patch<std::wstring> dmp;
+                    auto patch = dmp.patch_fromText(utf8_to_wstring(o.body));
+                    if (patch.size()) {
+                        auto result = dmp.patch_apply(patch, utf8_to_wstring(to_string(com.body)));
+                        auto patched_body = wstring_to_utf8(result.first);
+                        if (!fc::is_utf8(patched_body)) {
+                            idump(("invalid utf8")(patched_body));
+                            from_string(com.body, fc::prune_invalid_utf8(patched_body));
+                        } else { from_string(com.body, patched_body); }
+                    } else { // replace
+                        from_string(com.body, o.body);
+                    }
+                } catch (...) {
+                    from_string(com.body, o.body);
+                }
+            }
+#endif
+
+        });
+
+    } // end EDIT case
 } FC_CAPTURE_AND_RETHROW( (o) ) }
 
 void escrow_transfer_evaluator::do_apply( const escrow_transfer_operation& o )
@@ -1344,7 +1500,7 @@ try {
          cv.rshares = rshares;
          cv.vote_percent = o.weight;
          cv.last_update = _db.head_block_time();
-         cv.comment_bmchain = o.comment_bmchain;
+         from_string(cv.comment_bmchain, o.comment_bmchain);
 
          bool curation_reward_eligible = rshares > 0 && (comment.last_payout == fc::time_point_sec()) && comment.allow_curation_rewards;
 
@@ -1523,7 +1679,7 @@ try {
          cv.last_update = _db.head_block_time();
          cv.weight = 0;
          cv.num_changes += 1;
-         cv.comment_bmchain = o.comment_bmchain;
+         from_string(cv.comment_bmchain, o.comment_bmchain);
       });
 
       if( !_db.has_hardfork( STEEMIT_HARDFORK_0_17__774) )
@@ -2313,6 +2469,35 @@ void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_
          _db.remove( *delegation );
       }
    }
+}
+
+void content_order_create_evaluator::do_apply( const content_order_create_operation& op)
+{
+    auto owner = _db.get_account( op.owner );
+    FC_ASSERT( owner.balance < op.price, "Cannot buy the encrypted post because balance doesn't have enough BMT." );
+
+    _db.modify( owner, [&]( account_object& acc ) {
+        acc.balance -= op.price;
+    });
+
+   _db.create< content_order_object >( [&]( content_order_object& content_order ){
+       content_order.sent_time = _db.head_block_time();
+       content_order.author    = op.author;
+       from_string(content_order.permlink, op.permlink);
+       content_order.owner     = op.owner;
+       content_order.price     = op.price;
+       content_order.status    = content_order_object::order_status::open;
+   });
+}
+
+void content_order_cancel_evaluator::do_apply( const content_order_cancel_operation& op)
+{
+   std::cout << "content_order_cancel_evaluator" << std::endl;
+}
+
+void content_order_apply_evaluator::do_apply( const content_order_apply_operation& op)
+{
+   std::cout << "content_order_apply_evaluator" << std::endl;
 }
 
 } } // steemit::chain

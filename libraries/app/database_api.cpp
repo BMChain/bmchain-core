@@ -1055,7 +1055,7 @@ vector<vote_state> database_api::get_active_votes( string author, string permlin
          vstate.rshares = itr->rshares;
          vstate.percent = itr->vote_percent;
          vstate.time = itr->last_update;
-         vstate.comment_bmchain = itr->comment_bmchain;
+         vstate.comment_bmchain = to_string(itr->comment_bmchain);
 
          if( my->_follow_api )
          {
@@ -1824,6 +1824,8 @@ vector<discussion>  database_api::get_discussions_by_author_before_date(
          uint32_t count = 0;
          const auto& didx = my->_db.get_index<comment_index>().indices().get<by_author_last_update>();
 
+         auto size_idx = std::distance(didx.begin(), didx.end());
+
          if( before_date == time_point_sec() )
             before_date = time_point_sec::maximum();
 
@@ -2533,5 +2535,33 @@ map<string, int32_t> database_api_impl::get_reputation_by_categories(const accou
     }
     return result;
 };
+
+vector<discussion> database_api::get_encrypted_discussions_by_author( const discussion_query& query )const{
+    auto result = get_discussions_by_author_before_date(query.tag, "", time_point_sec(), query.limit);
+    result.erase(remove_if(result.begin(), result.end(), [](const discussion& disc){ return !disc.encrypted; }), result.end());
+    return result;
+}
+
+vector<discussion> database_api::get_encrypted_discussions_by_owner( const discussion_query& query )const{
+    vector< discussion > result;
+    return result;
+}
+
+vector<content_order_api_obj> database_api::get_content_orders(string customer, string author)const{
+    vector<content_order_api_obj> result;
+    const auto& order_idx = my->_db.get_index< content_order_index >().indices().get< by_customer >();
+    for (auto idx = order_idx.cbegin(); idx != order_idx.cend(); ++idx){
+        result.push_back(*idx);
+    }
+    return result;
+}
+
+optional<content_order_api_obj> database_api::get_content_order_by_id(uint32_t id)const {
+    optional<content_order_api_obj> result;
+    auto content = my->_db.find< content_order_object, by_id >( id );
+    FC_ASSERT( content != nullptr,  "Content order was not found.");
+    result = *content;
+    return result;
+}
 
 } } // steemit::app

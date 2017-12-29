@@ -1629,11 +1629,8 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
          }
          else
          {
-#ifdef CLEAR_VOTE
-            // it's bad way, bun I can't fix it fast.
-            if (cur_vote != 463){
-               remove(cur_vote);
-            }
+#ifdef CLEAR_VOTES
+            remove(cur_vote);
 #endif
          }
       }
@@ -2225,6 +2222,10 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< claim_reward_balance_evaluator           >();
    _my->_evaluator_registry.register_evaluator< account_create_with_delegation_evaluator >();
    _my->_evaluator_registry.register_evaluator< delegate_vesting_shares_evaluator        >();
+   _my->_evaluator_registry.register_evaluator< encrypted_content_evaluator              >();
+   _my->_evaluator_registry.register_evaluator< content_order_create_evaluator           >();
+   _my->_evaluator_registry.register_evaluator< content_order_cancel_evaluator           >();
+   _my->_evaluator_registry.register_evaluator< content_order_apply_evaluator            >();
 }
 
 void database::set_custom_operation_interpreter( const std::string& id, std::shared_ptr< custom_operation_interpreter > registry )
@@ -2271,6 +2272,7 @@ void database::initialize_indexes()
    add_core_index< reward_fund_index                       >(*this);
    add_core_index< vesting_delegation_index                >(*this);
    add_core_index< vesting_delegation_expiration_index     >(*this);
+   add_core_index< content_order_index                     >(*this);
 
    _plugin_index_signal();
 }
@@ -4196,7 +4198,6 @@ void database::retally_witness_vote_counts( bool force )
 
 void database::process_funds_bmchain(int64_t new_steem){
     const auto& props = get_dynamic_global_properties();
-    const auto& wso = get_witness_schedule_object();
 
     /// 90% in reward funds
     share_type content_reward = ( new_steem * (STEEMIT_CONTENT_REWARD_PERCENT) ) / STEEMIT_100_PERCENT;

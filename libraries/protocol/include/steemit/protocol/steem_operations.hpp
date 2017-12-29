@@ -72,21 +72,36 @@ namespace steemit { namespace protocol {
       { if( !owner ) a.insert( account ); }
    };
 
+   struct extended_encrypted_content
+   {
+       public_key_type     to_memo_key;
+       public_key_type     from_memo_key;
+       uint32_t            checksum;
+       std::vector< char > encrypted_body;
+   };
 
    struct comment_operation : public base_operation
    {
-      account_name_type parent_author;
-      string            parent_permlink;
+      account_name_type   parent_author;
+      string              parent_permlink;
 
-      account_name_type author;
-      string            permlink;
+      account_name_type   author;
+      string              permlink;
 
-      string            title;
-      string            body;
-      string            json_metadata;
+      string              title;
+      string              body;
+      string              json_metadata;
 
       void validate()const;
       void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(author); }
+   };
+
+   struct encrypted_content_operation : public comment_operation
+   {
+       /// encrypted content
+       std::vector< char > encrypted_body;
+       uint32_t            checksum;
+       asset               price;
    };
 
    struct beneficiary_route_type
@@ -940,6 +955,39 @@ namespace steemit { namespace protocol {
       void get_required_active_authorities( flat_set< account_name_type >& a ) const { a.insert( delegator ); }
       void validate() const;
    };
+
+   struct content_order_create_operation : public base_operation
+   {
+       account_name_type author;
+       string            permlink;
+       account_name_type owner;
+       asset             price;
+
+       void validate() const;
+
+       void get_required_active_authorities(flat_set<account_name_type> &a) const { a.insert(owner); }
+   };
+
+   struct content_order_cancel_operation : public base_operation
+   {
+       account_name_type customer;
+       uint32_t orderid = 0;
+
+       void validate() const;
+
+       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(customer); }
+   };
+
+   struct content_order_apply_operation : public base_operation
+   {
+       account_name_type author;
+       uint32_t orderid = 0;
+
+       void validate() const;
+
+       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(author); }
+   };
+
 } } // steemit::protocol
 
 
@@ -1001,6 +1049,7 @@ FC_REFLECT( steemit::protocol::set_withdraw_vesting_route_operation, (from_accou
 FC_REFLECT( steemit::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( steemit::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( steemit::protocol::account_witness_proxy_operation, (account)(proxy) )
+FC_REFLECT( steemit::protocol::extended_encrypted_content, (to_memo_key)(from_memo_key)(checksum)(encrypted_body) )
 FC_REFLECT( steemit::protocol::comment_operation, (parent_author)(parent_permlink)(author)(permlink)(title)(body)(json_metadata) )
 FC_REFLECT( steemit::protocol::vote_operation, (voter)(author)(permlink)(weight)(comment_bmchain) )
 FC_REFLECT( steemit::protocol::custom_operation, (required_auths)(id)(data) )
@@ -1029,3 +1078,11 @@ FC_REFLECT( steemit::protocol::change_recovery_account_operation, (account_to_re
 FC_REFLECT( steemit::protocol::decline_voting_rights_operation, (account)(decline) );
 FC_REFLECT( steemit::protocol::claim_reward_balance_operation, (account)(reward_steem)(reward_sbd)(reward_vests) )
 FC_REFLECT( steemit::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) );
+
+
+FC_REFLECT( steemit::protocol::content_order_create_operation, (author)(permlink)(owner)(price) )
+FC_REFLECT( steemit::protocol::content_order_cancel_operation, (customer)(orderid) );
+FC_REFLECT( steemit::protocol::content_order_apply_operation, (author)(orderid) );
+
+FC_REFLECT_DERIVED( steemit::protocol::encrypted_content_operation, (steemit::protocol::comment_operation),
+                   (encrypted_body)(checksum)(price));

@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
             if (logging_config)
                fc::configure_logging(*logging_config);
          }
-         catch (const fc::exception&)
+         catch (const fc::exception& e)
          {
             wlog("Error parsing logging config from config file ${config}, using default config", ("config", config_ini_path.preferred_string()));
          }
