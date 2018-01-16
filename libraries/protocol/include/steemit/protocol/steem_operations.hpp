@@ -102,6 +102,11 @@ namespace steemit { namespace protocol {
        std::vector< char > encrypted_body;
        uint32_t            checksum;
        asset               price;
+
+       /// for content_order applying
+       account_name_type owner;
+       uint32_t          order_id;
+       bool              apply_order;
    };
 
    struct beneficiary_route_type
@@ -970,22 +975,12 @@ namespace steemit { namespace protocol {
 
    struct content_order_cancel_operation : public base_operation
    {
-       account_name_type customer;
-       uint32_t orderid = 0;
+       account_name_type owner;
+       uint32_t order_id = 0;
 
        void validate() const;
 
-       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(customer); }
-   };
-
-   struct content_order_apply_operation : public base_operation
-   {
-       account_name_type author;
-       uint32_t orderid = 0;
-
-       void validate() const;
-
-       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(author); }
+       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
    };
 
 } } // steemit::protocol
@@ -1079,10 +1074,8 @@ FC_REFLECT( steemit::protocol::decline_voting_rights_operation, (account)(declin
 FC_REFLECT( steemit::protocol::claim_reward_balance_operation, (account)(reward_steem)(reward_sbd)(reward_vests) )
 FC_REFLECT( steemit::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) );
 
-
 FC_REFLECT( steemit::protocol::content_order_create_operation, (author)(permlink)(owner)(price) )
-FC_REFLECT( steemit::protocol::content_order_cancel_operation, (customer)(orderid) );
-FC_REFLECT( steemit::protocol::content_order_apply_operation, (author)(orderid) );
+FC_REFLECT( steemit::protocol::content_order_cancel_operation, (owner)(order_id) );
 
 FC_REFLECT_DERIVED( steemit::protocol::encrypted_content_operation, (steemit::protocol::comment_operation),
-                   (encrypted_body)(checksum)(price));
+                   (encrypted_body)(checksum)(price)(owner)(order_id)(apply_order));

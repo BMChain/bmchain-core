@@ -63,7 +63,6 @@ namespace steemit { namespace protocol {
             account_create_with_delegation_operation,
             content_order_create_operation,
             content_order_cancel_operation,
-            content_order_apply_operation,
             encrypted_content_operation,
 
             /// virtual operations below this point

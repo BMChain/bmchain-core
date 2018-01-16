@@ -412,6 +412,8 @@ namespace steemit { namespace chain {
          bool skip_transaction_delta_check = true;
 #endif
 
+         const content_order_object& get_content_order_by_id( uint32_t escrow_id )const;
+
    protected:
          //Mark pop_undo() as protected -- we do not want outside calling pop_undo(); it should call pop_block() instead
          //void pop_undo() { object_database::pop_undo(); }

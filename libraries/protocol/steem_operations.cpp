@@ -556,12 +556,7 @@ namespace steemit { namespace protocol {
 
    void content_order_cancel_operation::validate()const
    {
-      validate_account_name(customer);
-   }
-
-   void content_order_apply_operation::validate()const
-   {
-      validate_account_name(author);
+      validate_account_name(owner);
    }
 
 } } // steemit::protocol

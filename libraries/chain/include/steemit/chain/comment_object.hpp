@@ -191,6 +191,8 @@ namespace steemit { namespace chain {
    struct by_responses;
    struct by_author_last_update;
    struct by_author_created;
+   struct by_owner;
+   struct by_encrypted;
 
    /**
     * @ingroup object_index
@@ -226,6 +228,20 @@ namespace steemit { namespace chain {
                member< comment_object, comment_id_type, &comment_object::id >
             >,
             composite_key_compare< std::less< account_name_type >, strcmp_less, std::less< comment_id_type > >
+         >,
+         ordered_unique< tag< by_owner >,
+            composite_key< comment_object,
+               member< comment_object, account_name_type, &comment_object::owner >,
+               member< comment_object, comment_id_type, &comment_object::id >
+            >,
+            composite_key_compare< std::less< account_name_type >, std::less< comment_id_type > >
+         >,
+         ordered_unique< tag< by_encrypted >,
+            composite_key< comment_object,
+               member< comment_object, bool, &comment_object::encrypted >,
+               member< comment_object, comment_id_type, &comment_object::id >
+            >,
+            composite_key_compare< std::less< bool >, std::less< comment_id_type > >
          >
          /// NON_CONSENSUS INDICIES - used by APIs
 #ifndef IS_LOW_MEM

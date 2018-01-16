@@ -693,7 +693,7 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
 
     FC_ASSERT(!(auth.owner_challenged || auth.active_challenged),
               "Operation cannot be processed because account is currently challenged.");
-
+        
     comment_id_type id;
     const comment_object *parent = nullptr;
     if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
@@ -707,6 +707,22 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
         FC_ASSERT(fc::is_utf8(o.json_metadata), "JSON Metadata must be UTF-8");
     }
 
+    /// apply content order
+    if ( o.apply_order ){
+        const auto & co = _db.get_content_order_by_id(o.order_id);
+
+        FC_ASSERT( co.status == content_order_object::open, "This order is completed or canceled.");
+
+        _db.modify(auth, [&](account_object &a) {
+            a.balance += co.price;
+        });
+
+        _db.modify( co, [&]( content_order_object& order )
+        {
+            order.status = content_order_object::order_status::completed;
+        });
+    }        
+        
     auto now = _db.head_block_time();
 
     if (itr == by_permlink_idx.end()) {
@@ -769,6 +785,10 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
                 com.price    = o.price;
                 com.encrypted_body.resize(o.encrypted_body.size());
                 std::copy(o.encrypted_body.begin(), o.encrypted_body.end(), com.encrypted_body.begin());
+                if (o.apply_order){
+                    com.private_post = true;
+                    com.owner = o.owner;
+                }
             }
 
 #ifndef IS_LOW_MEM
@@ -862,7 +882,8 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
 
         });
 
-    } // end EDIT case
+    } // end EDIT case    
+
 } FC_CAPTURE_AND_RETHROW( (o) ) }
 
 void escrow_transfer_evaluator::do_apply( const escrow_transfer_operation& o )
@@ -2473,8 +2494,8 @@ void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_
 
 void content_order_create_evaluator::do_apply( const content_order_create_operation& op)
 {
-    auto owner = _db.get_account( op.owner );
-    FC_ASSERT( owner.balance < op.price, "Cannot buy the encrypted post because balance doesn't have enough BMT." );
+    const auto& owner = _db.get_account( op.owner );
+    FC_ASSERT( owner.balance > op.price, "Cannot buy the encrypted post because balance doesn't have enough BMT." );
 
     _db.modify( owner, [&]( account_object& acc ) {
         acc.balance -= op.price;
@@ -2492,12 +2513,18 @@ void content_order_create_evaluator::do_apply( const content_order_create_operat
 
 void content_order_cancel_evaluator::do_apply( const content_order_cancel_operation& op)
 {
-   std::cout << "content_order_cancel_evaluator" << std::endl;
-}
+    const auto &order = _db.get_content_order_by_id(op.order_id);
+    const auto &owner = _db.get_account(op.owner);
 
-void content_order_apply_evaluator::do_apply( const content_order_apply_operation& op)
-{
-   std::cout << "content_order_apply_evaluator" << std::endl;
+    FC_ASSERT(order.status == content_order_object::open, "This order is completed or canceled.");
+
+    _db.modify(owner, [&](account_object &a) {
+        a.balance += order.price;
+    });
+
+    _db.modify(order, [&](content_order_object &o) {
+        o.status = content_order_object::order_status::canceled;
+    });
 }
 
 } } // steemit::chain

@@ -53,6 +53,5 @@ DEFINE_EVALUATOR( delegate_vesting_shares )
 DEFINE_EVALUATOR( encrypted_content )
 DEFINE_EVALUATOR( content_order_create )
 DEFINE_EVALUATOR( content_order_cancel )
-DEFINE_EVALUATOR( content_order_apply )
 
 } } // steemit::chain

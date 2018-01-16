@@ -980,9 +980,11 @@ class wallet_api
 
       vector<best_author> get_best_authors(uint32_t limit)const;
 
-      vector<discussion> get_discussions_by_hot()const;
+      vector<discussion> get_discussions_by_hot(uint32_t limit, string filter_tags)const;
 
-      vector<discussion> get_discussions_by_blog(string author, uint32_t limit)const;
+      vector<discussion> get_discussions_by_blog(string author, uint32_t limit, string filter_tags)const;
+
+      vector<discussion> get_discussions_by_created(uint32_t limit, string filter_tags)const;
 
       statistic get_statistic(const string & begin, const string & end)const;
 
@@ -998,11 +1000,33 @@ class wallet_api
 
       annotated_signed_transaction apply_content_order(string author, uint32_t id, bool broadcast);
 
-      vector<content_order_api_obj> get_content_orders(string customer, string author);
+      vector<content_order_api_obj> get_content_orders(string owner, string author, uint32_t limit) const;
 
-      vector< discussion > get_encrypted_posts(string author, string owner, uint32_t limit);
+      vector< discussion > get_encrypted_discussions(string author, string owner, uint32_t limit) const;
 
-      std::string try_decrypt_content( const extended_encrypted_content& content );
+      void test_api() const;
+
+      std::string try_decrypt_content( const extended_encrypted_content& content ) const;
+
+private:
+
+      set<string> get_tags_from_json(string tags)const{
+          set<string> result;
+          if (!tags.empty()) {
+              auto filter = fc::json::from_string(tags).get_object();
+              for (auto itr = filter.begin(); itr != filter.end(); ++itr) {
+                  auto key = itr->key();
+                  auto value = itr->value();
+                  if (key == "tags") {
+                      auto tags_ = value.get_array();
+                      for (auto tag : tags_) {
+                          result.insert(tag.as_string());
+                      }
+                  }
+              }
+          }
+          return result;
+      }
 };
 
 struct plain_keys {
@@ -1059,6 +1083,7 @@ FC_API( steemit::wallet::wallet_api,
         (get_best_authors)
         (get_discussions_by_hot)
         (get_discussions_by_blog)
+        (get_discussions_by_created)
 
         /// transaction api
         (create_account)
@@ -1135,7 +1160,8 @@ FC_API( steemit::wallet::wallet_api,
         (cancel_content_order)
         (apply_content_order)
         (get_content_orders)
-        (get_encrypted_posts)
+        (get_encrypted_discussions)
+        (test_api)
       )
 
 FC_REFLECT( steemit::wallet::memo_data, (from)(to)(nonce)(check)(encrypted) )

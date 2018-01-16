@@ -137,6 +137,7 @@ struct discussion_query {
    optional<string> start_permlink;
    optional<string> parent_author;
    optional<string> parent_permlink;
+   string           owner; /// for getting private-posts
 };
 
 /**
@@ -465,11 +466,9 @@ class database_api
       total_block_statistic get_total_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
 
       /// Encrypted content
-      vector<discussion> get_encrypted_discussions_by_author( const discussion_query& query )const;
+      vector<discussion> get_encrypted_discussions( string author, string owner, uint32_t limit )const;
 
-      vector<discussion> get_encrypted_discussions_by_owner( const discussion_query& query )const;
-
-      vector<content_order_api_obj> get_content_orders(string customer, string author)const;
+      vector<content_order_api_obj> get_content_orders(string owner, string author, uint32_t limit)const;
 
       optional<content_order_api_obj> get_content_order_by_id(uint32_t id)const;
 
@@ -508,7 +507,7 @@ FC_REFLECT( steemit::app::scheduled_hardfork, (hf_version)(live_time) );
 FC_REFLECT( steemit::app::liquidity_balance, (account)(weight) );
 FC_REFLECT( steemit::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) );
 
-FC_REFLECT( steemit::app::discussion_query, (tag)(filter_tags)(select_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit) );
+FC_REFLECT( steemit::app::discussion_query, (tag)(filter_tags)(select_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(owner) );
 
 FC_REFLECT( steemit::app::best_author, (name)(reputation)(json_metadata)(permlink)(title) );
 FC_REFLECT( steemit::app::statistic, (begin)(end)(users)(posts)(comments)(votes)(current_supply) );
@@ -621,8 +620,7 @@ FC_API(steemit::app::database_api,
    (get_category_reputation)
 
    // Encrypted content
-   (get_encrypted_discussions_by_author)
-   (get_encrypted_discussions_by_owner)
+   (get_encrypted_discussions)
    (get_content_orders)
    (get_content_order_by_id)
 )

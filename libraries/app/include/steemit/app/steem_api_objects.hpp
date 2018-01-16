@@ -531,8 +531,9 @@ struct content_order_api_obj
             sent_time(o.sent_time),
             author(o.author),
             permlink(to_string(o.permlink)),
-            customer(o.owner),
-            price(o.price)
+            owner(o.owner),
+            price(o.price),
+            status(o.status)
     {}
 
     content_order_api_obj() {}
@@ -542,8 +543,9 @@ struct content_order_api_obj
     time_point_sec    sent_time;
     account_name_type author;
     std::string       permlink;
-    account_name_type customer;
+    account_name_type owner;
     asset             price = asset( 0, STEEM_SYMBOL );
+    content_order_object::order_status status;
 };
 
 } } // steemit::app
@@ -647,10 +649,5 @@ FC_REFLECT_DERIVED( steemit::app::dynamic_global_property_api_obj, (steemit::cha
                   )
 
 FC_REFLECT( steemit::app::content_order_api_obj,
-             (id)
-             (sent_time)
-             (author)
-             (permlink)
-             (customer)
-             (price)
+             (id)(sent_time)(author)(permlink)(owner)(price)(status)
            )

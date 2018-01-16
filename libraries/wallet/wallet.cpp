@@ -2512,21 +2512,32 @@ vector<best_author> wallet_api::get_best_authors(uint32_t limit)const{
    return best_authors;
 };
 
-vector<discussion> wallet_api::get_discussions_by_hot()const {
+vector<discussion> wallet_api::get_discussions_by_hot(uint32_t limit, string filter_tags)const {
    discussion_query q;
    q.tag = "";
    q.limit = 20;
    q.truncate_body = 1024;
+   q.filter_tags = get_tags_from_json(filter_tags);
    auto hot_discussions = my->_remote_db->get_discussions_by_hot(q);
    return hot_discussions;
 }
 
-vector<discussion> wallet_api::get_discussions_by_blog(string author, uint32_t limit)const {
+vector<discussion> wallet_api::get_discussions_by_blog(string author, uint32_t limit, string filter_tags)const {
     discussion_query q;
     q.tag = author;
     q.limit = limit;
     q.truncate_body = 1024;
+    q.filter_tags = get_tags_from_json(filter_tags);
     auto discussions = my->_remote_db->get_discussions_by_blog(q);
+    return discussions;
+}
+
+vector<discussion> wallet_api::get_discussions_by_created(uint32_t limit, string filter_tags)const {
+    discussion_query q;
+    q.limit = limit;
+    q.truncate_body = 1024;
+    q.filter_tags = get_tags_from_json(filter_tags);
+    auto discussions = my->_remote_db->get_discussions_by_created(q);
     return discussions;
 }
 
@@ -2601,10 +2612,10 @@ annotated_signed_transaction wallet_api::create_content_order( string owner, str
     return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::cancel_content_order(string author, uint32_t id, bool broadcast){
+annotated_signed_transaction wallet_api::cancel_content_order(string owner, uint32_t orderid, bool broadcast){
    content_order_cancel_operation op;
-   op.customer = author;
-   op.orderid = id;
+   op.owner = owner;
+   op.order_id = orderid;
 
    signed_transaction tx;
    tx.operations.push_back( op );
@@ -2616,14 +2627,11 @@ annotated_signed_transaction wallet_api::cancel_content_order(string author, uin
 annotated_signed_transaction wallet_api::apply_content_order(string author, uint32_t id, bool broadcast){
     FC_ASSERT( !is_locked() );
 
-    vector<content_order_api_obj> orders = my->_remote_db->get_content_orders("", author);
-    auto order = find_if(orders.cbegin(), orders.cend(), [=](const content_order_api_obj & cont){ return cont.id == id; });
-
-    FC_ASSERT( order != orders.cend(), "unable to find content order for id" );
+    const auto & order = my->_remote_db->get_content_order_by_id(id);
 
     discussion post = my->_remote_db->get_content(author, order->permlink);
     auto auth = get_account(author);
-    auto customer = get_account(order->customer);
+    auto owner = get_account(order->owner);
 
     extended_encrypted_content obj_enc;
     obj_enc.from_memo_key = auth.memo_key;
@@ -2635,7 +2643,7 @@ annotated_signed_transaction wallet_api::apply_content_order(string author, uint
 
     auto priv_key = wif_to_key(get_private_key(auth.memo_key));
     FC_ASSERT(priv_key, "unable to find private key for memo");
-    auto shared_secret = priv_key->get_shared_secret(customer.memo_key);
+    auto shared_secret = priv_key->get_shared_secret(owner.memo_key);
     fc::sha512::encoder enc;
     fc::raw::pack(enc, shared_secret);
     auto encrypt_key = enc.result();
@@ -2646,7 +2654,7 @@ annotated_signed_transaction wallet_api::apply_content_order(string author, uint
     auto encrypted_body = fc::aes_encrypt(encrypt_key, plain_text);
 
     extended_encrypted_content obj;
-    obj.to_memo_key = customer.memo_key;
+    obj.to_memo_key = owner.memo_key;
     obj.from_memo_key = auth.memo_key;
     obj.checksum = checksum;
     obj.encrypted_body = encrypted_body;
@@ -2655,12 +2663,15 @@ annotated_signed_transaction wallet_api::apply_content_order(string author, uint
     encrypted_content_operation op;
     op.parent_permlink = post.category;
     op.author = author;
-    op.permlink = post.permlink + order->customer;
+    op.permlink = post.permlink + order->owner;
     op.title = post.title;
     op.body = post.body;
     op.json_metadata = post.json_metadata;
     op.encrypted_body = encrypted_body;
     op.checksum = checksum;
+    op.owner = order->owner;
+    op.order_id = id;
+    op.apply_order = true;
 
     signed_transaction tx;
     tx.operations.push_back(op);
@@ -2669,34 +2680,116 @@ annotated_signed_transaction wallet_api::apply_content_order(string author, uint
     return my->sign_transaction(tx, broadcast);
 }
 
-vector<content_order_api_obj> wallet_api::get_content_orders(string customer, string author){
-    auto result = my->_remote_db->get_content_orders(customer, author);
+vector<content_order_api_obj> wallet_api::get_content_orders(string owner, string author, uint32_t limit) const{
+    auto result = my->_remote_db->get_content_orders(owner, author, limit);
     return result;
 }
 
-vector< discussion > wallet_api::get_encrypted_posts(string author, string owner, uint32_t limit){
-    discussion_query q;
-    q.tag = author;
-    q.limit = limit;
-    q.truncate_body = 1024;
-    auto discussions = my->_remote_db->get_encrypted_discussions_by_author(q);
+vector< discussion > wallet_api::get_encrypted_discussions(string author, string owner, uint32_t limit) const{
+    auto discussions = my->_remote_db->get_encrypted_discussions(author, owner, limit);
 
-    for (discussion & disc : discussions){
-        auto auth = get_account( author );
+    if (!author.empty()) {
+        for (discussion &disc : discussions) {
+            auto auth = get_account(author);
 
-        extended_encrypted_content obj;
-        obj.from_memo_key = auth.memo_key;
-        obj.to_memo_key = auth.memo_key;
-        obj.checksum = disc.checksum;
-        obj.encrypted_body = disc.encrypted_body;
+            extended_encrypted_content obj;
+            obj.from_memo_key = auth.memo_key;
+            obj.to_memo_key = auth.memo_key;
+            obj.checksum = disc.checksum;
+            obj.encrypted_body = disc.encrypted_body;
 
-        disc.decrypted_content = try_decrypt_content(obj);
+            disc.decrypted_content = try_decrypt_content(obj);
+        }
     }
-
     return discussions;
 }
 
-std::string wallet_api::try_decrypt_content( const extended_encrypted_content& content ){
+void wallet_api::test_api() const{
+    using std::cout;
+    using std::endl;
+
+    /// tests of encrypted content
+    /*auto co_1 = get_content_orders("user002", "", 100);
+    auto co_2 = get_content_orders("", "user001", 100);
+    auto co_3 = get_content_orders("user002", "user001", 100);
+
+    auto co_4 = get_content_orders("user004", "", 100);
+    auto co_5 = get_content_orders("", "user003", 100);
+    auto co_6 = get_content_orders("user004", "user003", 100);
+    auto co = get_content_orders("", "", 100);
+
+    auto co_open = std::count_if(co.cbegin(), co.cend(), [](const content_order_api_obj & co_api){return co_api.status == content_order_object::order_status::open;});
+    auto co_completed = std::count_if(co.cbegin(), co.cend(), [](const content_order_api_obj & co_api){return co_api.status == content_order_object::order_status::completed;});
+    auto co_canceled = std::count_if(co.cbegin(), co.cend(), [](const content_order_api_obj & co_api){return co_api.status == content_order_object::order_status::canceled;});
+
+    auto ed_1 = get_encrypted_discussions("user001", "", 100);
+    auto ed_2 = get_encrypted_discussions("", "user002", 100);
+    auto ed_3 = get_encrypted_discussions("user001", "user002", 100);
+
+    auto ed_4 = get_encrypted_discussions("user003", "", 100);
+    auto ed_5 = get_encrypted_discussions("", "user004", 100);
+    auto ed_6 = get_encrypted_discussions("user003", "user004", 100);
+    auto ed = get_encrypted_discussions("", "", 100);
+
+    auto ed_encrypted = std::count_if(ed.cbegin(), ed.cend(), [](const discussion & disc){return disc.encrypted;});
+    auto ed_private = std::count_if(ed.cbegin(), ed.cend(), [](const discussion & disc){return disc.private_post;});
+
+    cout << "content orders user002 - null   : " << co_1.size() << endl;
+    cout << "content orders null    - user001: " << co_2.size() << endl;
+    cout << "content orders user002 - user001: " << co_3.size() << endl;
+
+    cout << "content orders user004 - null   : " << co_4.size() << endl;
+    cout << "content orders null    - user003: " << co_5.size() << endl;
+    cout << "content orders user004 - user003: " << co_6.size() << endl;
+    cout << endl;
+
+    cout << "content orders total    : " << co.size() << endl;
+    cout << "content orders open     : " << co_open << endl;
+    cout << "content orders completed: " << co_completed << endl;
+    cout << "content orders canceled : " << co_canceled << endl;
+    cout << endl;
+
+    cout << "encrypted discussions user001 - null   : " << ed_1.size() << endl;
+    cout << "encrypted discussions null    - user002: " << ed_2.size() << endl;
+    cout << "encrypted discussions user001 - user002: " << ed_3.size() << endl;
+
+    cout << "encrypted discussions user003 - null   : " << ed_4.size() << endl;
+    cout << "encrypted discussions null    - user004: " << ed_5.size() << endl;
+    cout << "encrypted discussions user003 - user004: " << ed_6.size() << endl;
+    cout << endl;
+
+    cout << "encrypted discussions total            : " << ed.size() << endl;
+    cout << "encrypted discussions encrypted        : " << ed_encrypted << endl;
+    cout << "encrypted discussions private          : " << ed_private << endl;
+    cout << endl;*/
+
+    /// tests of filter by tags
+    auto disc00 = get_discussions_by_created(100, "{\"tags\":[\"tag00\", \"tag01\", \"tag02\", \"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
+    auto disc01 = get_discussions_by_created(100, "{\"tags\":[\"tag01\", \"tag02\", \"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
+    auto disc02 = get_discussions_by_created(100, "{\"tags\":[\"tag02\", \"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
+    auto disc03 = get_discussions_by_created(100, "{\"tags\":[\"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
+    auto disc04 = get_discussions_by_created(100, "{\"tags\":[\"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
+    auto disc05 = get_discussions_by_created(100, "{\"tags\":[\"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
+    auto disc06 = get_discussions_by_created(100, "{\"tags\":[\"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
+    auto disc07 = get_discussions_by_created(100, "{\"tags\":[\"tag07\", \"tag08\", \"tag09\"]}");
+    auto disc08 = get_discussions_by_created(100, "{\"tags\":[\"tag08\", \"tag09\"]}");
+    auto disc09 = get_discussions_by_created(100, "{\"tags\":[\"tag09\"]}");
+
+    cout << "filter by tag00: " << disc00.size() << endl;
+    cout << "filter by tag01: " << disc01.size() << endl;
+    cout << "filter by tag02: " << disc02.size() << endl;
+    cout << "filter by tag03: " << disc03.size() << endl;
+    cout << "filter by tag04: " << disc04.size() << endl;
+    cout << "filter by tag05: " << disc05.size() << endl;
+    cout << "filter by tag06: " << disc06.size() << endl;
+    cout << "filter by tag07: " << disc07.size() << endl;
+    cout << "filter by tag08: " << disc08.size() << endl;
+    cout << "filter by tag09: " << disc09.size() << endl;
+    cout << endl;
+
+}
+
+std::string wallet_api::try_decrypt_content( const extended_encrypted_content& content ) const{
    std::string result;
    fc::sha512 shared_secret;
    fc::sha512::encoder enc;

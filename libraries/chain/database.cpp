@@ -2225,7 +2225,6 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< encrypted_content_evaluator              >();
    _my->_evaluator_registry.register_evaluator< content_order_create_evaluator           >();
    _my->_evaluator_registry.register_evaluator< content_order_cancel_evaluator           >();
-   _my->_evaluator_registry.register_evaluator< content_order_apply_evaluator            >();
 }
 
 void database::set_custom_operation_interpreter( const std::string& id, std::shared_ptr< custom_operation_interpreter > registry )
@@ -4026,6 +4025,15 @@ void database::validate_invariants()const
          total_supply += itr->reward_balance;
       }
 
+       const auto& content_order_idx = get_index< content_order_index, by_id >();
+
+       for( auto itr = content_order_idx.begin(); itr != content_order_idx.end(); ++itr )
+       {
+           if (itr->status == content_order_object::order_status::open) {
+               total_supply += itr->price;
+           }
+       }
+
       total_supply += gpo.total_vesting_fund_steem + gpo.total_reward_fund_steem + gpo.pending_rewarded_vesting_steem;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
@@ -4196,7 +4204,8 @@ void database::retally_witness_vote_counts( bool force )
    }
 }
 
-void database::process_funds_bmchain(int64_t new_steem){
+void database::process_funds_bmchain(int64_t new_steem)
+{
     const auto& props = get_dynamic_global_properties();
 
     /// 90% in reward funds
@@ -4219,5 +4228,11 @@ void database::process_funds_bmchain(int64_t new_steem){
     });
 }
 
+const content_order_object& database::get_content_order_by_id( uint32_t id )const
+{
+    try {
+        return get< content_order_object, by_id >( id );
+    } FC_CAPTURE_AND_RETHROW( (id) )
+}
 
 } } //steemit::chain

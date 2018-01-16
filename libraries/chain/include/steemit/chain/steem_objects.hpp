@@ -292,7 +292,7 @@ namespace steemit { namespace chain {
             c( *this );
          }
 
-         enum order_status{open, close};
+         enum order_status{open, completed, canceled};
 
          id_type           id;
 
@@ -509,7 +509,7 @@ namespace steemit { namespace chain {
    > reward_fund_index;
 
    struct by_author;
-   struct by_customer;
+   struct by_owner;
    struct by_sent_time;
    typedef multi_index_container<
       content_order_object,
@@ -521,7 +521,7 @@ namespace steemit { namespace chain {
                member< content_order_object, content_order_id_type,  &content_order_object::id >
             >
          >,
-         ordered_unique< tag< by_customer >,
+         ordered_unique< tag< by_owner >,
             composite_key< content_order_object,
                member< content_order_object, account_name_type,  &content_order_object::owner >,
                member< content_order_object, content_order_id_type,  &content_order_object::id >
@@ -594,4 +594,4 @@ FC_REFLECT( steemit::chain::content_order_object,
 CHAINBASE_SET_INDEX_TYPE( steemit::chain::content_order_object, steemit::chain::content_order_index )
 
 FC_REFLECT_ENUM( steemit::chain::content_order_object::order_status,
-                 (open)(close))
+                 (open)(completed)(canceled))
