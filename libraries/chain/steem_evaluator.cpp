@@ -39,7 +39,7 @@ namespace steemit { namespace chain {
 
 inline void validate_permlink_0_1( const string& permlink )
 {
-   FC_ASSERT( permlink.size() > STEEMIT_MIN_PERMLINK_LENGTH && permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "Permlink is not a valid size." );
+   FC_ASSERT( permlink.size() > BMCHAIN_MIN_PERMLINK_LENGTH && permlink.size() < BMCHAIN_MAX_PERMLINK_LENGTH, "Permlink is not a valid size." );
 
    //setlocale(LC_ALL, "rus");
 
@@ -78,9 +78,9 @@ void witness_update_evaluator::do_apply( const witness_update_operation& o )
 
    if ( _db.has_hardfork( STEEMIT_HARDFORK_0_1 ) )
    {
-      FC_ASSERT( o.url.size() <= STEEMIT_MAX_WITNESS_URL_LENGTH, "URL is too long" );
+      FC_ASSERT( o.url.size() <= BMCHAIN_MAX_WITNESS_URL_LENGTH, "URL is too long" );
    }
-   else if( o.url.size() > STEEMIT_MAX_WITNESS_URL_LENGTH )
+   else if( o.url.size() > BMCHAIN_MAX_WITNESS_URL_LENGTH )
    {
       // after HF, above check can be moved to validate() if reindex doesn't show this warning
       wlog( "URL is too long in block ${b}", ("b", _db.head_block_num()+1) );
@@ -129,8 +129,8 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
    if( _db.has_hardfork( STEEMIT_HARDFORK_0_19__987) )
    {
       const witness_schedule_object& wso = _db.get_witness_schedule_object();
-      FC_ASSERT( o.fee >= asset( wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL ), "Insufficient Fee: ${f} required, ${p} provided.",
-                 ("f", wso.median_props.account_creation_fee * asset( STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL ) )
+      FC_ASSERT( o.fee >= asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL ), "Insufficient Fee: ${f} required, ${p} provided.",
+                 ("f", wso.median_props.account_creation_fee * asset( BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL ) )
                  ("p", o.fee) );
    }
    else if( _db.has_hardfork( STEEMIT_HARDFORK_0_1 ) )
@@ -222,9 +222,9 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
                ( "creator.vesting_shares", creator.vesting_shares )
                ( "creator.delegated_vesting_shares", creator.delegated_vesting_shares )( "required", o.delegation ) );
 
-   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL ) * props.get_vesting_share_price();
+   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL ) * props.get_vesting_share_price();
 
-   auto current_delegation = asset( o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL ) * props.get_vesting_share_price() + o.delegation;
+   auto current_delegation = asset( o.fee.amount * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL ) * props.get_vesting_share_price() + o.delegation;
 
    FC_ASSERT( current_delegation >= target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
                ("f", target_delegation )
@@ -291,7 +291,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
          vdo.delegator = o.creator;
          vdo.delegatee = o.new_account_name;
          vdo.vesting_shares = o.delegation;
-         vdo.min_delegation_time = _db.head_block_time() + STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME;
+         vdo.min_delegation_time = _db.head_block_time() + BMCHAIN_CREATE_ACCOUNT_DELEGATION_TIME;
       });
    }
 
@@ -302,7 +302,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
 
 void account_update_evaluator::do_apply( const account_update_operation& o )
 {
-   if( _db.has_hardfork( STEEMIT_HARDFORK_0_1 ) ) FC_ASSERT( o.account != STEEMIT_TEMP_ACCOUNT, "Cannot update temp account." );
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_1 ) ) FC_ASSERT( o.account != BMCHAIN_TEMP_ACCOUNT, "Cannot update temp account." );
 
    if( ( _db.has_hardfork( STEEMIT_HARDFORK_0_15__465 ) ) && o.posting )
       o.posting->validate();
@@ -314,7 +314,7 @@ void account_update_evaluator::do_apply( const account_update_operation& o )
    {
 #ifndef IS_TEST_NET
       if( _db.has_hardfork( STEEMIT_HARDFORK_0_11 ) )
-         FC_ASSERT( _db.head_block_time() - account_auth.last_owner_update > STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour." );
+         FC_ASSERT( _db.head_block_time() - account_auth.last_owner_update > BMCHAIN_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour." );
 #endif
 
       if( ( _db.has_hardfork( STEEMIT_HARDFORK_0_15__465 ) ) )
@@ -408,7 +408,7 @@ void delete_comment_evaluator::do_apply( const delete_comment_operation& o )
    }
 
    /// this loop can be skiped for validate-only nodes as it is merely gathering stats for indicies
-   if( _db.has_hardfork( STEEMIT_HARDFORK_0_6__80 ) && comment.parent_author != STEEMIT_ROOT_POST_PARENT )
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_6__80 ) && comment.parent_author != BMCHAIN_ROOT_POST_PARENT )
    {
       auto parent = &_db.get_comment( comment.parent_author, comment.parent_permlink );
       auto now = _db.head_block_time();
@@ -419,7 +419,7 @@ void delete_comment_evaluator::do_apply( const delete_comment_operation& o )
             p.active = now;
          });
    #ifndef IS_LOW_MEM
-         if( parent->parent_author != STEEMIT_ROOT_POST_PARENT )
+         if( parent->parent_author != BMCHAIN_ROOT_POST_PARENT )
             parent = &_db.get_comment( parent->parent_author, parent->parent_permlink );
          else
    #endif
@@ -498,10 +498,10 @@ void comment_evaluator::do_apply( const comment_operation& o )
 
    comment_id_type id;
    const comment_object* parent = nullptr;
-   if( o.parent_author != STEEMIT_ROOT_POST_PARENT )
+   if( o.parent_author != BMCHAIN_ROOT_POST_PARENT )
    {
       parent = &_db.get_comment( o.parent_author, o.parent_permlink );
-      FC_ASSERT( parent->depth < STEEMIT_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",STEEMIT_MAX_COMMENT_DEPTH) );
+      FC_ASSERT( parent->depth < BMCHAIN_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",BMCHAIN_MAX_COMMENT_DEPTH) );
    }
 
    if( o.json_metadata.size() ) {
@@ -512,23 +512,23 @@ void comment_evaluator::do_apply( const comment_operation& o )
 
    if ( itr == by_permlink_idx.end() )
    {
-      if( o.parent_author != STEEMIT_ROOT_POST_PARENT )
+      if( o.parent_author != BMCHAIN_ROOT_POST_PARENT )
       {
          FC_ASSERT( _db.get( parent->root_comment ).allow_replies, "The parent comment has disabled replies." );
       }
-      if( o.parent_author == STEEMIT_ROOT_POST_PARENT ) {
-          FC_ASSERT((now - auth.last_root_post) >= STEEMIT_MIN_ROOT_COMMENT_INTERVAL,
+      if( o.parent_author == BMCHAIN_ROOT_POST_PARENT ) {
+          FC_ASSERT((now - auth.last_root_post) >= BMCHAIN_MIN_ROOT_COMMENT_INTERVAL,
                     "You may only post once every 5 minutes.", ("now", now)("last_root_post", auth.last_root_post));
       }
       else {
-          FC_ASSERT((now - auth.last_post) >= STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.",
+          FC_ASSERT((now - auth.last_post) >= BMCHAIN_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.",
                     ("now", now)("auth.last_post", auth.last_post));
       }
-      uint16_t reward_weight = STEEMIT_100_PERCENT;
+      uint16_t reward_weight = BMCHAIN_100_PERCENT;
       uint64_t post_bandwidth = auth.post_bandwidth;
 
       _db.modify( auth, [&]( account_object& a ) {
-         if( o.parent_author == STEEMIT_ROOT_POST_PARENT )
+         if( o.parent_author == BMCHAIN_ROOT_POST_PARENT )
          {
             a.last_root_post = now;
             a.post_bandwidth = uint32_t( post_bandwidth );
@@ -551,13 +551,13 @@ void comment_evaluator::do_apply( const comment_operation& o )
          com.max_cashout_time = fc::time_point_sec::maximum();
          com.reward_weight = reward_weight;
 
-         if ( o.parent_author == STEEMIT_ROOT_POST_PARENT )
+         if ( o.parent_author == BMCHAIN_ROOT_POST_PARENT )
          {
             com.parent_author = "";
             from_string( com.parent_permlink, o.parent_permlink );
             from_string( com.category, o.parent_permlink );
             com.root_comment = com.id;
-            com.cashout_time = _db.head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+            com.cashout_time = _db.head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
          }
          else
          {
@@ -569,7 +569,7 @@ void comment_evaluator::do_apply( const comment_operation& o )
             com.cashout_time = fc::time_point_sec::maximum();
          }
 
-         com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
+         com.cashout_time = com.created + BMCHAIN_CASHOUT_WINDOW_SECONDS;
 
          /*com.encrypted = !o.encrypted_body.empty();
          if (com.encrypted) {
@@ -602,7 +602,7 @@ void comment_evaluator::do_apply( const comment_operation& o )
             p.active = now;
          });
 #ifndef IS_LOW_MEM
-         if( parent->parent_author != STEEMIT_ROOT_POST_PARENT )
+         if( parent->parent_author != BMCHAIN_ROOT_POST_PARENT )
             parent = &_db.get_comment( parent->parent_author, parent->parent_permlink );
          else
 #endif
@@ -696,11 +696,11 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
         
     comment_id_type id;
     const comment_object *parent = nullptr;
-    if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
+    if (o.parent_author != BMCHAIN_ROOT_POST_PARENT) {
         parent = &_db.get_comment(o.parent_author, o.parent_permlink);
-        FC_ASSERT(parent->depth < STEEMIT_MAX_COMMENT_DEPTH,
+        FC_ASSERT(parent->depth < BMCHAIN_MAX_COMMENT_DEPTH,
                   "Comment is nested ${x} posts deep, maximum depth is ${y}.",
-                  ("x", parent->depth)("y", STEEMIT_MAX_COMMENT_DEPTH));
+                  ("x", parent->depth)("y", BMCHAIN_MAX_COMMENT_DEPTH));
     }
 
     if (o.json_metadata.size()) {
@@ -726,22 +726,22 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
     auto now = _db.head_block_time();
 
     if (itr == by_permlink_idx.end()) {
-        if (o.parent_author != STEEMIT_ROOT_POST_PARENT) {
+        if (o.parent_author != BMCHAIN_ROOT_POST_PARENT) {
             FC_ASSERT(_db.get(parent->root_comment).allow_replies, "The parent comment has disabled replies.");
         }
-        if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
-            FC_ASSERT((now - auth.last_root_post) >= STEEMIT_MIN_ROOT_COMMENT_INTERVAL,
+        if (o.parent_author == BMCHAIN_ROOT_POST_PARENT) {
+            FC_ASSERT((now - auth.last_root_post) >= BMCHAIN_MIN_ROOT_COMMENT_INTERVAL,
                       "You may only post once every 5 minutes.", ("now", now)("last_root_post", auth.last_root_post));
         } else {
-            FC_ASSERT((now - auth.last_post) >= STEEMIT_MIN_REPLY_INTERVAL,
+            FC_ASSERT((now - auth.last_post) >= BMCHAIN_MIN_REPLY_INTERVAL,
                       "You may only comment once every 20 seconds.",
                       ("now", now)("auth.last_post", auth.last_post));
         }
-        uint16_t reward_weight = STEEMIT_100_PERCENT;
+        uint16_t reward_weight = BMCHAIN_100_PERCENT;
         uint64_t post_bandwidth = auth.post_bandwidth;
 
         _db.modify(auth, [&](account_object &a) {
-            if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
+            if (o.parent_author == BMCHAIN_ROOT_POST_PARENT) {
                 a.last_root_post = now;
                 a.post_bandwidth = uint32_t(post_bandwidth);
             }
@@ -762,12 +762,12 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
             com.max_cashout_time = fc::time_point_sec::maximum();
             com.reward_weight = reward_weight;
 
-            if (o.parent_author == STEEMIT_ROOT_POST_PARENT) {
+            if (o.parent_author == BMCHAIN_ROOT_POST_PARENT) {
                 com.parent_author = "";
                 from_string(com.parent_permlink, o.parent_permlink);
                 from_string(com.category, o.parent_permlink);
                 com.root_comment = com.id;
-                com.cashout_time = _db.head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+                com.cashout_time = _db.head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
             } else {
                 com.parent_author = parent->author;
                 com.parent_permlink = parent->permlink;
@@ -777,7 +777,7 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
                 com.cashout_time = fc::time_point_sec::maximum();
             }
 
-            com.cashout_time = com.created + STEEMIT_CASHOUT_WINDOW_SECONDS;
+            com.cashout_time = com.created + BMCHAIN_CASHOUT_WINDOW_SECONDS;
 
             com.encrypted = !o.encrypted_body.empty();
             if (com.encrypted) {
@@ -813,7 +813,7 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
                 p.active = now;
             });
 #ifndef IS_LOW_MEM
-            if (parent->parent_author != STEEMIT_ROOT_POST_PARENT)
+            if (parent->parent_author != BMCHAIN_ROOT_POST_PARENT)
                 parent = &_db.get_comment(parent->parent_author, parent->parent_permlink);
             else
 #endif
@@ -1126,9 +1126,9 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
    }
    else
    {
-      int vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
+      int vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
       if( _db.has_hardfork( STEEMIT_HARDFORK_0_16__551 ) )
-         vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
+         vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
       _db.modify( account, [&]( account_object& a )
       {
@@ -1141,7 +1141,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
             FC_ASSERT( account.vesting_withdraw_rate  != new_vesting_withdraw_rate, "This operation would not change the vesting withdraw rate." );
 
          a.vesting_withdraw_rate = new_vesting_withdraw_rate;
-         a.next_vesting_withdrawal = _db.head_block_time() + fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
+         a.next_vesting_withdrawal = _db.head_block_time() + fc::seconds(BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS);
          a.to_withdraw = o.vesting_shares.amount;
          a.withdrawn = 0;
       });
@@ -1160,7 +1160,7 @@ void set_withdraw_vesting_route_evaluator::do_apply( const set_withdraw_vesting_
    if( itr == wd_idx.end() )
    {
       FC_ASSERT( o.percent != 0, "Cannot create a 0% destination." );
-      FC_ASSERT( from_account.withdraw_routes < STEEMIT_MAX_WITHDRAW_ROUTES, "Account already has the maximum number of routes." );
+      FC_ASSERT( from_account.withdraw_routes < BMCHAIN_MAX_WITHDRAW_ROUTES, "Account already has the maximum number of routes." );
 
       _db.create< withdraw_vesting_route_object >( [&]( withdraw_vesting_route_object& wvdo )
       {
@@ -1204,7 +1204,7 @@ void set_withdraw_vesting_route_evaluator::do_apply( const set_withdraw_vesting_
       ++itr;
    }
 
-   FC_ASSERT( total_percent <= STEEMIT_100_PERCENT, "More than 100% of vesting withdrawals allocated to destinations." );
+   FC_ASSERT( total_percent <= BMCHAIN_100_PERCENT, "More than 100% of vesting withdrawals allocated to destinations." );
    }
    FC_CAPTURE_AND_RETHROW()
 }
@@ -1217,16 +1217,16 @@ void account_witness_proxy_evaluator::do_apply( const account_witness_proxy_oper
    FC_ASSERT( account.can_vote, "Account has declined the ability to vote and cannot proxy votes." );
 
    /// remove all current votes
-   std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH+1> delta;
+   std::array<share_type, BMCHAIN_MAX_PROXY_RECURSION_DEPTH+1> delta;
    delta[0] = -account.vesting_shares.amount;
-   for( int i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i )
+   for( int i = 0; i < BMCHAIN_MAX_PROXY_RECURSION_DEPTH; ++i )
       delta[i+1] = -account.proxied_vsf_votes[i];
    _db.adjust_proxied_witness_votes( account, delta );
 
    if( o.proxy.size() ) {
       const auto& new_proxy = _db.get_account( o.proxy );
       flat_set<account_id_type> proxy_chain( { account.id, new_proxy.id } );
-      proxy_chain.reserve( STEEMIT_MAX_PROXY_RECURSION_DEPTH + 1 );
+      proxy_chain.reserve( BMCHAIN_MAX_PROXY_RECURSION_DEPTH + 1 );
 
       /// check for proxy loops and fail to update the proxy if it would create a loop
       auto cprox = &new_proxy;
@@ -1234,7 +1234,7 @@ void account_witness_proxy_evaluator::do_apply( const account_witness_proxy_oper
          const auto next_proxy = _db.get_account( cprox->proxy );
          FC_ASSERT( proxy_chain.insert( next_proxy.id ).second, "This proxy would create a proxy loop." );
          cprox = &next_proxy;
-         FC_ASSERT( proxy_chain.size() <= STEEMIT_MAX_PROXY_RECURSION_DEPTH, "Proxy chain is too long." );
+         FC_ASSERT( proxy_chain.size() <= BMCHAIN_MAX_PROXY_RECURSION_DEPTH, "Proxy chain is too long." );
       }
 
       /// clear all individual vote records
@@ -1245,7 +1245,7 @@ void account_witness_proxy_evaluator::do_apply( const account_witness_proxy_oper
       });
 
       /// add all new votes
-      for( int i = 0; i <= STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i )
+      for( int i = 0; i <= BMCHAIN_MAX_PROXY_RECURSION_DEPTH; ++i )
          delta[i] = -delta[i];
       _db.adjust_proxied_witness_votes( account, delta );
    } else { /// we are clearing the proxy which means we simply update the account
@@ -1273,7 +1273,7 @@ void account_witness_vote_evaluator::do_apply( const account_witness_vote_operat
 
       if ( _db.has_hardfork( STEEMIT_HARDFORK_0_2 ) )
       {
-         FC_ASSERT( voter.witnesses_voted_for < STEEMIT_MAX_ACCOUNT_WITNESS_VOTES, "Account has voted for too many witnesses." ); // TODO: Remove after hardfork 2
+         FC_ASSERT( voter.witnesses_voted_for < BMCHAIN_MAX_ACCOUNT_WITNESS_VOTES, "Account has voted for too many witnesses." ); // TODO: Remove after hardfork 2
 
          _db.create<witness_vote_object>( [&]( witness_vote_object& v ) {
              v.witness = witness.id;
@@ -1364,20 +1364,20 @@ try {
    int64_t elapsed_seconds   = (_db.head_block_time() - voter.last_vote_time).to_seconds();
 
    if( _db.has_hardfork( STEEMIT_HARDFORK_0_11 ) )
-      FC_ASSERT( elapsed_seconds >= STEEMIT_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 3 seconds." );
+      FC_ASSERT( elapsed_seconds >= BMCHAIN_MIN_VOTE_INTERVAL_SEC, "Can only vote once every 3 seconds." );
 
-   int64_t regenerated_power = (STEEMIT_100_PERCENT * elapsed_seconds) / STEEMIT_VOTE_REGENERATION_SECONDS;
-   int64_t current_power     = std::min( int64_t(voter.voting_power + regenerated_power), int64_t(STEEMIT_100_PERCENT) );
+   int64_t regenerated_power = (BMCHAIN_100_PERCENT * elapsed_seconds) / BMCHAIN_VOTE_REGENERATION_SECONDS;
+   int64_t current_power     = std::min( int64_t(voter.voting_power + regenerated_power), int64_t(BMCHAIN_100_PERCENT) );
    FC_ASSERT(current_power > 0, "Account currently does not have voting power.");
 
    int64_t  abs_weight    = abs(o.weight);
-   int64_t  used_power    = (current_power * abs_weight) / STEEMIT_100_PERCENT;
+   int64_t  used_power    = (current_power * abs_weight) / BMCHAIN_100_PERCENT;
 
    const dynamic_global_property_object& dgpo = _db.get_dynamic_global_properties();
 
-   // used_power = (current_power * abs_weight / STEEMIT_100_PERCENT) * (reserve / max_vote_denom)
+   // used_power = (current_power * abs_weight / BMCHAIN_100_PERCENT) * (reserve / max_vote_denom)
    // The second multiplication is rounded up as of HF 259
-   int64_t max_vote_denom = dgpo.vote_power_reserve_rate * STEEMIT_VOTE_REGENERATION_SECONDS / (60*60*24);
+   int64_t max_vote_denom = dgpo.vote_power_reserve_rate * BMCHAIN_VOTE_REGENERATION_SECONDS / (60*60*24);
    FC_ASSERT( max_vote_denom > 0 );
 
    if( !_db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) )
@@ -1392,14 +1392,14 @@ try {
    FC_ASSERT( used_power <= current_power, "Account does not have enough power to vote." );
 
    auto effective_vesting_shares = uint128_t(voter.effective_vesting_shares().amount.value);
-   int64_t abs_rshares    = ((effective_vesting_shares * used_power) / (STEEMIT_100_PERCENT)).to_uint64();
+   int64_t abs_rshares    = ((effective_vesting_shares * used_power) / (BMCHAIN_100_PERCENT)).to_uint64();
    if( !_db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) && abs_rshares == 0 ) abs_rshares = 1;
 
    if (_db.has_hardfork(STEEMIT_HARDFORK_0_14__259)) {
-      FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || o.weight == 0,
+      FC_ASSERT(abs_rshares > BMCHAIN_VOTE_DUST_THRESHOLD || o.weight == 0,
                 "Voting weight is too small, please accumulate more voting power or steem power.");
    } else if (_db.has_hardfork(STEEMIT_HARDFORK_0_13__248)) {
-      FC_ASSERT(abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || abs_rshares == 1,
+      FC_ASSERT(abs_rshares > BMCHAIN_VOTE_DUST_THRESHOLD || abs_rshares == 1,
                 "Voting weight is too small, please accumulate more voting power or steem power.");
    }
 
@@ -1422,9 +1422,9 @@ try {
       if( rshares > 0 )
       {
          if( _db.has_hardfork( STEEMIT_HARDFORK_0_17__900 ) )
-            FC_ASSERT( _db.head_block_time() < comment.cashout_time - STEEMIT_UPVOTE_LOCKOUT_HF17, "Cannot increase payout within last twelve hours before payout." );
+            FC_ASSERT( _db.head_block_time() < comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT_HF17, "Cannot increase payout within last twelve hours before payout." );
          else if( _db.has_hardfork( STEEMIT_HARDFORK_0_7 ) )
-            FC_ASSERT( _db.head_block_time() < _db.calculate_discussion_payout_time( comment ) - STEEMIT_UPVOTE_LOCKOUT_HF7, "Cannot increase payout within last minute before payout." );
+            FC_ASSERT( _db.head_block_time() < _db.calculate_discussion_payout_time( comment ) - BMCHAIN_UPVOTE_LOCKOUT_HF7, "Cannot increase payout within last minute before payout." );
       }
 
       //used_power /= (50*7); /// a 100% vote means use .28% of voting power which should force users to spread their votes around over 50+ posts day for a week
@@ -1448,9 +1448,9 @@ try {
          fc::uint128_t new_cashout_time_sec;
 
          if( _db.has_hardfork( STEEMIT_HARDFORK_0_12__177 ) && !_db.has_hardfork( STEEMIT_HARDFORK_0_13__257)  )
-            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
          else
-            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
+            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF12;
 
          avg_cashout_sec = ( cur_cashout_time_sec * old_root_abs_rshares + new_cashout_time_sec * abs_rshares ) / ( old_root_abs_rshares + abs_rshares );
       }
@@ -1480,12 +1480,12 @@ try {
          if( !_db.has_hardfork( STEEMIT_HARDFORK_0_17__769 ) )
          {
             if( _db.has_hardfork( STEEMIT_HARDFORK_0_12__177 ) && c.last_payout > fc::time_point_sec::min() )
-               c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
+               c.cashout_time = c.last_payout + BMCHAIN_SECOND_CASHOUT_WINDOW;
             else
                c.cashout_time = fc::time_point_sec( std::min( uint32_t( avg_cashout_sec.to_uint64() ), c.max_cashout_time.sec_since_epoch() ) );
 
             if( c.max_cashout_time == fc::time_point_sec::maximum() )
-               c.max_cashout_time = _db.head_block_time() + fc::seconds( STEEMIT_MAX_CASHOUT_WINDOW_SECONDS );
+               c.max_cashout_time = _db.head_block_time() + fc::seconds( BMCHAIN_MAX_CASHOUT_WINDOW_SECONDS );
          }
       });
 
@@ -1575,10 +1575,10 @@ try {
             {
                /// discount weight by time
                uint128_t w(max_vote_weight);
-               uint64_t delta_t = std::min( uint64_t((cv.last_update - comment.created).to_seconds()), uint64_t(STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS) );
+               uint64_t delta_t = std::min( uint64_t((cv.last_update - comment.created).to_seconds()), uint64_t(BMCHAIN_REVERSE_AUCTION_WINDOW_SECONDS) );
 
                w *= delta_t;
-               w /= STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS;
+               w /= BMCHAIN_REVERSE_AUCTION_WINDOW_SECONDS;
                cv.weight = w.to_uint64();
             }
          }
@@ -1600,7 +1600,7 @@ try {
    }
    else
    {
-      FC_ASSERT( itr->num_changes < STEEMIT_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment." );
+      FC_ASSERT( itr->num_changes < BMCHAIN_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment." );
 
       if( _db.has_hardfork( STEEMIT_HARDFORK_0_6__112 ) )
          FC_ASSERT( itr->vote_percent != o.weight, "You have already voted in a similar way." );
@@ -1611,9 +1611,9 @@ try {
       if( itr->rshares < rshares )
       {
          if( _db.has_hardfork( STEEMIT_HARDFORK_0_17__900 ) )
-            FC_ASSERT( _db.head_block_time() < comment.cashout_time - STEEMIT_UPVOTE_LOCKOUT_HF17, "Cannot increase payout within last twelve hours before payout." );
+            FC_ASSERT( _db.head_block_time() < comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT_HF17, "Cannot increase payout within last twelve hours before payout." );
          else if( _db.has_hardfork( STEEMIT_HARDFORK_0_7 ) )
-            FC_ASSERT( _db.head_block_time() < _db.calculate_discussion_payout_time( comment ) - STEEMIT_UPVOTE_LOCKOUT_HF7, "Cannot increase payout within last minute before payout." );
+            FC_ASSERT( _db.head_block_time() < _db.calculate_discussion_payout_time( comment ) - BMCHAIN_UPVOTE_LOCKOUT_HF7, "Cannot increase payout within last minute before payout." );
       }
 
       _db.modify( voter, [&]( account_object& a ){
@@ -1634,9 +1634,9 @@ try {
          fc::uint128_t new_cashout_time_sec;
 
          if( _db.has_hardfork( STEEMIT_HARDFORK_0_12__177 ) && ! _db.has_hardfork( STEEMIT_HARDFORK_0_13__257 )  )
-            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
          else
-            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12;
+            new_cashout_time_sec = _db.head_block_time().sec_since_epoch() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF12;
 
          if( _db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) && abs_rshares == 0 )
             avg_cashout_sec = cur_cashout_time_sec;
@@ -1672,12 +1672,12 @@ try {
          if( !_db.has_hardfork( STEEMIT_HARDFORK_0_17__769 ) )
          {
             if( _db.has_hardfork( STEEMIT_HARDFORK_0_12__177 ) && c.last_payout > fc::time_point_sec::min() )
-               c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
+               c.cashout_time = c.last_payout + BMCHAIN_SECOND_CASHOUT_WINDOW;
             else
                c.cashout_time = fc::time_point_sec( std::min( uint32_t( avg_cashout_sec.to_uint64() ), c.max_cashout_time.sec_since_epoch() ) );
 
             if( c.max_cashout_time == fc::time_point_sec::maximum() )
-               c.max_cashout_time = _db.head_block_time() + fc::seconds( STEEMIT_MAX_CASHOUT_WINDOW_SECONDS );
+               c.max_cashout_time = _db.head_block_time() + fc::seconds( BMCHAIN_MAX_CASHOUT_WINDOW_SECONDS );
          }
       });
 
@@ -1867,13 +1867,13 @@ void pow_apply( database& db, Operation o )
    }
    /// POW reward depends upon whether we are before or after MINER_VOTING kicks in
    asset pow_reward = db.get_pow_reward();
-   if( db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK )
-      pow_reward.amount *= STEEMIT_MAX_WITNESSES;
+   if( db.head_block_num() < BMCHAIN_START_MINER_VOTING_BLOCK )
+      pow_reward.amount *= BMCHAIN_MAX_WITNESSES;
    db.adjust_supply( pow_reward, true );
 
    /// pay the witness that includes this POW
    const auto& inc_witness = db.get_account( dgp.current_witness );
-   if( db.head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK )
+   if( db.head_block_num() < BMCHAIN_START_MINER_VOTING_BLOCK )
       db.adjust_balance( inc_witness, pow_reward );
    else
       db.create_vesting( inc_witness, pow_reward );
@@ -1912,7 +1912,7 @@ void pow2_evaluator::do_apply( const pow2_operation& o )
       worker_account = work.input.worker_account;
    }
 
-   FC_ASSERT( o.props.maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2, "Voted maximum block size is too small." );
+   FC_ASSERT( o.props.maximum_block_size >= BMCHAIN_MIN_BLOCK_SIZE_LIMIT * 2, "Voted maximum block size is too small." );
 
    db.modify( dgp, [&]( dynamic_global_property_object& p )
    {
@@ -1993,9 +1993,9 @@ void convert_evaluator::do_apply( const convert_operation& o )
   const auto& fhistory = _db.get_feed_history();
   FC_ASSERT( !fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feed." );
 
-  auto steemit_conversion_delay = STEEMIT_CONVERSION_DELAY_PRE_HF_16;
+  auto steemit_conversion_delay = BMCHAIN_CONVERSION_DELAY_PRE_HF_16;
   if( _db.has_hardfork( STEEMIT_HARDFORK_0_16__551) )
-     steemit_conversion_delay = STEEMIT_CONVERSION_DELAY;
+     steemit_conversion_delay = BMCHAIN_CONVERSION_DELAY;
 
   _db.create<convert_request_object>( [&]( convert_request_object& obj )
   {
@@ -2076,12 +2076,12 @@ void challenge_authority_evaluator::do_apply( const challenge_authority_operatio
    if( o.require_owner )
    {
       FC_ASSERT( challenged.reset_account == o.challenger, "Owner authority can only be challenged by its reset account." );
-      FC_ASSERT( challenger.balance >= STEEMIT_OWNER_CHALLENGE_FEE );
+      FC_ASSERT( challenger.balance >= BMCHAIN_OWNER_CHALLENGE_FEE );
       FC_ASSERT( !challenged.owner_challenged );
-      FC_ASSERT( _db.head_block_time() - challenged.last_owner_proved > STEEMIT_OWNER_CHALLENGE_COOLDOWN );
+      FC_ASSERT( _db.head_block_time() - challenged.last_owner_proved > BMCHAIN_OWNER_CHALLENGE_COOLDOWN );
 
-      _db.adjust_balance( challenger, - STEEMIT_OWNER_CHALLENGE_FEE );
-      _db.create_vesting( _db.get_account( o.challenged ), STEEMIT_OWNER_CHALLENGE_FEE );
+      _db.adjust_balance( challenger, - BMCHAIN_OWNER_CHALLENGE_FEE );
+      _db.create_vesting( _db.get_account( o.challenged ), BMCHAIN_OWNER_CHALLENGE_FEE );
 
       _db.modify( challenged, [&]( account_object& a )
       {
@@ -2090,12 +2090,12 @@ void challenge_authority_evaluator::do_apply( const challenge_authority_operatio
   }
   else
   {
-      FC_ASSERT( challenger.balance >= STEEMIT_ACTIVE_CHALLENGE_FEE, "Account does not have sufficient funds to pay challenge fee." );
+      FC_ASSERT( challenger.balance >= BMCHAIN_ACTIVE_CHALLENGE_FEE, "Account does not have sufficient funds to pay challenge fee." );
       FC_ASSERT( !( challenged.owner_challenged || challenged.active_challenged ), "Account is already challenged." );
-      FC_ASSERT( _db.head_block_time() - challenged.last_active_proved > STEEMIT_ACTIVE_CHALLENGE_COOLDOWN, "Account cannot be challenged because it was recently challenged." );
+      FC_ASSERT( _db.head_block_time() - challenged.last_active_proved > BMCHAIN_ACTIVE_CHALLENGE_COOLDOWN, "Account cannot be challenged because it was recently challenged." );
 
-      _db.adjust_balance( challenger, - STEEMIT_ACTIVE_CHALLENGE_FEE );
-      _db.create_vesting( _db.get_account( o.challenged ), STEEMIT_ACTIVE_CHALLENGE_FEE );
+      _db.adjust_balance( challenger, - BMCHAIN_ACTIVE_CHALLENGE_FEE );
+      _db.create_vesting( _db.get_account( o.challenged ), BMCHAIN_ACTIVE_CHALLENGE_FEE );
 
       _db.modify( challenged, [&]( account_object& a )
       {
@@ -2151,7 +2151,7 @@ void request_account_recovery_evaluator::do_apply( const request_account_recover
       {
          req.account_to_recover = o.account_to_recover;
          req.new_owner_authority = o.new_owner_authority;
-         req.expires = _db.head_block_time() + STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
+         req.expires = _db.head_block_time() + BMCHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
       });
    }
    else if( o.new_owner_authority.weight_threshold == 0 ) // Cancel Request if authority is open
@@ -2174,7 +2174,7 @@ void request_account_recovery_evaluator::do_apply( const request_account_recover
       _db.modify( *request, [&]( account_recovery_request_object& req )
       {
          req.new_owner_authority = o.new_owner_authority;
-         req.expires = _db.head_block_time() + STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
+         req.expires = _db.head_block_time() + BMCHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD;
       });
    }
 }
@@ -2184,7 +2184,7 @@ void recover_account_evaluator::do_apply( const recover_account_operation& o )
    const auto& account = _db.get_account( o.account_to_recover );
 
    if( _db.has_hardfork( STEEMIT_HARDFORK_0_12 ) )
-      FC_ASSERT( _db.head_block_time() - account.last_account_recovery > STEEMIT_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour." );
+      FC_ASSERT( _db.head_block_time() - account.last_account_recovery > BMCHAIN_OWNER_UPDATE_LIMIT, "Owner authority can only be updated once an hour." );
 
    const auto& recovery_request_idx = _db.get_index< account_recovery_request_index >().indices().get< by_account >();
    auto request = recovery_request_idx.find( o.account_to_recover );
@@ -2227,7 +2227,7 @@ void change_recovery_account_evaluator::do_apply( const change_recovery_account_
       {
          req.account_to_recover = o.account_to_recover;
          req.recovery_account = o.new_recovery_account;
-         req.effective_on = _db.head_block_time() + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
+         req.effective_on = _db.head_block_time() + BMCHAIN_OWNER_AUTH_RECOVERY_PERIOD;
       });
    }
    else if( account_to_recover.recovery_account != o.new_recovery_account ) // Change existing request
@@ -2235,7 +2235,7 @@ void change_recovery_account_evaluator::do_apply( const change_recovery_account_
       _db.modify( *request, [&]( change_recovery_account_request_object& req )
       {
          req.recovery_account = o.new_recovery_account;
-         req.effective_on = _db.head_block_time() + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
+         req.effective_on = _db.head_block_time() + BMCHAIN_OWNER_AUTH_RECOVERY_PERIOD;
       });
    }
    else // Request exists and changing back to current recovery account
@@ -2259,7 +2259,7 @@ void transfer_from_savings_evaluator::do_apply( const transfer_from_savings_oper
    const auto& from = _db.get_account( op.from );
    _db.get_account(op.to); // Verify to account exists
 
-   FC_ASSERT( from.savings_withdraw_requests < STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT, "Account has reached limit for pending withdraw requests." );
+   FC_ASSERT( from.savings_withdraw_requests < BMCHAIN_SAVINGS_WITHDRAW_REQUEST_LIMIT, "Account has reached limit for pending withdraw requests." );
 
    FC_ASSERT( _db.get_savings_balance( from, op.amount.symbol ) >= op.amount );
    _db.adjust_savings_balance( from, -op.amount );
@@ -2271,7 +2271,7 @@ void transfer_from_savings_evaluator::do_apply( const transfer_from_savings_oper
       from_string( s.memo, op.memo );
 #endif
       s.request_id = op.request_id;
-      s.complete = _db.head_block_time() + STEEMIT_SAVINGS_WITHDRAW_TIME;
+      s.complete = _db.head_block_time() + BMCHAIN_SAVINGS_WITHDRAW_TIME;
    });
 
    _db.modify( from, [&]( account_object& a )
@@ -2308,7 +2308,7 @@ void decline_voting_rights_evaluator::do_apply( const decline_voting_rights_oper
       _db.create< decline_voting_rights_request_object >( [&]( decline_voting_rights_request_object& req )
       {
          req.account = account.id;
-         req.effective_date = _db.head_block_time() + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD;
+         req.effective_date = _db.head_block_time() + BMCHAIN_OWNER_AUTH_RECOVERY_PERIOD;
       });
    }
    else
@@ -2470,7 +2470,7 @@ void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_
       {
          obj.delegator = op.delegator;
          obj.vesting_shares = delta;
-         obj.expiration = std::max( _db.head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time );
+         obj.expiration = std::max( _db.head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time );
       });
 
       _db.modify( delegatee, [&]( account_object& a )

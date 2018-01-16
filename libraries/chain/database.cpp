@@ -151,7 +151,7 @@ void database::reindex( const fc::path& data_dir, const fc::path& shared_mem_dir
       ilog( "Reindexing Blockchain" );
       wipe( data_dir, shared_mem_dir, false );
       //open( data_dir, shared_mem_dir, 0, shared_file_size, chainbase::database::read_write );
-      open( data_dir, shared_mem_dir, STEEMIT_INIT_SUPPLY, shared_file_size, chainbase::database::read_write );
+      open( data_dir, shared_mem_dir, BMCHAIN_INIT_SUPPLY, shared_file_size, chainbase::database::read_write );
       _fork_db.reset();    // override effect of _fork_db.start_block() call in open()
 
       auto start = fc::time_point::now();
@@ -347,7 +347,7 @@ std::vector< block_id_type > database::get_block_ids_on_fork( block_id_type head
 
 chain_id_type database::get_chain_id() const
 {
-   return STEEMIT_CHAIN_ID;
+   return BMCHAIN_CHAIN_ID;
 }
 
 const witness_object& database::get_witness( const account_name_type& name ) const
@@ -453,7 +453,7 @@ const hardfork_property_object& database::get_hardfork_property_object()const
 
 const time_point_sec database::calculate_discussion_payout_time( const comment_object& comment )const
 {
-   if( has_hardfork( STEEMIT_HARDFORK_0_17__769 ) || comment.parent_author == STEEMIT_ROOT_POST_PARENT )
+   if( has_hardfork( STEEMIT_HARDFORK_0_17__769 ) || comment.parent_author == BMCHAIN_ROOT_POST_PARENT )
       return comment.cashout_time;
    else
       return get< comment_object >( comment.root_comment ).cashout_time;
@@ -461,7 +461,7 @@ const time_point_sec database::calculate_discussion_payout_time( const comment_o
 
 const reward_fund_object& database::get_reward_fund( const comment_object& c ) const
 {
-   return get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME );
+   return get< reward_fund_object, by_name >( BMCHAIN_POST_REWARD_FUND_NAME );
 }
 
 void database::pay_fee( const account_object& account, asset fee )
@@ -478,7 +478,7 @@ void database::pay_fee( const account_object& account, asset fee )
 uint32_t database::witness_participation_rate()const
 {
    const dynamic_global_property_object& dpo = get_dynamic_global_properties();
-   return uint64_t(STEEMIT_100_PERCENT) * dpo.recent_slots_filled.popcount() / 128;
+   return uint64_t(BMCHAIN_100_PERCENT) * dpo.recent_slots_filled.popcount() / 128;
 }
 
 void database::add_checkpoints( const flat_map< uint32_t, block_id_type >& checkpts )
@@ -723,7 +723,7 @@ signed_block database::_generate_block(
       FC_ASSERT( witness_obj.signing_key == block_signing_private_key.get_public_key() );
 
    static const size_t max_block_header_size = fc::raw::pack_size( signed_block_header() ) + 4;
-   auto maximum_block_size = get_dynamic_global_properties().maximum_block_size; //STEEMIT_MAX_BLOCK_SIZE;
+   auto maximum_block_size = get_dynamic_global_properties().maximum_block_size; //BMCHAIN_MAX_BLOCK_SIZE;
    size_t total_block_size = max_block_header_size;
 
    signed_block pending_block;
@@ -801,19 +801,19 @@ signed_block database::_generate_block(
    {
       const auto& witness = get_witness( witness_owner );
 
-      if( witness.running_version != STEEMIT_BLOCKCHAIN_VERSION )
-         pending_block.extensions.insert( block_header_extensions( STEEMIT_BLOCKCHAIN_VERSION ) );
+      if( witness.running_version != BMCHAIN_BLOCKCHAIN_VERSION )
+         pending_block.extensions.insert( block_header_extensions( BMCHAIN_BLOCKCHAIN_VERSION ) );
 
       const auto& hfp = get_hardfork_property_object();
 
-      if( hfp.current_hardfork_version < STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
+      if( hfp.current_hardfork_version < BMCHAIN_BLOCKCHAIN_HARDFORK_VERSION // Binary is newer hardfork than has been applied
          && ( witness.hardfork_version_vote != _hardfork_versions[ hfp.last_hardfork + 1 ] || witness.hardfork_time_vote != _hardfork_times[ hfp.last_hardfork + 1 ] ) ) // Witness vote does not match binary configuration
       {
          // Make vote match binary configuration
          pending_block.extensions.insert( block_header_extensions( hardfork_version_vote( _hardfork_versions[ hfp.last_hardfork + 1 ], _hardfork_times[ hfp.last_hardfork + 1 ] ) ) );
       }
-      else if( hfp.current_hardfork_version == STEEMIT_BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
-         && witness.hardfork_version_vote > STEEMIT_BLOCKCHAIN_HARDFORK_VERSION ) // Voting for hardfork in the future, that we do not know of...
+      else if( hfp.current_hardfork_version == BMCHAIN_BLOCKCHAIN_HARDFORK_VERSION // Binary does not know of a new hardfork
+         && witness.hardfork_version_vote > BMCHAIN_BLOCKCHAIN_HARDFORK_VERSION ) // Voting for hardfork in the future, that we do not know of...
       {
          // Make vote match binary configuration. This is vote to not apply the new hardfork.
          pending_block.extensions.insert( block_header_extensions( hardfork_version_vote( _hardfork_versions[ hfp.last_hardfork ], _hardfork_times[ hfp.last_hardfork ] ) ) );
@@ -826,7 +826,7 @@ signed_block database::_generate_block(
    // TODO:  Move this to _push_block() so session is restored.
    if( !(skip & skip_block_size_check) )
    {
-      FC_ASSERT( fc::raw::pack_size(pending_block) <= STEEMIT_MAX_BLOCK_SIZE );
+      FC_ASSERT( fc::raw::pack_size(pending_block) <= BMCHAIN_MAX_BLOCK_SIZE );
    }
 
    push_block( pending_block, skip );
@@ -932,7 +932,7 @@ fc::time_point_sec database::get_slot_time(uint32_t slot_num)const
    if( slot_num == 0 )
       return fc::time_point_sec();
 
-   auto interval = STEEMIT_BLOCK_INTERVAL;
+   auto interval = BMCHAIN_BLOCK_INTERVAL;
    const dynamic_global_property_object& dpo = get_dynamic_global_properties();
 
    if( head_block_num() == 0 )
@@ -957,7 +957,7 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when)const
    fc::time_point_sec first_slot_time = get_slot_time( 1 );
    if( when < first_slot_time )
       return 0;
-   return (when - first_slot_time).to_seconds() / STEEMIT_BLOCK_INTERVAL + 1;
+   return (when - first_slot_time).to_seconds() / BMCHAIN_BLOCK_INTERVAL + 1;
 }
 
 /**
@@ -978,7 +978,7 @@ std::pair< asset, asset > database::create_sbd( const account_object& to_account
 
       if( !median_price.is_null() )
       {
-         auto to_sbd = ( gpo.sbd_print_rate * steem.amount ) / STEEMIT_100_PERCENT;
+         auto to_sbd = ( gpo.sbd_print_rate * steem.amount ) / BMCHAIN_100_PERCENT;
          auto to_steem = steem.amount - to_sbd;
 
          auto sbd = asset( to_sbd, STEEM_SYMBOL ) * median_price;
@@ -1093,20 +1093,20 @@ uint32_t database::get_pow_summary_target()const
 }
 
 void database::adjust_proxied_witness_votes( const account_object& a,
-                                   const std::array< share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH+1 >& delta,
+                                   const std::array< share_type, BMCHAIN_MAX_PROXY_RECURSION_DEPTH+1 >& delta,
                                    int depth )
 {
-   if( a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT )
+   if( a.proxy != BMCHAIN_PROXY_TO_SELF_ACCOUNT )
    {
       /// nested proxies are not supported, vote will not propagate
-      if( depth >= STEEMIT_MAX_PROXY_RECURSION_DEPTH )
+      if( depth >= BMCHAIN_MAX_PROXY_RECURSION_DEPTH )
          return;
 
       const auto& proxy = get_account( a.proxy );
 
       modify( proxy, [&]( account_object& a )
       {
-         for( int i = STEEMIT_MAX_PROXY_RECURSION_DEPTH - depth - 1; i >= 0; --i )
+         for( int i = BMCHAIN_MAX_PROXY_RECURSION_DEPTH - depth - 1; i >= 0; --i )
          {
             a.proxied_vsf_votes[i+depth] += delta[i];
          }
@@ -1117,7 +1117,7 @@ void database::adjust_proxied_witness_votes( const account_object& a,
    else
    {
       share_type total_delta = 0;
-      for( int i = STEEMIT_MAX_PROXY_RECURSION_DEPTH - depth; i >= 0; --i )
+      for( int i = BMCHAIN_MAX_PROXY_RECURSION_DEPTH - depth; i >= 0; --i )
          total_delta += delta[i];
       adjust_witness_votes( a, total_delta );
    }
@@ -1125,10 +1125,10 @@ void database::adjust_proxied_witness_votes( const account_object& a,
 
 void database::adjust_proxied_witness_votes( const account_object& a, share_type delta, int depth )
 {
-   if( a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT )
+   if( a.proxy != BMCHAIN_PROXY_TO_SELF_ACCOUNT )
    {
       /// nested proxies are not supported, vote will not propagate
-      if( depth >= STEEMIT_MAX_PROXY_RECURSION_DEPTH )
+      if( depth >= BMCHAIN_MAX_PROXY_RECURSION_DEPTH )
          return;
 
       const auto& proxy = get_account( a.proxy );
@@ -1205,7 +1205,7 @@ void database::clear_null_account_balance()
 {
    if( !has_hardfork( STEEMIT_HARDFORK_0_14__327 ) ) return;
 
-   const auto& null_account = get_account( STEEMIT_NULL_ACCOUNT );
+   const auto& null_account = get_account( BMCHAIN_NULL_ACCOUNT );
    asset total_steem( 0, STEEM_SYMBOL );
    asset total_sbd( 0, SBD_SYMBOL );
 
@@ -1308,7 +1308,7 @@ void database::adjust_rshares2( const comment_object& c, fc::uint128_t old_rshar
 
 void database::update_owner_authority( const account_object& account, const authority& owner_authority )
 {
-   if( head_block_num() >= STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM )
+   if( head_block_num() >= BMCHAIN_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM )
    {
       create< owner_authority_history_object >( [&]( owner_authority_history_object& hist )
       {
@@ -1361,7 +1361,7 @@ void database::process_vesting_withdrawals()
       {
          if( itr->auto_vest )
          {
-            share_type to_deposit = ( ( fc::uint128_t ( to_withdraw.value ) * itr->percent ) / STEEMIT_100_PERCENT ).to_uint64();
+            share_type to_deposit = ( ( fc::uint128_t ( to_withdraw.value ) * itr->percent ) / BMCHAIN_100_PERCENT ).to_uint64();
             vests_deposited_as_vests += to_deposit;
 
             if( to_deposit > 0 )
@@ -1388,7 +1388,7 @@ void database::process_vesting_withdrawals()
          {
             const auto& to_account = get(itr->to_account);
 
-            share_type to_deposit = ( ( fc::uint128_t ( to_withdraw.value ) * itr->percent ) / STEEMIT_100_PERCENT ).to_uint64();
+            share_type to_deposit = ( ( fc::uint128_t ( to_withdraw.value ) * itr->percent ) / BMCHAIN_100_PERCENT ).to_uint64();
             vests_deposited_as_steem += to_deposit;
             auto converted_steem = asset( to_deposit, VESTS_SYMBOL ) * cprops.get_vesting_share_price();
             total_steem_converted += converted_steem;
@@ -1429,7 +1429,7 @@ void database::process_vesting_withdrawals()
          }
          else
          {
-            a.next_vesting_withdrawal += fc::seconds( STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS );
+            a.next_vesting_withdrawal += fc::seconds( BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS );
          }
       });
 
@@ -1538,7 +1538,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
          if( reward_tokens > 0 )
          {
-            share_type curation_tokens = ( ( reward_tokens * get_curation_rewards_percent( comment ) ) / STEEMIT_100_PERCENT ).to_uint64();
+            share_type curation_tokens = ( ( reward_tokens * get_curation_rewards_percent( comment ) ) / BMCHAIN_100_PERCENT ).to_uint64();
             share_type author_tokens = reward_tokens.to_uint64() - curation_tokens;
 
             author_tokens += pay_curators( comment, curation_tokens );
@@ -1547,7 +1547,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             for( auto& b : comment.beneficiaries )
             {
-               auto benefactor_tokens = ( author_tokens * b.weight ) / STEEMIT_100_PERCENT;
+               auto benefactor_tokens = ( author_tokens * b.weight ) / BMCHAIN_100_PERCENT;
                auto vest_created = create_vesting( get_account( b.account ), benefactor_tokens, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
                push_virtual_operation( comment_benefactor_reward_operation( b.account, comment.author, to_string( comment.permlink ), vest_created ) );
                total_beneficiary += benefactor_tokens;
@@ -1555,7 +1555,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             author_tokens -= total_beneficiary;
 
-            auto sbd_steem = (author_tokens * comment.percent_steem_dollars) / (2 * STEEMIT_100_PERCENT);
+            auto sbd_steem = (author_tokens * comment.percent_steem_dollars) / (2 * BMCHAIN_100_PERCENT);
             auto vesting_steem = author_tokens - sbd_steem;
 
             const auto &author = get_account(comment.author);
@@ -1601,9 +1601,9 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
            if (has_hardfork(STEEMIT_HARDFORK_0_17__769)) {
                c.cashout_time = fc::time_point_sec::maximum();
-           } else if (c.parent_author == STEEMIT_ROOT_POST_PARENT) {
+           } else if (c.parent_author == BMCHAIN_ROOT_POST_PARENT) {
                if (has_hardfork(STEEMIT_HARDFORK_0_12__177) && c.last_payout == fc::time_point_sec::min())
-                   c.cashout_time = head_block_time() + STEEMIT_SECOND_CASHOUT_WINDOW;
+                   c.cashout_time = head_block_time() + BMCHAIN_SECOND_CASHOUT_WINDOW;
                else
                    c.cashout_time = fc::time_point_sec::maximum();
            }
@@ -1668,9 +1668,9 @@ void database::process_comment_cashout()
          fc::microseconds decay_rate;
 
          if( has_hardfork( STEEMIT_HARDFORK_0_19__1051 ) )
-            decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF19;
+            decay_rate = BMCHAIN_RECENT_RSHARES_DECAY_RATE_HF19;
          else
-            decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF17;
+            decay_rate = BMCHAIN_RECENT_RSHARES_DECAY_RATE_HF17;
 
          //rfo.recent_claims -= ( rfo.recent_claims * ( head_block_time() - rfo.last_update ).to_seconds() ) / decay_rate.to_seconds();
          rfo.last_update = head_block_time();
@@ -1789,22 +1789,22 @@ void database::process_funds()
       * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
       * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
       */
-      int64_t start_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_START_PERCENT );
-      int64_t inflation_rate_adjustment = int64_t( (head_block_num()) / STEEMIT_INFLATION_NARROWING_PERIOD );
-      int64_t inflation_rate_floor = int64_t( STEEMIT_INFLATION_RATE_STOP_PERCENT );
+      int64_t start_inflation_rate = int64_t( BMCHAIN_INFLATION_RATE_START_PERCENT );
+      int64_t inflation_rate_adjustment = int64_t( (head_block_num()) / BMCHAIN_INFLATION_NARROWING_PERIOD );
+      int64_t inflation_rate_floor = int64_t( BMCHAIN_INFLATION_RATE_STOP_PERCENT );
 
       // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
       int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
 
-      auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
-      auto content_reward = ( new_steem * (STEEMIT_CONTENT_REWARD_PERCENT + STEEMIT_VESTING_FUND_PERCENT) ) / STEEMIT_100_PERCENT;
+      auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( BMCHAIN_100_PERCENT ) * int64_t( BMCHAIN_BLOCKS_PER_YEAR ) );
+      auto content_reward = ( new_steem * (BMCHAIN_CONTENT_REWARD_PERCENT + BMCHAIN_VESTING_FUND_PERCENT) ) / BMCHAIN_100_PERCENT;
       if( has_hardfork( STEEMIT_HARDFORK_0_17__774 ) )
          content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
-      auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+      auto vesting_reward = ( new_steem * BMCHAIN_VESTING_FUND_PERCENT ) / BMCHAIN_100_PERCENT; /// 15% to vesting fund
       auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
       const auto& cwit = get_witness( props.current_witness );
-      witness_reward *= STEEMIT_MAX_WITNESSES;
+      witness_reward *= BMCHAIN_MAX_WITNESSES;
 
       if( cwit.schedule == witness_object::timeshare )
          witness_reward *= wso.timeshare_weight;
@@ -1841,7 +1841,7 @@ void database::process_funds()
 
       content_reward = content_reward + curate_reward;
 
-      if( props.head_block_number < STEEMIT_START_VESTING_BLOCK )
+      if( props.head_block_number < BMCHAIN_START_VESTING_BLOCK )
          vesting_reward.amount = 0;
       else
          vesting_reward.amount.value *= 9;
@@ -1883,37 +1883,37 @@ asset database::get_liquidity_reward()const
       return asset( 0, STEEM_SYMBOL );
 
    const auto& props = get_dynamic_global_properties();
-   static_assert( STEEMIT_LIQUIDITY_REWARD_PERIOD_SEC == 60*60, "this code assumes a 1 hour time interval" );
-   asset percent( protocol::calc_percent_reward_per_hour< STEEMIT_LIQUIDITY_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL );
-   return std::max( percent, STEEMIT_MIN_LIQUIDITY_REWARD );
+   static_assert( BMCHAIN_LIQUIDITY_REWARD_PERIOD_SEC == 60*60, "this code assumes a 1 hour time interval" );
+   asset percent( protocol::calc_percent_reward_per_hour< BMCHAIN_LIQUIDITY_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL );
+   return std::max( percent, BMCHAIN_MIN_LIQUIDITY_REWARD );
 }
 
 asset database::get_content_reward()const
 {
    const auto& props = get_dynamic_global_properties();
-   static_assert( STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
-   asset percent( protocol::calc_percent_reward_per_block< STEEMIT_CONTENT_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL );
-   return std::max( percent, STEEMIT_MIN_CONTENT_REWARD );
+   static_assert( BMCHAIN_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
+   asset percent( protocol::calc_percent_reward_per_block< BMCHAIN_CONTENT_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL );
+   return std::max( percent, BMCHAIN_MIN_CONTENT_REWARD );
 }
 
 asset database::get_curation_reward()const
 {
    const auto& props = get_dynamic_global_properties();
-   static_assert( STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
-   asset percent( protocol::calc_percent_reward_per_block< STEEMIT_CURATE_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
-   return std::max( percent, STEEMIT_MIN_CURATE_REWARD );
+   static_assert( BMCHAIN_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
+   asset percent( protocol::calc_percent_reward_per_block< BMCHAIN_CURATE_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
+   return std::max( percent, BMCHAIN_MIN_CURATE_REWARD );
 }
 
 asset database::get_producer_reward()
 {
    const auto& props = get_dynamic_global_properties();
-   static_assert( STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
-   asset percent( protocol::calc_percent_reward_per_block< STEEMIT_PRODUCER_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
-   auto pay = std::max( percent, STEEMIT_MIN_PRODUCER_REWARD );
+   static_assert( BMCHAIN_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
+   asset percent( protocol::calc_percent_reward_per_block< BMCHAIN_PRODUCER_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
+   auto pay = std::max( percent, BMCHAIN_MIN_PRODUCER_REWARD );
    const auto& witness_account = get_account( props.current_witness );
 
    /// pay witness in vesting shares
-   if( props.head_block_number >= STEEMIT_START_MINER_VOTING_BLOCK || (witness_account.vesting_shares.amount.value == 0) ) {
+   if( props.head_block_number >= BMCHAIN_START_MINER_VOTING_BLOCK || (witness_account.vesting_shares.amount.value == 0) ) {
       // const auto& witness_obj = get_witness( props.current_witness );
       const auto& producer_reward = create_vesting( witness_account, pay );
       push_virtual_operation( producer_reward_operation( witness_account.name, producer_reward ) );
@@ -1935,14 +1935,14 @@ asset database::get_pow_reward()const
 
 #ifndef IS_TEST_NET
    /// 0 block rewards until at least STEEMIT_MAX_WITNESSES have produced a POW
-   if( props.num_pow_witnesses < STEEMIT_MAX_WITNESSES && props.head_block_number < STEEMIT_START_VESTING_BLOCK )
+   if( props.num_pow_witnesses < BMCHAIN_MAX_WITNESSES && props.head_block_number < BMCHAIN_START_VESTING_BLOCK )
       return asset( 0, STEEM_SYMBOL );
 #endif
 
-   static_assert( STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
-   static_assert( STEEMIT_MAX_WITNESSES == 21, "this code assumes 21 per round" );
-   asset percent( calc_percent_reward_per_round< STEEMIT_POW_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
-   return std::max( percent, STEEMIT_MIN_POW_REWARD );
+   static_assert( BMCHAIN_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
+   static_assert( BMCHAIN_MAX_WITNESSES == 21, "this code assumes 21 per round" );
+   asset percent( calc_percent_reward_per_round< BMCHAIN_POW_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
+   return std::max( percent, BMCHAIN_MIN_POW_REWARD );
 }
 
 
@@ -1953,7 +1953,7 @@ void database::pay_liquidity_reward()
       return;
 #endif
 
-   if( (head_block_num() % STEEMIT_LIQUIDITY_REWARD_BLOCKS) == 0 )
+   if( (head_block_num() % BMCHAIN_LIQUIDITY_REWARD_BLOCKS) == 0 )
    {
       auto reward = get_liquidity_reward();
 
@@ -1984,9 +1984,9 @@ uint16_t database::get_curation_rewards_percent( const comment_object& c ) const
    if( has_hardfork( STEEMIT_HARDFORK_0_17__774 ) )
       return get_reward_fund( c ).percent_curation_rewards;
    else if( has_hardfork( STEEMIT_HARDFORK_0_8__116 ) )
-      return STEEMIT_1_PERCENT * 25;
+      return BMCHAIN_1_PERCENT * 25;
    else
-      return STEEMIT_1_PERCENT * 50;
+      return BMCHAIN_1_PERCENT * 50;
 }
 
 share_type database::pay_reward_funds( share_type reward )
@@ -1997,7 +1997,7 @@ share_type database::pay_reward_funds( share_type reward )
    for( auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr )
    {
       // reward is a per block reward and the percents are 16-bit. This should never overflow
-      auto r = ( reward * itr->percent_content_rewards ) / STEEMIT_100_PERCENT;
+      auto r = ( reward * itr->percent_content_rewards ) / BMCHAIN_100_PERCENT;
 
       modify( *itr, [&]( reward_fund_object& rfo )
       {
@@ -2083,7 +2083,7 @@ void database::account_recovery_processing()
    const auto& hist_idx = get_index< owner_authority_history_index >().indices(); //by id
    auto hist = hist_idx.begin();
 
-   while( hist != hist_idx.end() && time_point_sec( hist->last_valid_time + STEEMIT_OWNER_AUTH_RECOVERY_PERIOD ) < head_block_time() )
+   while( hist != hist_idx.end() && time_point_sec( hist->last_valid_time + BMCHAIN_OWNER_AUTH_RECOVERY_PERIOD ) < head_block_time() )
    {
       remove( *hist );
       hist = hist_idx.begin();
@@ -2134,9 +2134,9 @@ void database::process_decline_voting_rights()
       const auto& account = get(itr->account);
 
       /// remove all current votes
-      std::array<share_type, STEEMIT_MAX_PROXY_RECURSION_DEPTH+1> delta;
+      std::array<share_type, BMCHAIN_MAX_PROXY_RECURSION_DEPTH+1> delta;
       delta[0] = -account.vesting_shares.amount;
-      for( int i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i )
+      for( int i = 0; i < BMCHAIN_MAX_PROXY_RECURSION_DEPTH; ++i )
          delta[i+1] = -account.proxied_vsf_votes[i];
       adjust_proxied_witness_votes( account, delta );
 
@@ -2145,7 +2145,7 @@ void database::process_decline_voting_rights()
       modify( get(itr->account), [&]( account_object& a )
       {
          a.can_vote = false;
-         a.proxy = STEEMIT_PROXY_TO_SELF_ACCOUNT;
+         a.proxy = BMCHAIN_PROXY_TO_SELF_ACCOUNT;
       });
 
       remove( *itr );
@@ -2362,49 +2362,49 @@ void database::init_genesis( uint64_t init_supply )
 
       create< account_object >( [&]( account_object& a )
       {
-         a.name = STEEMIT_MINER_ACCOUNT;
+         a.name = BMCHAIN_MINER_ACCOUNT;
       } );
       create< account_authority_object >( [&]( account_authority_object& auth )
       {
-         auth.account = STEEMIT_MINER_ACCOUNT;
+         auth.account = BMCHAIN_MINER_ACCOUNT;
          auth.owner.weight_threshold = 1;
          auth.active.weight_threshold = 1;
       });
 
       create< account_object >( [&]( account_object& a )
       {
-         a.name = STEEMIT_NULL_ACCOUNT;
+         a.name = BMCHAIN_NULL_ACCOUNT;
       } );
       create< account_authority_object >( [&]( account_authority_object& auth )
       {
-         auth.account = STEEMIT_NULL_ACCOUNT;
+         auth.account = BMCHAIN_NULL_ACCOUNT;
          auth.owner.weight_threshold = 1;
          auth.active.weight_threshold = 1;
       });
 
       create< account_object >( [&]( account_object& a )
       {
-         a.name = STEEMIT_TEMP_ACCOUNT;
+         a.name = BMCHAIN_TEMP_ACCOUNT;
       } );
       create< account_authority_object >( [&]( account_authority_object& auth )
       {
-         auth.account = STEEMIT_TEMP_ACCOUNT;
+         auth.account = BMCHAIN_TEMP_ACCOUNT;
          auth.owner.weight_threshold = 0;
          auth.active.weight_threshold = 0;
       });
 
-      for( int i = 0; i < STEEMIT_NUM_INIT_MINERS; ++i )
+      for( int i = 0; i < BMCHAIN_NUM_INIT_MINERS; ++i )
       {
          create< account_object >( [&]( account_object& a )
          {
-            a.name = STEEMIT_INIT_MINER_NAME + ( i ? fc::to_string( i ) : std::string() );
+            a.name = BMCHAIN_INIT_MINER_NAME + ( i ? fc::to_string( i ) : std::string() );
             a.memo_key = init_public_key;
             a.balance  = asset( i ? 0 : init_supply, STEEM_SYMBOL );
          } );
 
          create< account_authority_object >( [&]( account_authority_object& auth )
          {
-            auth.account = STEEMIT_INIT_MINER_NAME + ( i ? fc::to_string( i ) : std::string() );
+            auth.account = BMCHAIN_INIT_MINER_NAME + ( i ? fc::to_string( i ) : std::string() );
             auth.owner.add_authority( init_public_key, 1 );
             auth.owner.weight_threshold = 1;
             auth.active  = auth.owner;
@@ -2413,7 +2413,7 @@ void database::init_genesis( uint64_t init_supply )
 
          create< witness_object >( [&]( witness_object& w )
          {
-            w.owner        = STEEMIT_INIT_MINER_NAME + ( i ? fc::to_string(i) : std::string() );
+            w.owner        = BMCHAIN_INIT_MINER_NAME + ( i ? fc::to_string(i) : std::string() );
             w.signing_key  = init_public_key;
             w.schedule = witness_object::miner;
          } );
@@ -2421,13 +2421,13 @@ void database::init_genesis( uint64_t init_supply )
 
       create< dynamic_global_property_object >( [&]( dynamic_global_property_object& p )
       {
-         p.current_witness = STEEMIT_INIT_MINER_NAME;
-         p.time = STEEMIT_GENESIS_TIME;
+         p.current_witness = BMCHAIN_INIT_MINER_NAME;
+         p.time = BMCHAIN_GENESIS_TIME;
          p.recent_slots_filled = fc::uint128::max_value();
          p.participation_count = 128;
          p.current_supply = asset( init_supply, STEEM_SYMBOL );
          p.virtual_supply = p.current_supply;
-         p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
+         p.maximum_block_size = BMCHAIN_MAX_BLOCK_SIZE;
       } );
 
       // Nothing to do
@@ -2436,13 +2436,13 @@ void database::init_genesis( uint64_t init_supply )
          create< block_summary_object >( [&]( block_summary_object& ) {});
       create< hardfork_property_object >( [&](hardfork_property_object& hpo )
       {
-         hpo.processed_hardforks.push_back( STEEMIT_GENESIS_TIME );
+         hpo.processed_hardforks.push_back( BMCHAIN_GENESIS_TIME );
       } );
 
       // Create witness scheduler
       create< witness_schedule_object >( [&]( witness_schedule_object& wso )
       {
-         wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
+         wso.current_shuffled_witnesses[0] = BMCHAIN_INIT_MINER_NAME;
       } );
 
 #if BMCHAIN_INIT_HARDFORK != 0
@@ -2628,10 +2628,10 @@ void database::_apply_block( const signed_block& next_block )
       FC_ASSERT( block_size <= gprops.maximum_block_size, "Block Size is too Big", ("next_block_num",next_block_num)("block_size", block_size)("max",gprops.maximum_block_size) );
    }
 
-   if( block_size < STEEMIT_MIN_BLOCK_SIZE )
+   if( block_size < BMCHAIN_MIN_BLOCK_SIZE )
    {
       elog( "Block size is too small",
-         ("next_block_num",next_block_num)("block_size", block_size)("min",STEEMIT_MIN_BLOCK_SIZE)
+         ("next_block_num",next_block_num)("block_size", block_size)("min",BMCHAIN_MIN_BLOCK_SIZE)
       );
    }
 
@@ -2758,7 +2758,7 @@ void database::process_header_extensions( const signed_block& next_block )
 
 void database::update_median_feed() {
 try {
-   if( (head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0 )
+   if( (head_block_num() % BMCHAIN_FEED_INTERVAL_BLOCKS) != 0 )
       return;
 
    auto now = head_block_time();
@@ -2769,20 +2769,20 @@ try {
       const auto& wit = get_witness( wso.current_shuffled_witnesses[i] );
       if( has_hardfork( STEEMIT_HARDFORK_0_19__822 ) )
       {
-         if( now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE_SECONDS
+         if( now < wit.last_sbd_exchange_update + BMCHAIN_MAX_FEED_AGE_SECONDS
             && !wit.sbd_exchange_rate.is_null() )
          {
             feeds.push_back( wit.sbd_exchange_rate );
          }
       }
-      else if( wit.last_sbd_exchange_update < now + STEEMIT_MAX_FEED_AGE_SECONDS &&
+      else if( wit.last_sbd_exchange_update < now + BMCHAIN_MAX_FEED_AGE_SECONDS &&
           !wit.sbd_exchange_rate.is_null() )
       {
          feeds.push_back( wit.sbd_exchange_rate );
       }
    }
 
-   if( feeds.size() >= STEEMIT_MIN_FEEDS )
+   if( feeds.size() >= BMCHAIN_MIN_FEEDS )
    {
       std::sort( feeds.begin(), feeds.end() );
       auto median_feed = feeds[feeds.size()/2];
@@ -2790,9 +2790,9 @@ try {
       modify( get_feed_history(), [&]( feed_history_object& fho )
       {
          fho.price_history.push_back( median_feed );
-         size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16;
+         size_t steemit_feed_history_window = BMCHAIN_FEED_HISTORY_WINDOW_PRE_HF_16;
          if( has_hardfork( STEEMIT_HARDFORK_0_16__551) )
-            steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
+            steemit_feed_history_window = BMCHAIN_FEED_HISTORY_WINDOW;
 
          if( fho.price_history.size() > steemit_feed_history_window )
             fho.price_history.pop_front();
@@ -2840,7 +2840,7 @@ void database::_apply_transaction(const signed_transaction& trx)
       trx.validate();
 
    auto& trx_idx = get_index<transaction_index>();
-   const chain_id_type& chain_id = STEEMIT_CHAIN_ID;
+   const chain_id_type& chain_id = BMCHAIN_CHAIN_ID;
    auto trx_id = trx.id();
    // idump((trx_id)(skip&skip_transaction_dupe_check));
    FC_ASSERT( (skip & skip_transaction_dupe_check) ||
@@ -2879,8 +2879,8 @@ void database::_apply_transaction(const signed_transaction& trx)
 
       fc::time_point_sec now = head_block_time();
 
-      STEEMIT_ASSERT( trx.expiration <= now + fc::seconds(STEEMIT_MAX_TIME_UNTIL_EXPIRATION), transaction_expiration_exception,
-                  "", ("trx.expiration",trx.expiration)("now",now)("max_til_exp",STEEMIT_MAX_TIME_UNTIL_EXPIRATION));
+      STEEMIT_ASSERT( trx.expiration <= now + fc::seconds(BMCHAIN_MAX_TIME_UNTIL_EXPIRATION), transaction_expiration_exception,
+                  "", ("trx.expiration",trx.expiration)("now",now)("max_til_exp",BMCHAIN_MAX_TIME_UNTIL_EXPIRATION));
       if( has_hardfork( STEEMIT_HARDFORK_0_9 ) ) // Simple solution to pending trx bug when now == trx.expiration
          STEEMIT_ASSERT( now < trx.expiration, transaction_expiration_exception, "", ("now",now)("trx.exp",trx.expiration) );
       STEEMIT_ASSERT( now <= trx.expiration, transaction_expiration_exception, "", ("now",now)("trx.exp",trx.expiration) );
@@ -2970,7 +2970,7 @@ void database::update_global_dynamic_data( const signed_block& b )
                w.total_missed++;
                if( has_hardfork( STEEMIT_HARDFORK_0_14__278 ) )
                {
-                  if( head_block_num() - w.last_confirmed_block_num  > STEEMIT_BLOCKS_PER_DAY )
+                  if( head_block_num() - w.last_confirmed_block_num  > BMCHAIN_BLOCKS_PER_DAY )
                   {
                      w.signing_key = public_key_type();
                      push_virtual_operation( shutdown_witness_operation( w.owner ) );
@@ -3000,11 +3000,11 @@ void database::update_global_dynamic_data( const signed_block& b )
 
    if( !(get_node_properties().skip_flags & skip_undo_history_check) )
    {
-      STEEMIT_ASSERT( _dgp.head_block_number - _dgp.last_irreversible_block_num  < STEEMIT_MAX_UNDO_HISTORY, undo_database_exception,
+      STEEMIT_ASSERT( _dgp.head_block_number - _dgp.last_irreversible_block_num  < BMCHAIN_MAX_UNDO_HISTORY, undo_database_exception,
                  "The database does not have enough undo history to support a blockchain with so many missed blocks. "
                  "Please add a checkpoint if you would like to continue applying blocks beyond this point.",
                  ("last_irreversible_block_num",_dgp.last_irreversible_block_num)("head", _dgp.head_block_number)
-                 ("max_undo",STEEMIT_MAX_UNDO_HISTORY) );
+                 ("max_undo",BMCHAIN_MAX_UNDO_HISTORY) );
    }
 } FC_CAPTURE_AND_RETHROW() }
 
@@ -3020,15 +3020,15 @@ void database::update_virtual_supply()
 
       if( !median_price.is_null() && has_hardfork( STEEMIT_HARDFORK_0_14__230 ) )
       {
-         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEMIT_100_PERCENT )
+         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * BMCHAIN_100_PERCENT )
             / dgp.virtual_supply.amount.value ).to_uint64() );
 
-         if( percent_sbd <= STEEMIT_SBD_START_PERCENT )
-            dgp.sbd_print_rate = STEEMIT_100_PERCENT;
-         else if( percent_sbd >= STEEMIT_SBD_STOP_PERCENT )
+         if( percent_sbd <= BMCHAIN_SBD_START_PERCENT )
+            dgp.sbd_print_rate = BMCHAIN_100_PERCENT;
+         else if( percent_sbd >= BMCHAIN_SBD_STOP_PERCENT )
             dgp.sbd_print_rate = 0;
          else
-            dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
+            dgp.sbd_print_rate = ( ( BMCHAIN_SBD_STOP_PERCENT - percent_sbd ) * BMCHAIN_100_PERCENT ) / ( BMCHAIN_SBD_STOP_PERCENT - BMCHAIN_SBD_START_PERCENT );
       }*/
    });
 } FC_CAPTURE_AND_RETHROW() }
@@ -3053,12 +3053,12 @@ void database::update_last_irreversible_block()
     * Prior to voting taking over, we must be more conservative...
     *
     */
-   if( head_block_num() < STEEMIT_START_MINER_VOTING_BLOCK )
+   if( head_block_num() < BMCHAIN_START_MINER_VOTING_BLOCK )
    {
       modify( dpo, [&]( dynamic_global_property_object& _dpo )
       {
-         if ( head_block_num() > STEEMIT_MAX_WITNESSES )
-            _dpo.last_irreversible_block_num = head_block_num() - STEEMIT_MAX_WITNESSES;
+         if ( head_block_num() > BMCHAIN_MAX_WITNESSES )
+            _dpo.last_irreversible_block_num = head_block_num() - BMCHAIN_MAX_WITNESSES;
       } );
    }
    else
@@ -3070,13 +3070,13 @@ void database::update_last_irreversible_block()
       for( int i = 0; i < wso.num_scheduled_witnesses; i++ )
          wit_objs.push_back( &get_witness( wso.current_shuffled_witnesses[i] ) );
 
-      static_assert( STEEMIT_IRREVERSIBLE_THRESHOLD > 0, "irreversible threshold must be nonzero" );
+      static_assert( BMCHAIN_IRREVERSIBLE_THRESHOLD > 0, "irreversible threshold must be nonzero" );
 
       // 1 1 1 2 2 2 2 2 2 2 -> 2     .7*10 = 7
       // 1 1 1 1 1 1 1 2 2 2 -> 1
       // 3 3 3 3 3 3 3 3 3 3 -> 3
 
-      size_t offset = ((STEEMIT_100_PERCENT - STEEMIT_IRREVERSIBLE_THRESHOLD) * wit_objs.size() / STEEMIT_100_PERCENT);
+      size_t offset = ((BMCHAIN_100_PERCENT - BMCHAIN_IRREVERSIBLE_THRESHOLD) * wit_objs.size() / BMCHAIN_100_PERCENT);
 
       std::nth_element( wit_objs.begin(), wit_objs.begin() + offset, wit_objs.end(),
          []( const witness_object* a, const witness_object* b )
@@ -3182,7 +3182,7 @@ int database::match( const limit_order_object& new_order, const limit_order_obje
 
    auto age = head_block_time() - old_order.created;
    if( !has_hardfork( STEEMIT_HARDFORK_0_12__178 ) &&
-       ( (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC && !has_hardfork( STEEMIT_HARDFORK_0_10__149)) ||
+       ( (age >= BMCHAIN_MIN_LIQUIDITY_REWARD_PERIOD_SEC && !has_hardfork( STEEMIT_HARDFORK_0_10__149)) ||
        (age >= STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 && has_hardfork( STEEMIT_HARDFORK_0_10__149) ) ) )
    {
       if( old_order_receives.symbol == STEEM_SYMBOL )
@@ -3215,7 +3215,7 @@ void database::adjust_liquidity_reward( const account_object& owner, const asset
    {
       modify<liquidity_reward_balance_object>( *itr, [&]( liquidity_reward_balance_object& r )
       {
-         if( head_block_time() - r.last_update >= STEEMIT_LIQUIDITY_TIMEOUT_SEC )
+         if( head_block_time() - r.last_update >= BMCHAIN_LIQUIDITY_TIMEOUT_SEC )
          {
             r.sbd_volume = 0;
             r.steem_volume = 0;
@@ -3351,11 +3351,11 @@ void database::adjust_balance( const account_object& a, const asset& delta )
                acnt.sbd_seconds_last_update = head_block_time();
 
                if( acnt.sbd_seconds > 0 &&
-                   (acnt.sbd_seconds_last_update - acnt.sbd_last_interest_payment).to_seconds() > STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
+                   (acnt.sbd_seconds_last_update - acnt.sbd_last_interest_payment).to_seconds() > BMCHAIN_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
                {
-                  auto interest = acnt.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
+                  auto interest = acnt.sbd_seconds / BMCHAIN_SECONDS_PER_YEAR;
                   interest *= get_dynamic_global_properties().sbd_interest_rate;
-                  interest /= STEEMIT_100_PERCENT;
+                  interest /= BMCHAIN_100_PERCENT;
                   asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
                   acnt.sbd_balance += interest_paid;
                   acnt.sbd_seconds = 0;
@@ -3396,11 +3396,11 @@ void database::adjust_savings_balance( const account_object& a, const asset& del
                acnt.savings_sbd_seconds_last_update = head_block_time();
 
                if( acnt.savings_sbd_seconds > 0 &&
-                   (acnt.savings_sbd_seconds_last_update - acnt.savings_sbd_last_interest_payment).to_seconds() > STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
+                   (acnt.savings_sbd_seconds_last_update - acnt.savings_sbd_last_interest_payment).to_seconds() > BMCHAIN_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
                {
-                  auto interest = acnt.savings_sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
+                  auto interest = acnt.savings_sbd_seconds / BMCHAIN_SECONDS_PER_YEAR;
                   interest *= get_dynamic_global_properties().sbd_interest_rate;
-                  interest /= STEEMIT_100_PERCENT;
+                  interest /= BMCHAIN_100_PERCENT;
                   asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
                   acnt.savings_sbd_balance += interest_paid;
                   acnt.savings_sbd_seconds = 0;
@@ -3448,7 +3448,7 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
 {
 
    const auto& props = get_dynamic_global_properties();
-   if( props.head_block_number < STEEMIT_BLOCKS_PER_DAY*7 )
+   if( props.head_block_number < BMCHAIN_BLOCKS_PER_DAY*7 )
       adjust_vesting = false;
 
    modify( props, [&]( dynamic_global_property_object& props )
@@ -3504,7 +3504,7 @@ asset database::get_savings_balance( const account_object& a, asset_symbol_type 
 
 void database::init_hardforks()
 {
-   _hardfork_times[ 0 ] = fc::time_point_sec( STEEMIT_GENESIS_TIME );
+   _hardfork_times[ 0 ] = fc::time_point_sec( BMCHAIN_GENESIS_TIME );
    _hardfork_versions[ 0 ] = hardfork_version( 0, 0 );
    FC_ASSERT( STEEMIT_HARDFORK_0_1 == 1, "Invalid hardfork configuration" );
    _hardfork_times[ STEEMIT_HARDFORK_0_1 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_1_TIME );
@@ -3567,8 +3567,8 @@ void database::init_hardforks()
 
    const auto& hardforks = get_hardfork_property_object();
    FC_ASSERT( hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("STEEMIT_NUM_HARDFORKS",STEEMIT_NUM_HARDFORKS) );
-   FC_ASSERT( _hardfork_versions[ hardforks.last_hardfork ] <= STEEMIT_BLOCKCHAIN_VERSION, "Blockchain version is older than last applied hardfork" );
-   FC_ASSERT( STEEMIT_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[ STEEMIT_NUM_HARDFORKS ] );
+   FC_ASSERT( _hardfork_versions[ hardforks.last_hardfork ] <= BMCHAIN_BLOCKCHAIN_VERSION, "Blockchain version is older than last applied hardfork" );
+   FC_ASSERT( BMCHAIN_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[ STEEMIT_NUM_HARDFORKS ] );
 }
 
 void database::process_hardforks()
@@ -3644,7 +3644,7 @@ void database::apply_hardfork( uint32_t hardfork )
             custom_operation test_op;
             string op_msg = "Testnet: Hardfork applied";
             test_op.data = vector< char >( op_msg.begin(), op_msg.end() );
-            test_op.required_auths.insert( STEEMIT_INIT_MINER_NAME );
+            test_op.required_auths.insert( BMCHAIN_INIT_MINER_NAME );
             operation op = test_op;   // we need the operation object to live to the end of this scope
             operation_notification note( op );
             notify_pre_apply_operation( note );
@@ -3705,14 +3705,14 @@ void database::apply_hardfork( uint32_t hardfork )
                // At the hardfork time, all new posts with no votes get their cashout time set to +12 hrs from head block time.
                // All posts with a payout get their cashout time set to +30 days. This hardfork takes place within 30 days
                // initial payout so we don't have to handle the case of posts that should be frozen that aren't
-               if( itr->parent_author == STEEMIT_ROOT_POST_PARENT )
+               if( itr->parent_author == BMCHAIN_ROOT_POST_PARENT )
                {
                   // Post has not been paid out and has no votes (cashout_time == 0 === net_rshares == 0, under current semmantics)
                   if( itr->last_payout == fc::time_point_sec::min() && itr->cashout_time == fc::time_point_sec::maximum() )
                   {
                      modify( *itr, [&]( comment_object & c )
                      {
-                        c.cashout_time = head_block_time() + STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+                        c.cashout_time = head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
                      });
                   }
                   // Has been paid out, needs to be on second cashout window
@@ -3720,25 +3720,25 @@ void database::apply_hardfork( uint32_t hardfork )
                   {
                      modify( *itr, [&]( comment_object& c )
                      {
-                        c.cashout_time = c.last_payout + STEEMIT_SECOND_CASHOUT_WINDOW;
+                        c.cashout_time = c.last_payout + BMCHAIN_SECOND_CASHOUT_WINDOW;
                      });
                   }
                }
             }
 
-            modify( get< account_authority_object, by_account >( STEEMIT_MINER_ACCOUNT ), [&]( account_authority_object& auth )
+            modify( get< account_authority_object, by_account >( BMCHAIN_MINER_ACCOUNT ), [&]( account_authority_object& auth )
             {
                auth.posting = authority();
                auth.posting.weight_threshold = 1;
             });
 
-            modify( get< account_authority_object, by_account >( STEEMIT_NULL_ACCOUNT ), [&]( account_authority_object& auth )
+            modify( get< account_authority_object, by_account >( BMCHAIN_NULL_ACCOUNT ), [&]( account_authority_object& auth )
             {
                auth.posting = authority();
                auth.posting.weight_threshold = 1;
             });
 
-            modify( get< account_authority_object, by_account >( STEEMIT_TEMP_ACCOUNT ), [&]( account_authority_object& auth )
+            modify( get< account_authority_object, by_account >( BMCHAIN_TEMP_ACCOUNT ), [&]( account_authority_object& auth )
             {
                auth.posting = authority();
                auth.posting.weight_threshold = 1;
@@ -3755,7 +3755,7 @@ void database::apply_hardfork( uint32_t hardfork )
          {
             modify( get_feed_history(), [&]( feed_history_object& fho )
             {
-               while( fho.price_history.size() > STEEMIT_FEED_HISTORY_WINDOW )
+               while( fho.price_history.size() > BMCHAIN_FEED_HISTORY_WINDOW )
                   fho.price_history.pop_front();
             });
          }
@@ -3763,28 +3763,28 @@ void database::apply_hardfork( uint32_t hardfork )
       case STEEMIT_HARDFORK_0_17:
          {
             static_assert(
-               STEEMIT_MAX_VOTED_WITNESSES_HF0 + STEEMIT_MAX_MINER_WITNESSES_HF0 + STEEMIT_MAX_RUNNER_WITNESSES_HF0 == STEEMIT_MAX_WITNESSES,
-               "HF0 witness counts must add up to STEEMIT_MAX_WITNESSES" );
+               BMCHAIN_MAX_VOTED_WITNESSES_HF0 + BMCHAIN_MAX_MINER_WITNESSES_HF0 + BMCHAIN_MAX_RUNNER_WITNESSES_HF0 == BMCHAIN_MAX_WITNESSES,
+               "HF0 witness counts must add up to BMCHAIN_MAX_WITNESSES" );
             static_assert(
-               STEEMIT_MAX_VOTED_WITNESSES_HF17 + STEEMIT_MAX_MINER_WITNESSES_HF17 + STEEMIT_MAX_RUNNER_WITNESSES_HF17 == STEEMIT_MAX_WITNESSES,
-               "HF17 witness counts must add up to STEEMIT_MAX_WITNESSES" );
+               BMCHAIN_MAX_VOTED_WITNESSES_HF17 + BMCHAIN_MAX_MINER_WITNESSES_HF17 + BMCHAIN_MAX_RUNNER_WITNESSES_HF17 == BMCHAIN_MAX_WITNESSES,
+               "HF17 witness counts must add up to BMCHAIN_MAX_WITNESSES" );
 
             modify( get_witness_schedule_object(), [&]( witness_schedule_object& wso )
             {
-               wso.max_voted_witnesses = STEEMIT_MAX_VOTED_WITNESSES_HF17;
-               wso.max_miner_witnesses = STEEMIT_MAX_MINER_WITNESSES_HF17;
-               wso.max_runner_witnesses = STEEMIT_MAX_RUNNER_WITNESSES_HF17;
+               wso.max_voted_witnesses = BMCHAIN_MAX_VOTED_WITNESSES_HF17;
+               wso.max_miner_witnesses = BMCHAIN_MAX_MINER_WITNESSES_HF17;
+               wso.max_runner_witnesses = BMCHAIN_MAX_RUNNER_WITNESSES_HF17;
             });
 
             const auto& gpo = get_dynamic_global_properties();
 
             auto post_rf = create< reward_fund_object >( [&]( reward_fund_object& rfo )
             {
-               rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
+               rfo.name = BMCHAIN_POST_REWARD_FUND_NAME;
                rfo.last_update = head_block_time();
-               rfo.content_constant = STEEMIT_CONTENT_CONSTANT_HF0;
-               rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
-               rfo.percent_content_rewards = STEEMIT_100_PERCENT;
+               rfo.content_constant = BMCHAIN_CONTENT_CONSTANT_HF0;
+               rfo.percent_curation_rewards = BMCHAIN_1_PERCENT * 25;
+               rfo.percent_content_rewards = BMCHAIN_100_PERCENT;
                rfo.reward_balance = gpo.total_reward_fund_steem;
 #ifndef IS_TEST_NET
                rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
@@ -3836,7 +3836,7 @@ void database::apply_hardfork( uint32_t hardfork )
             {
                modify( *itr, [&]( comment_object& c )
                {
-                  c.cashout_time = std::max( c.created + STEEMIT_CASHOUT_WINDOW_SECONDS, c.cashout_time );
+                  c.cashout_time = std::max( c.created + BMCHAIN_CASHOUT_WINDOW_SECONDS, c.cashout_time );
                });
             }
 
@@ -3844,7 +3844,7 @@ void database::apply_hardfork( uint32_t hardfork )
             {
                modify( *itr, [&]( comment_object& c )
                {
-                  c.cashout_time = std::max( calculate_discussion_payout_time( c ), c.created + STEEMIT_CASHOUT_WINDOW_SECONDS );
+                  c.cashout_time = std::max( calculate_discussion_payout_time( c ), c.created + BMCHAIN_CASHOUT_WINDOW_SECONDS );
                });
             }
          }
@@ -3858,7 +3858,7 @@ void database::apply_hardfork( uint32_t hardfork )
                gpo.vote_power_reserve_rate = 10;
             });
 
-            modify( get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
+            modify( get< reward_fund_object, by_name >( BMCHAIN_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
             {
 #ifndef IS_TEST_NET
                rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
@@ -3946,10 +3946,10 @@ void database::validate_invariants()const
          total_vesting += itr->vesting_shares;
          total_vesting += itr->reward_vesting_balance;
          pending_vesting_steem += itr->reward_vesting_steem;
-         total_vsf_votes += ( itr->proxy == STEEMIT_PROXY_TO_SELF_ACCOUNT ?
+         total_vsf_votes += ( itr->proxy == BMCHAIN_PROXY_TO_SELF_ACCOUNT ?
                                  itr->witness_vote_weight() :
-                                 ( STEEMIT_MAX_PROXY_RECURSION_DEPTH > 0 ?
-                                      itr->proxied_vsf_votes[STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] :
+                                 ( BMCHAIN_MAX_PROXY_RECURSION_DEPTH > 0 ?
+                                      itr->proxied_vsf_votes[BMCHAIN_MAX_PROXY_RECURSION_DEPTH - 1] :
                                       itr->vesting_shares.amount ) );
       }
 
@@ -4070,11 +4070,11 @@ void database::perform_vesting_share_split( uint32_t magnitude )
             a.vesting_shares.amount *= magnitude;
             a.withdrawn             *= magnitude;
             a.to_withdraw           *= magnitude;
-            a.vesting_withdraw_rate  = asset( a.to_withdraw / STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16, VESTS_SYMBOL );
+            a.vesting_withdraw_rate  = asset( a.to_withdraw / BMCHAIN_VESTING_WITHDRAW_INTERVALS_PRE_HF_16, VESTS_SYMBOL );
             if( a.vesting_withdraw_rate.amount == 0 )
                a.vesting_withdraw_rate.amount = 1;
 
-            for( uint32_t i = 0; i < STEEMIT_MAX_PROXY_RECURSION_DEPTH; ++i )
+            for( uint32_t i = 0; i < BMCHAIN_MAX_PROXY_RECURSION_DEPTH; ++i )
                a.proxied_vsf_votes[i] *= magnitude;
          } );
       }
@@ -4115,7 +4115,7 @@ void database::retally_comment_children()
 
    for( auto itr = cidx.begin(); itr != cidx.end(); ++itr )
    {
-      if( itr->parent_author != STEEMIT_ROOT_POST_PARENT )
+      if( itr->parent_author != BMCHAIN_ROOT_POST_PARENT )
       {
 // Low memory nodes only need immediate child count, full nodes track total children
 #ifdef IS_LOW_MEM
@@ -4132,7 +4132,7 @@ void database::retally_comment_children()
                c.children++;
             });
 
-            if( parent->parent_author != STEEMIT_ROOT_POST_PARENT )
+            if( parent->parent_author != BMCHAIN_ROOT_POST_PARENT )
                parent = &get_comment( parent->parent_author, parent->parent_permlink );
             else
                parent = nullptr;
@@ -4161,7 +4161,7 @@ void database::retally_witness_votes()
    // Apply all existing votes by account
    for( auto itr = account_idx.begin(); itr != account_idx.end(); ++itr )
    {
-      if( itr->proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT ) continue;
+      if( itr->proxy != BMCHAIN_PROXY_TO_SELF_ACCOUNT ) continue;
 
       const auto& a = *itr;
 
@@ -4184,7 +4184,7 @@ void database::retally_witness_vote_counts( bool force )
    {
       const auto& a = *itr;
       uint16_t witnesses_voted_for = 0;
-      if( force || (a.proxy != STEEMIT_PROXY_TO_SELF_ACCOUNT  ) )
+      if( force || (a.proxy != BMCHAIN_PROXY_TO_SELF_ACCOUNT  ) )
       {
         const auto& vidx = get_index< witness_vote_index >().indices().get< by_account_witness >();
         auto wit_itr = vidx.lower_bound( boost::make_tuple( a.id, witness_id_type() ) );
@@ -4209,7 +4209,7 @@ void database::process_funds_bmchain(int64_t new_steem)
     const auto& props = get_dynamic_global_properties();
 
     /// 90% in reward funds
-    share_type content_reward = ( new_steem * (STEEMIT_CONTENT_REWARD_PERCENT) ) / STEEMIT_100_PERCENT;
+    share_type content_reward = ( new_steem * (BMCHAIN_CONTENT_REWARD_PERCENT) ) / BMCHAIN_100_PERCENT;
     content_reward = pay_reward_funds( content_reward );
 
     /// 10% to wintess

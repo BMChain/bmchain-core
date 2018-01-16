@@ -82,7 +82,7 @@ namespace steemit { namespace chain {
           */
          uint16_t sbd_interest_rate = 0;
 
-         uint16_t sbd_print_rate = 0; /// bmchain /// STEEMIT_100_PERCENT;
+         uint16_t sbd_print_rate = 0; /// bmchain /// BMCHAIN_100_PERCENT;
 
          /**
           *  Maximum block size is decided by the set of active witnesses which change every round.

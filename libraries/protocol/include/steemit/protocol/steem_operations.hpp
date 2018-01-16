@@ -15,7 +15,7 @@ namespace steemit { namespace protocol {
 
    inline void validate_permlink( const string& permlink )
    {
-      FC_ASSERT( permlink.size() < STEEMIT_MAX_PERMLINK_LENGTH, "permlink is too long" );
+      FC_ASSERT( permlink.size() < BMCHAIN_MAX_PERMLINK_LENGTH, "permlink is too long" );
       FC_ASSERT( fc::is_utf8( permlink ), "permlink not formatted in UTF8" );
    }
 
@@ -148,7 +148,7 @@ namespace steemit { namespace protocol {
       string            permlink;
 
       asset             max_accepted_payout    = asset( 1000000000, SBD_SYMBOL );       /// SBD value of the maximum payout this post will receive
-      uint16_t          percent_steem_dollars  = STEEMIT_100_PERCENT; /// the percent of Steem Dollars to key, unkept amounts will be received as Steem Power
+      uint16_t          percent_steem_dollars  = BMCHAIN_100_PERCENT; /// the percent of Steem Dollars to key, unkept amounts will be received as Steem Power
       bool              allow_votes            = true;      /// allows a post to receive votes;
       bool              allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
       comment_options_extensions_type extensions;
@@ -403,21 +403,21 @@ namespace steemit { namespace protocol {
        *  ability to vote and make transactions.
        */
       asset             account_creation_fee =
-         asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL );
+         asset( BMCHAIN_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL );
 
       /**
        *  This witnesses vote for the maximum_block_size which is used by the network
        *  to tune rate limiting and capacity
        */
-      uint32_t          maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
-      uint16_t          sbd_interest_rate  = STEEMIT_DEFAULT_SBD_INTEREST_RATE;
+      uint32_t          maximum_block_size = BMCHAIN_MIN_BLOCK_SIZE_LIMIT * 2;
+      uint16_t          sbd_interest_rate  = BMCHAIN_DEFAULT_SBD_INTEREST_RATE;
 
       void validate()const
       {
-         FC_ASSERT( account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
-         FC_ASSERT( maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
+         FC_ASSERT( account_creation_fee.amount >= BMCHAIN_MIN_ACCOUNT_CREATION_FEE);
+         FC_ASSERT( maximum_block_size >= BMCHAIN_MIN_BLOCK_SIZE_LIMIT);
          FC_ASSERT( sbd_interest_rate >= 0 );
-         FC_ASSERT( sbd_interest_rate <= STEEMIT_100_PERCENT );
+         FC_ASSERT( sbd_interest_rate <= BMCHAIN_100_PERCENT );
       }
    };
 

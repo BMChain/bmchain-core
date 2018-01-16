@@ -327,10 +327,10 @@ BOOST_AUTO_TEST_CASE( hardfork_version_test )
 BOOST_AUTO_TEST_CASE( min_block_size )
 {
    signed_block b;
-   while( b.witness.length() < STEEMIT_MIN_ACCOUNT_NAME_LENGTH )
+   while( b.witness.length() < BMCHAIN_MIN_ACCOUNT_NAME_LENGTH )
       b.witness += 'a';
    size_t min_size = fc::raw::pack_size( b );
-   BOOST_CHECK( min_size == STEEMIT_MIN_BLOCK_SIZE );
+   BOOST_CHECK( min_size == BMCHAIN_MIN_BLOCK_SIZE );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

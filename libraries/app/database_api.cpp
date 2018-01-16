@@ -825,7 +825,7 @@ namespace steemit {
         set<public_key_type> database_api_impl::get_required_signatures(const signed_transaction &trx,
                                                                         const flat_set<public_key_type> &available_keys) const {
 //   wdump((trx)(available_keys));
-            auto result = trx.get_required_signatures(STEEMIT_CHAIN_ID,
+            auto result = trx.get_required_signatures(BMCHAIN_CHAIN_ID,
                                                       available_keys,
                                                       [&](string account_name) {
                                                           return authority(
@@ -857,7 +857,7 @@ namespace steemit {
 //   wdump((trx));
             set<public_key_type> result;
             trx.get_required_signatures(
-                    STEEMIT_CHAIN_ID,
+                    BMCHAIN_CHAIN_ID,
                     flat_set<public_key_type>(),
                     [&](account_name_type account_name) {
                         const auto &auth = _db.get<account_authority_object, by_account>(account_name).active;
@@ -891,7 +891,7 @@ namespace steemit {
         }
 
         bool database_api_impl::verify_authority(const signed_transaction &trx) const {
-            trx.verify_authority(STEEMIT_CHAIN_ID,
+            trx.verify_authority(BMCHAIN_CHAIN_ID,
                                  [&](string account_name) {
                                      return authority(
                                              _db.get<account_authority_object, by_account>(account_name).active);
@@ -1066,7 +1066,7 @@ namespace steemit {
                 }
             }
 
-            if (d.parent_author != STEEMIT_ROOT_POST_PARENT)
+            if (d.parent_author != BMCHAIN_ROOT_POST_PARENT)
                 d.cashout_time = my->_db.calculate_discussion_payout_time(my->_db.get<comment_object>(d.id));
 
             if (d.body.size() > 1024 * 128)
@@ -1349,7 +1349,7 @@ namespace steemit {
                 auto parent = get_parent(query);
 
                 const auto &tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_promoted>();
-                auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, share_type(STEEMIT_MAX_SHARE_SUPPLY)));
+                auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, share_type(BMCHAIN_MAX_SHARE_SUPPLY)));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body, filter_default,
                                        exit_default, [](const tags::tag_object &t) { return t.promoted_balance == 0; });
