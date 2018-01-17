@@ -2036,8 +2036,6 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
       validate_database();
 
       BOOST_TEST_MESSAGE( "--- Test adding a grandchild proxy" );
-      // alice \
-      // bob->  sam->dave
 
       tx.operations.clear();
       tx.signatures.clear();

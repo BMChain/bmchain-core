@@ -68,7 +68,7 @@ int main( int argc, char** argv, char** envp )
 /*
 #define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1458835200))
 #define BMCHAIN_MINING_TIME                     (fc::time_point_sec(1458838800))
-#define STEEMIT_FIRST_CASHOUT_TIME              (fc::time_point_sec(1467590400))  /// July 4th
+#define BMCHAIN_FIRST_CASHOUT_TIME              (fc::time_point_sec(1467590400))  /// July 4th
 */
 
    uint32_t liquidity_begin_block = (1467590400 - 1458835200) / 3;
