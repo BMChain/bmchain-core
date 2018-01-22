@@ -54,8 +54,8 @@ namespace bmchain { namespace chain {
          uint16_t          voting_power = BMCHAIN_100_PERCENT;   ///< current voting power of this account, it falls after every vote
          time_point_sec    last_vote_time; ///< used to increase the voting power of this account the longer it goes without voting.
 
-         asset             balance = asset( 0, STEEM_SYMBOL );  ///< total liquid shares held by this account
-         asset             savings_balance = asset( 0, STEEM_SYMBOL );  ///< total liquid shares held by this account
+         asset             balance = asset( 0, BMT_SYMBOL );  ///< total liquid shares held by this account
+         asset             savings_balance = asset( 0, BMT_SYMBOL );  ///< total liquid shares held by this account
 
          /**
           *  SBD Deposits pay interest based upon the interest rate set by witnesses. The purpose of these
@@ -86,18 +86,18 @@ namespace bmchain { namespace chain {
          ///@}
 
          asset             reward_sbd_balance = asset( 0, SBD_SYMBOL );
-         asset             reward_steem_balance = asset( 0, STEEM_SYMBOL );
-         asset             reward_vesting_balance = asset( 0, VESTS_SYMBOL );
-         asset             reward_vesting_steem = asset( 0, STEEM_SYMBOL );
+         asset             reward_steem_balance = asset( 0, BMT_SYMBOL );
+         asset             reward_vesting_balance = asset( 0, REP_SYMBOL );
+         asset             reward_vesting_steem = asset( 0, BMT_SYMBOL );
 
          share_type        curation_rewards = 0;
          share_type        posting_rewards = 0;
 
-         asset             vesting_shares = asset( 0, VESTS_SYMBOL ); ///< total vesting shares held by this account, controls its voting power
-         asset             delegated_vesting_shares = asset( 0, VESTS_SYMBOL );
-         asset             received_vesting_shares = asset( 0, VESTS_SYMBOL );
+         asset             vesting_shares = asset( 0, REP_SYMBOL ); ///< total vesting shares held by this account, controls its voting power
+         asset             delegated_vesting_shares = asset( 0, REP_SYMBOL );
+         asset             received_vesting_shares = asset( 0, REP_SYMBOL );
 
-         asset             vesting_withdraw_rate = asset( 0, VESTS_SYMBOL ); ///< at the time this is updated it can be at most vesting_shares/104
+         asset             vesting_withdraw_rate = asset( 0, REP_SYMBOL ); ///< at the time this is updated it can be at most vesting_shares/104
          time_point_sec    next_vesting_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
          share_type        withdrawn = 0; /// Track how many shares have been withdrawn
          share_type        to_withdraw = 0; /// Might be able to look this up with operation history.

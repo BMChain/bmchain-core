@@ -107,7 +107,7 @@ namespace bmchain { namespace chain {
          account_name_type owner;
          buffer_type       encrypted_body;
          uint32_t          checksum = 0;
-         asset             price = asset(0, STEEM_SYMBOL);
+         asset             price = asset(0, BMT_SYMBOL);
    };
 
    /**

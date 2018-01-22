@@ -222,8 +222,8 @@ namespace bmchain { namespace protocol {
       string            memo;
 
       void              validate()const;
-      void get_required_active_authorities( flat_set<account_name_type>& a )const{ if(amount.symbol != VESTS_SYMBOL) a.insert(from); }
-      void get_required_owner_authorities( flat_set<account_name_type>& a )const { if(amount.symbol == VESTS_SYMBOL) a.insert(from); }
+      void get_required_active_authorities( flat_set<account_name_type>& a )const{ if(amount.symbol != REP_SYMBOL) a.insert(from); }
+      void get_required_owner_authorities( flat_set<account_name_type>& a )const { if(amount.symbol == REP_SYMBOL) a.insert(from); }
    };
 
 
@@ -253,7 +253,7 @@ namespace bmchain { namespace protocol {
       uint32_t          escrow_id = 30;
 
       asset             sbd_amount = asset( 0, SBD_SYMBOL );
-      asset             steem_amount = asset( 0, STEEM_SYMBOL );
+      asset             steem_amount = asset( 0, BMT_SYMBOL );
       asset             fee;
 
       time_point_sec    ratification_deadline;
@@ -325,7 +325,7 @@ namespace bmchain { namespace protocol {
 
       uint32_t          escrow_id = 30;
       asset             sbd_amount = asset( 0, SBD_SYMBOL ); ///< the amount of sbd to release
-      asset             steem_amount = asset( 0, STEEM_SYMBOL ); ///< the amount of steem to release
+      asset             steem_amount = asset( 0, BMT_SYMBOL ); ///< the amount of steem to release
 
       void validate()const;
       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(who); }
@@ -403,7 +403,7 @@ namespace bmchain { namespace protocol {
        *  ability to vote and make transactions.
        */
       asset             account_creation_fee =
-         asset( BMCHAIN_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL );
+         asset( BMCHAIN_MIN_ACCOUNT_CREATION_FEE, BMT_SYMBOL );
 
       /**
        *  This witnesses vote for the maximum_block_size which is used by the network

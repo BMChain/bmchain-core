@@ -709,7 +709,7 @@ namespace bmchain {
                 while (itr != idx.end() && itr->seller == owner) {
                     result.push_back(*itr);
 
-                    if (itr->sell_price.base.symbol == STEEM_SYMBOL)
+                    if (itr->sell_price.base.symbol == BMT_SYMBOL)
                         result.back().real_price = (~result.back().sell_price).to_real();
                     else
                         result.back().real_price = (result.back().sell_price).to_real();
@@ -723,8 +723,8 @@ namespace bmchain {
             FC_ASSERT(limit <= 1000);
             order_book result;
 
-            auto max_sell = price::max(SBD_SYMBOL, STEEM_SYMBOL);
-            auto max_buy = price::max(STEEM_SYMBOL, SBD_SYMBOL);
+            auto max_sell = price::max(SBD_SYMBOL, BMT_SYMBOL);
+            auto max_buy = price::max(BMT_SYMBOL, SBD_SYMBOL);
 
             const auto &limit_price_idx = _db.get_index<limit_order_index>().indices().get<by_price>();
             auto sell_itr = limit_price_idx.lower_bound(max_sell);
@@ -745,13 +745,13 @@ namespace bmchain {
                 result.bids.push_back(cur);
                 ++sell_itr;
             }
-            while (buy_itr != end && buy_itr->sell_price.base.symbol == STEEM_SYMBOL && result.asks.size() < limit) {
+            while (buy_itr != end && buy_itr->sell_price.base.symbol == BMT_SYMBOL && result.asks.size() < limit) {
                 auto itr = buy_itr;
                 order cur;
                 cur.order_price = itr->sell_price;
                 cur.real_price = (~cur.order_price).to_real();
                 cur.steem = itr->for_sale;
-                cur.sbd = (asset(itr->for_sale, STEEM_SYMBOL) * cur.order_price).amount;
+                cur.sbd = (asset(itr->for_sale, BMT_SYMBOL) * cur.order_price).amount;
                 cur.created = itr->created;
                 result.asks.push_back(cur);
                 ++buy_itr;

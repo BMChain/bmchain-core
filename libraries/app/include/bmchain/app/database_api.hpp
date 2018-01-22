@@ -85,7 +85,7 @@ struct statistic
     uint32_t posts    = 0;
     uint32_t comments = 0;
     uint32_t votes    = 0;
-    asset    current_supply = asset( 0, STEEM_SYMBOL );
+    asset    current_supply = asset( 0, BMT_SYMBOL );
 };
 
 struct block_statistic

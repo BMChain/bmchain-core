@@ -160,7 +160,7 @@ struct comment_api_obj
    account_name_type owner;
    std::vector<char>       encrypted_body;
    uint32_t          checksum = 0;
-   asset             price = asset(0, STEEM_SYMBOL);
+   asset             price = asset(0, BMT_SYMBOL);
 };
 
 struct tag_api_obj
@@ -544,7 +544,7 @@ struct content_order_api_obj
     account_name_type author;
     std::string       permlink;
     account_name_type owner;
-    asset             price = asset( 0, STEEM_SYMBOL );
+    asset             price = asset( 0, BMT_SYMBOL );
     content_order_object::order_status status;
 };
 
