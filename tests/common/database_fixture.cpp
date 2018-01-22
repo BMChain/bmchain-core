@@ -3,10 +3,10 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/account_history/account_history_plugin.hpp>
-#include <steemit/witness/witness_plugin.hpp>
+#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/history_object.hpp>
+#include <bmchain/account_history/account_history_plugin.hpp>
+#include <bmchain/witness/witness_plugin.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -17,11 +17,11 @@
 
 #include "database_fixture.hpp"
 
-//using namespace steemit::chain::test;
+//using namespace bmchain::chain::test;
 
 uint32_t STEEMIT_TESTING_GENESIS_TIMESTAMP = 1431700000;
 
-namespace steemit { namespace chain {
+namespace bmchain { namespace chain {
 
 using std::cout;
 using std::cerr;
@@ -39,9 +39,9 @@ clean_database_fixture::clean_database_fixture()
       if( arg == "--show-test-names" )
          std::cout << "running test " << boost::unit_test::framework::current_test_case().p_name << std::endl;
    }
-   auto ahplugin = app.register_plugin< steemit::account_history::account_history_plugin >();
-   db_plugin = app.register_plugin< steemit::plugin::debug_node::debug_node_plugin >();
-   auto wit_plugin = app.register_plugin< steemit::witness::witness_plugin >();
+   auto ahplugin = app.register_plugin< bmchain::account_history::account_history_plugin >();
+   db_plugin = app.register_plugin< bmchain::plugin::debug_node::debug_node_plugin >();
+   auto wit_plugin = app.register_plugin< bmchain::witness::witness_plugin >();
    init_account_pub_key = init_account_priv_key.get_public_key();
 
    boost::program_options::variables_map options;
@@ -138,7 +138,7 @@ live_database_fixture::live_database_fixture()
       _chain_dir = fc::current_path() / "test_blockchain";
       FC_ASSERT( fc::exists( _chain_dir ), "Requires blockchain to test on in ./test_blockchain" );
 
-      auto ahplugin = app.register_plugin< steemit::account_history::account_history_plugin >();
+      auto ahplugin = app.register_plugin< bmchain::account_history::account_history_plugin >();
       ahplugin->plugin_initialize( boost::program_options::variables_map() );
 
       db.open( _chain_dir, _chain_dir );
@@ -500,7 +500,7 @@ vector< operation > database_fixture::get_last_operations( uint32_t num_ops )
    while( itr != acc_hist_idx.begin() && ops.size() < num_ops )
    {
       itr--;
-      ops.push_back( fc::raw::unpack< steemit::chain::operation >( db.get(itr->op).serialized_op ) );
+      ops.push_back( fc::raw::unpack< bmchain::chain::operation >( db.get(itr->op).serialized_op ) );
    }
 
    return ops;
@@ -527,6 +527,6 @@ void _push_transaction( database& db, const signed_transaction& tx, uint32_t ski
    db.push_transaction( tx, skip_flags );
 } FC_CAPTURE_AND_RETHROW((tx)) }
 
-} // steemit::chain::test
+} // bmchain::chain::test
 
-} } // steemit::chain
+} } // bmchain::chain

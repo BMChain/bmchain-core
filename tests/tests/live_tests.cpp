@@ -1,10 +1,10 @@
 #include <boost/test/unit_test.hpp>
 
-#include <steemit/protocol/exceptions.hpp>
+#include <bmchain/protocol/exceptions.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/hardfork.hpp>
-#include <steemit/chain/steem_objects.hpp>
+#include <bmchain/chain/database.hpp>
+#include <bmchain/chain/hardfork.hpp>
+#include <bmchain/chain/steem_objects.hpp>
 
 #include <fc/crypto/digest.hpp>
 
@@ -12,9 +12,9 @@
 
 #include <iostream>
 
-using namespace steemit;
-using namespace steemit::chain;
-using namespace steemit::protocol;
+using namespace bmchain;
+using namespace bmchain::chain;
+using namespace bmchain::protocol;
 
 #ifndef IS_TEST_NET
 

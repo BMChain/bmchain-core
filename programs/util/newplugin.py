@@ -28,7 +28,7 @@ target_include_directories( {plugin_provider}_{plugin_name}
 
 #include <fc/api.hpp>
 
-namespace steemit {{ namespace app {{
+namespace bmchain {{ namespace app {{
    struct api_context;
 }} }}
 
@@ -41,7 +41,7 @@ class {plugin_name}_api_impl;
 class {plugin_name}_api
 {{
    public:
-      {plugin_name}_api( const steemit::app::api_context& ctx );
+      {plugin_name}_api( const bmchain::app::api_context& ctx );
 
       void on_api_startup();
 
@@ -62,7 +62,7 @@ FC_API( {plugin_provider}::plugin::{plugin_name}::{plugin_name}_api,
 """
 #pragma once
 
-#include <steemit/app/plugin.hpp>
+#include <bmchain/app/plugin.hpp>
 
 namespace {plugin_provider} {{ namespace plugin {{ namespace {plugin_name} {{
 
@@ -70,10 +70,10 @@ namespace detail {{
 class {plugin_name}_plugin_impl;
 }}
 
-class {plugin_name}_plugin : public steemit::app::plugin
+class {plugin_name}_plugin : public bmchain::app::plugin
 {{
    public:
-      {plugin_name}_plugin( steemit::app::application* app );
+      {plugin_name}_plugin( bmchain::app::application* app );
       virtual ~{plugin_name}_plugin();
 
       virtual std::string plugin_name()const override;
@@ -90,8 +90,8 @@ class {plugin_name}_plugin : public steemit::app::plugin
 
 "{plugin_name}_api.cpp" :
 """
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/application.hpp>
+#include <bmchain/app/api_context.hpp>
+#include <bmchain/app/application.hpp>
 
 #include <{plugin_provider}/plugins/{plugin_name}/{plugin_name}_api.hpp>
 #include <{plugin_provider}/plugins/{plugin_name}/{plugin_name}_plugin.hpp>
@@ -103,14 +103,14 @@ namespace detail {{
 class {plugin_name}_api_impl
 {{
    public:
-      {plugin_name}_api_impl( steemit::app::application& _app );
+      {plugin_name}_api_impl( bmchain::app::application& _app );
 
       std::shared_ptr< {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin > get_plugin();
 
-      steemit::app::application& app;
+      bmchain::app::application& app;
 }};
 
-{plugin_name}_api_impl::{plugin_name}_api_impl( steemit::app::application& _app ) : app( _app )
+{plugin_name}_api_impl::{plugin_name}_api_impl( bmchain::app::application& _app ) : app( _app )
 {{}}
 
 std::shared_ptr< {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin > {plugin_name}_api_impl::get_plugin()
@@ -120,7 +120,7 @@ std::shared_ptr< {plugin_provider}::plugin::{plugin_name}::{plugin_name}_plugin 
 
 }} // detail
 
-{plugin_name}_api::{plugin_name}_api( const steemit::app::api_context& ctx )
+{plugin_name}_api::{plugin_name}_api( const bmchain::app::api_context& ctx )
 {{
    my = std::make_shared< detail::{plugin_name}_api_impl >(ctx.app);
 }}
@@ -145,7 +145,7 @@ namespace detail {{
 class {plugin_name}_plugin_impl
 {{
    public:
-      {plugin_name}_plugin_impl( steemit::app::application& app );
+      {plugin_name}_plugin_impl( bmchain::app::application& app );
       virtual ~{plugin_name}_plugin_impl();
 
       virtual std::string plugin_name()const;
@@ -154,11 +154,11 @@ class {plugin_name}_plugin_impl
       virtual void plugin_shutdown();
       void on_applied_block( const chain::signed_block& b );
 
-      steemit::app::application& _app;
+      bmchain::app::application& _app;
       boost::signals2::scoped_connection _applied_block_conn;
 }};
 
-{plugin_name}_plugin_impl::{plugin_name}_plugin_impl( steemit::app::application& app )
+{plugin_name}_plugin_impl::{plugin_name}_plugin_impl( bmchain::app::application& app )
   : _app(app) {{}}
 
 {plugin_name}_plugin_impl::~{plugin_name}_plugin_impl() {{}}
@@ -189,7 +189,7 @@ void {plugin_name}_plugin_impl::on_applied_block( const chain::signed_block& b )
 
 }}
 
-{plugin_name}_plugin::{plugin_name}_plugin( steemit::app::application* app )
+{plugin_name}_plugin::{plugin_name}_plugin( bmchain::app::application* app )
    : plugin(app)
 {{
    FC_ASSERT( app != nullptr );
