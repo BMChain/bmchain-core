@@ -141,26 +141,7 @@ struct post_operation_visitor
       if( acct_itr ) _plugin.my->update_key_lookup( *acct_itr );
    }
 
-   void operator()( const hardfork_operation& op )const
-   {
-      if( op.hardfork_id == STEEMIT_HARDFORK_0_9 )
-      {
-         auto& db = _plugin.database();
-
-         for( const std::string& acc : hardfork9::get_compromised_accounts() )
-         {
-            const account_object* account = db.find_account( acc );
-            if( account == nullptr )
-               continue;
-
-            db.create< key_lookup_object >( [&]( key_lookup_object& o )
-            {
-               o.key = public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" );
-               o.account = account->name;
-            });
-         }
-      }
-   }
+   void operator()( const hardfork_operation& op )const{}
 };
 
 void account_by_key_plugin_impl::clear_cache()

@@ -2348,6 +2348,193 @@ void database::init_genesis( uint64_t init_supply )
 #if BMCHAIN_INIT_HARDFORK != 0
        set_hardfork(BMCHAIN_INIT_HARDFORK, true);
 #endif
+
+
+       perform_vesting_share_split(1000000);
+       retally_witness_votes();            // HARDFORK_0_2
+       retally_witness_votes();            // HARDFORK_0_3
+       reset_virtual_schedule_time(*this); // HARDFORK_0_4
+       retally_witness_vote_counts();      // HARDFORK_0_6
+       retally_comment_children();         // HARDFORK_0_6
+       retally_witness_vote_counts(true);  // HARDFORK_0_8
+       retally_liquidity_weight();         // HARDFORK_0_10
+
+#ifdef IS_TEST_NET
+       {
+        custom_operation test_op;
+        string op_msg = "Testnet: Hardfork applied";
+        test_op.data = vector< char >( op_msg.begin(), op_msg.end() );
+        test_op.required_auths.insert( BMCHAIN_INIT_MINER_NAME );
+        operation op = test_op;   // we need the operation object to live to the end of this scope
+        operation_notification note( op );
+        notify_pre_apply_operation( note );
+        notify_post_apply_operation( note );
+     }
+     break;
+#endif
+       // HARDFORK_0_12:
+
+       const auto &comment_idx = get_index<comment_index>().indices();
+
+       for (auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr) {
+           // At the hardfork time, all new posts with no votes get their cashout time set to +12 hrs from head block time.
+           // All posts with a payout get their cashout time set to +30 days. This hardfork takes place within 30 days
+           // initial payout so we don't have to handle the case of posts that should be frozen that aren't
+           if (itr->parent_author == BMCHAIN_ROOT_POST_PARENT) {
+               // Post has not been paid out and has no votes (cashout_time == 0 === net_rshares == 0, under current semmantics)
+               if (itr->last_payout == fc::time_point_sec::min() &&
+                   itr->cashout_time == fc::time_point_sec::maximum()) {
+                   modify(*itr, [&](comment_object &c) {
+                       c.cashout_time = head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
+                   });
+               }
+                   // Has been paid out, needs to be on second cashout window
+               else if (itr->last_payout > fc::time_point_sec()) {
+                   modify(*itr, [&](comment_object &c) {
+                       c.cashout_time = c.last_payout + BMCHAIN_SECOND_CASHOUT_WINDOW;
+                   });
+               }
+           }
+       }
+
+       modify(get<account_authority_object, by_account>(BMCHAIN_MINER_ACCOUNT), [&](account_authority_object &auth) {
+           auth.posting = authority();
+           auth.posting.weight_threshold = 1;
+       });
+
+       modify(get<account_authority_object, by_account>(BMCHAIN_NULL_ACCOUNT), [&](account_authority_object &auth) {
+           auth.posting = authority();
+           auth.posting.weight_threshold = 1;
+       });
+
+       modify(get<account_authority_object, by_account>(BMCHAIN_TEMP_ACCOUNT), [&](account_authority_object &auth) {
+           auth.posting = authority();
+           auth.posting.weight_threshold = 1;
+       });
+
+
+       // STEEMIT_HARDFORK_0_17:
+
+       static_assert(
+               BMCHAIN_MAX_VOTED_WITNESSES_HF0 + BMCHAIN_MAX_MINER_WITNESSES_HF0 + BMCHAIN_MAX_RUNNER_WITNESSES_HF0 ==
+               BMCHAIN_MAX_WITNESSES,
+               "HF0 witness counts must add up to BMCHAIN_MAX_WITNESSES");
+       static_assert(
+               BMCHAIN_MAX_VOTED_WITNESSES_HF17 + BMCHAIN_MAX_MINER_WITNESSES_HF17 +
+               BMCHAIN_MAX_RUNNER_WITNESSES_HF17 == BMCHAIN_MAX_WITNESSES,
+               "HF17 witness counts must add up to BMCHAIN_MAX_WITNESSES");
+
+       modify(get_witness_schedule_object(), [&](witness_schedule_object &wso) {
+           wso.max_voted_witnesses = BMCHAIN_MAX_VOTED_WITNESSES_HF17;
+           wso.max_miner_witnesses = BMCHAIN_MAX_MINER_WITNESSES_HF17;
+           wso.max_runner_witnesses = BMCHAIN_MAX_RUNNER_WITNESSES_HF17;
+       });
+
+       const auto &gpo = get_dynamic_global_properties();
+
+       auto post_rf = create<reward_fund_object>([&](reward_fund_object &rfo) {
+           rfo.name = BMCHAIN_POST_REWARD_FUND_NAME;
+           rfo.last_update = head_block_time();
+           rfo.content_constant = BMCHAIN_CONTENT_CONSTANT_HF0;
+           rfo.percent_curation_rewards = BMCHAIN_1_PERCENT * 25;
+           rfo.percent_content_rewards = BMCHAIN_100_PERCENT;
+           rfo.reward_balance = gpo.total_reward_fund_steem;
+#ifndef IS_TEST_NET
+           rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
+#endif
+           rfo.author_reward_curve = curve_id::quadratic;
+           rfo.curation_reward_curve = curve_id::quadratic_curation;
+       });
+
+       // As a shortcut in payout processing, we use the id as an array index.
+       // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
+       FC_ASSERT(post_rf.id._id == 0);
+
+       modify(gpo, [&](dynamic_global_property_object &g) {
+           g.total_reward_fund_steem = asset(0, STEEM_SYMBOL);
+           g.total_reward_shares2 = 0;
+       });
+
+       /*
+       * For all current comments we will either keep their current cashout time, or extend it to 1 week
+       * after creation.
+       *
+       * We cannot do a simple iteration by cashout time because we are editting cashout time.
+       * More specifically, we will be adding an explicit cashout time to all comments with parents.
+       * To find all discussions that have not been paid out we fir iterate over posts by cashout time.
+       * Before the hardfork these are all root posts. Iterate over all of their children, adding each
+       * to a specific list. Next, update payout times for all discussions on the root post. This defines
+       * the min cashout time for each child in the discussion. Then iterate over the children and set
+       * their cashout time in a similar way, grabbing the root post as their inherent cashout time.
+       */
+       //const auto &comment_idx = get_index<comment_index, by_cashout_time>();
+       const auto &by_root_idx = get_index<comment_index, by_root>();
+       vector<const comment_object *> root_posts;
+       root_posts.reserve(STEEMIT_HF_17_NUM_POSTS);
+       vector<const comment_object *> replies;
+       replies.reserve(STEEMIT_HF_17_NUM_REPLIES);
+
+       for (auto itr = comment_idx.begin();
+            itr != comment_idx.end() && itr->cashout_time < fc::time_point_sec::maximum(); ++itr) {
+           root_posts.push_back(&(*itr));
+
+           for (auto reply_itr = by_root_idx.lower_bound(itr->id);
+                reply_itr != by_root_idx.end() && reply_itr->root_comment == itr->id; ++reply_itr) {
+               replies.push_back(&(*reply_itr));
+           }
+       }
+
+       for (auto itr : root_posts) {
+           modify(*itr, [&](comment_object &c) {
+               c.cashout_time = std::max(c.created + BMCHAIN_CASHOUT_WINDOW_SECONDS, c.cashout_time);
+           });
+       }
+
+       for (auto itr : replies) {
+           modify(*itr, [&](comment_object &c) {
+               c.cashout_time = std::max(calculate_discussion_payout_time(c),
+                                         c.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+           });
+       }
+
+
+       // STEEMIT_HARDFORK_0_19:
+
+       modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &gpo) {
+           gpo.vote_power_reserve_rate = 10;
+       });
+
+       modify(get<reward_fund_object, by_name>(BMCHAIN_POST_REWARD_FUND_NAME), [&](reward_fund_object &rfo) {
+#ifndef IS_TEST_NET
+           rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
+#endif
+           rfo.recent_claims = 0; /// bmchain
+           //rfo.author_reward_curve = curve_id::linear;
+           rfo.author_reward_curve = curve_id::quadratic; /// bmchain
+           rfo.curation_reward_curve = curve_id::square_root;
+       });
+
+       /* Remove all 0 delegation objects */
+       vector<const vesting_delegation_object *> to_remove;
+       const auto &delegation_idx = get_index<vesting_delegation_index, by_id>();
+       auto delegation_itr = delegation_idx.begin();
+
+       while (delegation_itr != delegation_idx.end()) {
+           if (delegation_itr->vesting_shares.amount == 0)
+               to_remove.push_back(&(*delegation_itr));
+
+           ++delegation_itr;
+       }
+
+       for (const vesting_delegation_object *delegation_ptr: to_remove) {
+           remove(*delegation_ptr);
+       }
+
+
+
+
+
+
    }
    FC_CAPTURE_AND_RETHROW()
 }
@@ -3351,63 +3538,63 @@ void database::init_hardforks()
 {
    _hardfork_times[ 0 ] = fc::time_point_sec( BMCHAIN_GENESIS_TIME );
    _hardfork_versions[ 0 ] = hardfork_version( 0, 0 );
-   FC_ASSERT( STEEMIT_HARDFORK_0_1 == 1, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_1 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_1_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_1 ] = STEEMIT_HARDFORK_0_1_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_2 == 2, "Invlaid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_2 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_2_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_2 ] = STEEMIT_HARDFORK_0_2_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_3 == 3, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_3 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_3_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_3 ] = STEEMIT_HARDFORK_0_3_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_4 == 4, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_4 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_4_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_4 ] = STEEMIT_HARDFORK_0_4_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_5 == 5, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_5 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_5_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_5 ] = STEEMIT_HARDFORK_0_5_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_6 == 6, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_6 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_6_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_6 ] = STEEMIT_HARDFORK_0_6_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_7 == 7, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_7 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_7_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_7 ] = STEEMIT_HARDFORK_0_7_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_8 == 8, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_8 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_8_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_8 ] = STEEMIT_HARDFORK_0_8_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_9 == 9, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_9 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_9_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_9 ] = STEEMIT_HARDFORK_0_9_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_10 == 10, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_10 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_10_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_10 ] = STEEMIT_HARDFORK_0_10_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_11 == 11, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_11 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_11_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_11 ] = STEEMIT_HARDFORK_0_11_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_12 == 12, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_12 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_12_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_12 ] = STEEMIT_HARDFORK_0_12_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_13 == 13, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_13 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_13_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_13 ] = STEEMIT_HARDFORK_0_13_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_14 == 14, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_14 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_14_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_14 ] = STEEMIT_HARDFORK_0_14_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_15 == 15, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_15 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_15_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_15 ] = STEEMIT_HARDFORK_0_15_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_16 == 16, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_16 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_16_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_16 ] = STEEMIT_HARDFORK_0_16_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_17 == 17, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_17 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_17_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_17 ] = STEEMIT_HARDFORK_0_17_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_18 == 18, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_18 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_18_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_18 ] = STEEMIT_HARDFORK_0_18_VERSION;
-   FC_ASSERT( STEEMIT_HARDFORK_0_19 == 19, "Invalid hardfork configuration" );
-   _hardfork_times[ STEEMIT_HARDFORK_0_19 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_19_TIME );
-   _hardfork_versions[ STEEMIT_HARDFORK_0_19 ] = STEEMIT_HARDFORK_0_19_VERSION;
+    /*FC_ASSERT( STEEMIT_HARDFORK_0_1 == 1, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_1 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_1_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_1 ] = STEEMIT_HARDFORK_0_1_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_2 == 2, "Invlaid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_2 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_2_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_2 ] = STEEMIT_HARDFORK_0_2_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_3 == 3, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_3 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_3_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_3 ] = STEEMIT_HARDFORK_0_3_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_4 == 4, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_4 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_4_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_4 ] = STEEMIT_HARDFORK_0_4_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_5 == 5, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_5 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_5_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_5 ] = STEEMIT_HARDFORK_0_5_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_6 == 6, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_6 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_6_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_6 ] = STEEMIT_HARDFORK_0_6_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_7 == 7, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_7 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_7_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_7 ] = STEEMIT_HARDFORK_0_7_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_8 == 8, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_8 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_8_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_8 ] = STEEMIT_HARDFORK_0_8_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_9 == 9, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_9 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_9_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_9 ] = STEEMIT_HARDFORK_0_9_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_10 == 10, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_10 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_10_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_10 ] = STEEMIT_HARDFORK_0_10_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_11 == 11, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_11 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_11_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_11 ] = STEEMIT_HARDFORK_0_11_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_12 == 12, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_12 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_12_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_12 ] = STEEMIT_HARDFORK_0_12_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_13 == 13, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_13 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_13_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_13 ] = STEEMIT_HARDFORK_0_13_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_14 == 14, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_14 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_14_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_14 ] = STEEMIT_HARDFORK_0_14_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_15 == 15, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_15 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_15_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_15 ] = STEEMIT_HARDFORK_0_15_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_16 == 16, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_16 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_16_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_16 ] = STEEMIT_HARDFORK_0_16_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_17 == 17, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_17 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_17_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_17 ] = STEEMIT_HARDFORK_0_17_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_18 == 18, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_18 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_18_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_18 ] = STEEMIT_HARDFORK_0_18_VERSION;
+    FC_ASSERT( STEEMIT_HARDFORK_0_19 == 19, "Invalid hardfork configuration" );
+    _hardfork_times[ STEEMIT_HARDFORK_0_19 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_19_TIME );
+    _hardfork_versions[ STEEMIT_HARDFORK_0_19 ] = STEEMIT_HARDFORK_0_19_VERSION;*/
 
 
    const auto& hardforks = get_hardfork_property_object();
@@ -3445,16 +3632,11 @@ void database::set_hardfork( uint32_t hardfork, bool apply_now )
 
    for( uint32_t i = hardforks.last_hardfork + 1; i <= hardfork && i <= STEEMIT_NUM_HARDFORKS; i++ )
    {
-      if( i <= STEEMIT_HARDFORK_0_5__54 )
-         _hardfork_times[i] = head_block_time();
-      else
+      modify( hardforks, [&]( hardfork_property_object& hpo )
       {
-         modify( hardforks, [&]( hardfork_property_object& hpo )
-         {
-            hpo.next_hardfork = _hardfork_versions[i];
-            hpo.next_hardfork_time = head_block_time();
-         } );
-      }
+         hpo.next_hardfork = _hardfork_versions[i];
+         hpo.next_hardfork_time = head_block_time();
+      } );
 
       if( apply_now )
          apply_hardfork( i );
@@ -3465,263 +3647,6 @@ void database::apply_hardfork( uint32_t hardfork )
 {
    if( _log_hardforks )
       elog( "HARDFORK ${hf} at block ${b}", ("hf", hardfork)("b", head_block_num()) );
-
-   switch( hardfork )
-   {
-      case STEEMIT_HARDFORK_0_1:
-         perform_vesting_share_split( 1000000 );
-#ifdef IS_TEST_NET
-         {
-            custom_operation test_op;
-            string op_msg = "Testnet: Hardfork applied";
-            test_op.data = vector< char >( op_msg.begin(), op_msg.end() );
-            test_op.required_auths.insert( BMCHAIN_INIT_MINER_NAME );
-            operation op = test_op;   // we need the operation object to live to the end of this scope
-            operation_notification note( op );
-            notify_pre_apply_operation( note );
-            notify_post_apply_operation( note );
-         }
-         break;
-#endif
-         break;
-      case STEEMIT_HARDFORK_0_2:
-         retally_witness_votes();
-         break;
-      case STEEMIT_HARDFORK_0_3:
-         retally_witness_votes();
-         break;
-      case STEEMIT_HARDFORK_0_4:
-         reset_virtual_schedule_time(*this);
-         break;
-      case STEEMIT_HARDFORK_0_5:
-         break;
-      case STEEMIT_HARDFORK_0_6:
-         retally_witness_vote_counts();
-         retally_comment_children();
-         break;
-      case STEEMIT_HARDFORK_0_7:
-         break;
-      case STEEMIT_HARDFORK_0_8:
-         retally_witness_vote_counts(true);
-         break;
-      case STEEMIT_HARDFORK_0_9:
-         {
-            for( const std::string& acc : hardfork9::get_compromised_accounts() )
-            {
-               const account_object* account = find_account( acc );
-               if( account == nullptr )
-                  continue;
-
-               update_owner_authority( *account, authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 ) );
-
-               modify( get< account_authority_object, by_account >( account->name ), [&]( account_authority_object& auth )
-               {
-                  auth.active  = authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 );
-                  auth.posting = authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 );
-               });
-            }
-         }
-         break;
-      case STEEMIT_HARDFORK_0_10:
-         retally_liquidity_weight();
-         break;
-      case STEEMIT_HARDFORK_0_11:
-         break;
-      case STEEMIT_HARDFORK_0_12:
-         {
-            const auto& comment_idx = get_index< comment_index >().indices();
-
-            for( auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr )
-            {
-               // At the hardfork time, all new posts with no votes get their cashout time set to +12 hrs from head block time.
-               // All posts with a payout get their cashout time set to +30 days. This hardfork takes place within 30 days
-               // initial payout so we don't have to handle the case of posts that should be frozen that aren't
-               if( itr->parent_author == BMCHAIN_ROOT_POST_PARENT )
-               {
-                  // Post has not been paid out and has no votes (cashout_time == 0 === net_rshares == 0, under current semmantics)
-                  if( itr->last_payout == fc::time_point_sec::min() && itr->cashout_time == fc::time_point_sec::maximum() )
-                  {
-                     modify( *itr, [&]( comment_object & c )
-                     {
-                        c.cashout_time = head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
-                     });
-                  }
-                  // Has been paid out, needs to be on second cashout window
-                  else if( itr->last_payout > fc::time_point_sec() )
-                  {
-                     modify( *itr, [&]( comment_object& c )
-                     {
-                        c.cashout_time = c.last_payout + BMCHAIN_SECOND_CASHOUT_WINDOW;
-                     });
-                  }
-               }
-            }
-
-            modify( get< account_authority_object, by_account >( BMCHAIN_MINER_ACCOUNT ), [&]( account_authority_object& auth )
-            {
-               auth.posting = authority();
-               auth.posting.weight_threshold = 1;
-            });
-
-            modify( get< account_authority_object, by_account >( BMCHAIN_NULL_ACCOUNT ), [&]( account_authority_object& auth )
-            {
-               auth.posting = authority();
-               auth.posting.weight_threshold = 1;
-            });
-
-            modify( get< account_authority_object, by_account >( BMCHAIN_TEMP_ACCOUNT ), [&]( account_authority_object& auth )
-            {
-               auth.posting = authority();
-               auth.posting.weight_threshold = 1;
-            });
-         }
-         break;
-      case STEEMIT_HARDFORK_0_13:
-         break;
-      case STEEMIT_HARDFORK_0_14:
-         break;
-      case STEEMIT_HARDFORK_0_15:
-         break;
-      case STEEMIT_HARDFORK_0_16:
-         {
-            modify( get_feed_history(), [&]( feed_history_object& fho )
-            {
-               while( fho.price_history.size() > BMCHAIN_FEED_HISTORY_WINDOW )
-                  fho.price_history.pop_front();
-            });
-         }
-         break;
-      case STEEMIT_HARDFORK_0_17:
-         {
-            static_assert(
-               BMCHAIN_MAX_VOTED_WITNESSES_HF0 + BMCHAIN_MAX_MINER_WITNESSES_HF0 + BMCHAIN_MAX_RUNNER_WITNESSES_HF0 == BMCHAIN_MAX_WITNESSES,
-               "HF0 witness counts must add up to BMCHAIN_MAX_WITNESSES" );
-            static_assert(
-               BMCHAIN_MAX_VOTED_WITNESSES_HF17 + BMCHAIN_MAX_MINER_WITNESSES_HF17 + BMCHAIN_MAX_RUNNER_WITNESSES_HF17 == BMCHAIN_MAX_WITNESSES,
-               "HF17 witness counts must add up to BMCHAIN_MAX_WITNESSES" );
-
-            modify( get_witness_schedule_object(), [&]( witness_schedule_object& wso )
-            {
-               wso.max_voted_witnesses = BMCHAIN_MAX_VOTED_WITNESSES_HF17;
-               wso.max_miner_witnesses = BMCHAIN_MAX_MINER_WITNESSES_HF17;
-               wso.max_runner_witnesses = BMCHAIN_MAX_RUNNER_WITNESSES_HF17;
-            });
-
-            const auto& gpo = get_dynamic_global_properties();
-
-            auto post_rf = create< reward_fund_object >( [&]( reward_fund_object& rfo )
-            {
-               rfo.name = BMCHAIN_POST_REWARD_FUND_NAME;
-               rfo.last_update = head_block_time();
-               rfo.content_constant = BMCHAIN_CONTENT_CONSTANT_HF0;
-               rfo.percent_curation_rewards = BMCHAIN_1_PERCENT * 25;
-               rfo.percent_content_rewards = BMCHAIN_100_PERCENT;
-               rfo.reward_balance = gpo.total_reward_fund_steem;
-#ifndef IS_TEST_NET
-               rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
-#endif
-               rfo.author_reward_curve = curve_id::quadratic;
-               rfo.curation_reward_curve = curve_id::quadratic_curation;
-            });
-
-            // As a shortcut in payout processing, we use the id as an array index.
-            // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
-            FC_ASSERT( post_rf.id._id == 0 );
-
-            modify( gpo, [&]( dynamic_global_property_object& g )
-            {
-               g.total_reward_fund_steem = asset( 0, STEEM_SYMBOL );
-               g.total_reward_shares2 = 0;
-            });
-
-            /*
-            * For all current comments we will either keep their current cashout time, or extend it to 1 week
-            * after creation.
-            *
-            * We cannot do a simple iteration by cashout time because we are editting cashout time.
-            * More specifically, we will be adding an explicit cashout time to all comments with parents.
-            * To find all discussions that have not been paid out we fir iterate over posts by cashout time.
-            * Before the hardfork these are all root posts. Iterate over all of their children, adding each
-            * to a specific list. Next, update payout times for all discussions on the root post. This defines
-            * the min cashout time for each child in the discussion. Then iterate over the children and set
-            * their cashout time in a similar way, grabbing the root post as their inherent cashout time.
-            */
-            const auto& comment_idx = get_index< comment_index, by_cashout_time >();
-            const auto& by_root_idx = get_index< comment_index, by_root >();
-            vector< const comment_object* > root_posts;
-            root_posts.reserve( STEEMIT_HF_17_NUM_POSTS );
-            vector< const comment_object* > replies;
-            replies.reserve( STEEMIT_HF_17_NUM_REPLIES );
-
-            for( auto itr = comment_idx.begin(); itr != comment_idx.end() && itr->cashout_time < fc::time_point_sec::maximum(); ++itr )
-            {
-               root_posts.push_back( &(*itr) );
-
-               for( auto reply_itr = by_root_idx.lower_bound( itr->id ); reply_itr != by_root_idx.end() && reply_itr->root_comment == itr->id; ++reply_itr )
-               {
-                  replies.push_back( &(*reply_itr) );
-               }
-            }
-
-            for( auto itr : root_posts )
-            {
-               modify( *itr, [&]( comment_object& c )
-               {
-                  c.cashout_time = std::max( c.created + BMCHAIN_CASHOUT_WINDOW_SECONDS, c.cashout_time );
-               });
-            }
-
-            for( auto itr : replies )
-            {
-               modify( *itr, [&]( comment_object& c )
-               {
-                  c.cashout_time = std::max( calculate_discussion_payout_time( c ), c.created + BMCHAIN_CASHOUT_WINDOW_SECONDS );
-               });
-            }
-         }
-         break;
-      case STEEMIT_HARDFORK_0_18:
-         break;
-      case STEEMIT_HARDFORK_0_19:
-         {
-            modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
-            {
-               gpo.vote_power_reserve_rate = 10;
-            });
-
-            modify( get< reward_fund_object, by_name >( BMCHAIN_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
-            {
-#ifndef IS_TEST_NET
-               rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
-#endif
-               rfo.recent_claims = 0; /// bmchain
-               //rfo.author_reward_curve = curve_id::linear;
-               rfo.author_reward_curve = curve_id::quadratic; /// bmchain
-               rfo.curation_reward_curve = curve_id::square_root;
-            });
-
-            /* Remove all 0 delegation objects */
-            vector< const vesting_delegation_object* > to_remove;
-            const auto& delegation_idx = get_index< vesting_delegation_index, by_id >();
-            auto delegation_itr = delegation_idx.begin();
-
-            while( delegation_itr != delegation_idx.end() )
-            {
-               if( delegation_itr->vesting_shares.amount == 0 )
-                  to_remove.push_back( &(*delegation_itr) );
-
-               ++delegation_itr;
-            }
-
-            for( const vesting_delegation_object* delegation_ptr: to_remove )
-            {
-               remove( *delegation_ptr );
-            }
-         }
-         break;
-      default:
-         break;
-   }
 
    modify( get_hardfork_property_object(), [&]( hardfork_property_object& hfp )
    {

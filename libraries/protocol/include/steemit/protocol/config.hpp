@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#define BMCHAIN_BLOCKCHAIN_VERSION              ( version(0, 19, 2) )
+#define BMCHAIN_BLOCKCHAIN_VERSION              ( version(0, 0, 0) )
 #define BMCHAIN_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( BMCHAIN_BLOCKCHAIN_VERSION ) )
 
 #ifdef IS_TEST_NET
@@ -274,8 +274,20 @@
 #define BMCHAIN_STRESS_TESTING                  false
 #define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*2)) /// 2 days
 
-#define BMCHAIN_INIT_HARDFORK                   19        /// Hardfork to apply when creating a new chain
+#define BMCHAIN_INIT_HARDFORK                   0        /// Hardfork to apply when creating a new chain
 #define BMCHAIN_VOTE_EMISSION_RATE              50
 #define BMCHAIN_COMMENT_EMISSION_RATE           200
 #define BMCHAIN_POST_EMISSION_RATE              500
 #define BMCHAIN_USER_EMISSION_RATE              1000
+
+#define STEEMIT_HF_19_RECENT_CLAIMS (fc::uint128_t(uint64_t(140797515942543623ull)))
+#define STEEMIT_HF_17_RECENT_CLAIMS (fc::uint128_t(808638359297ull,13744269167557038121ull)) // 14916744862149894120447332012073
+#define STEEMIT_HF_17_NUM_POSTS     (49357)
+#define STEEMIT_HF_17_NUM_REPLIES   (242051)
+#define STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 fc::seconds(60*30) /// 30 min
+
+#ifdef IS_TEST_NET
+#define STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME (0)
+#else
+#define STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME (1467295200-(60*60*24*6))
+#endif
