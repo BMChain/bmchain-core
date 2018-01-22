@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <steemit/app/api.hpp>
-#include <steemit/app/api_access.hpp>
-#include <steemit/app/application.hpp>
-#include <steemit/app/plugin.hpp>
+#include <bmchain/app/api.hpp>
+#include <bmchain/app/api_access.hpp>
+#include <bmchain/app/application.hpp>
+#include <bmchain/app/plugin.hpp>
 
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/steem_object_types.hpp>
-#include <steemit/chain/database_exceptions.hpp>
+#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/database_exceptions.hpp>
 
 #include <fc/time.hpp>
 
@@ -59,7 +59,7 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
-namespace steemit { namespace app {
+namespace bmchain { namespace app {
 using graphene::net::item_hash_t;
 using graphene::net::item_id;
 using graphene::net::message;
@@ -519,7 +519,7 @@ namespace detail {
                }
 
                return result;
-            } catch ( const steemit::chain::unlinkable_block_exception& e ) {
+            } catch ( const bmchain::chain::unlinkable_block_exception& e ) {
                // translate to a graphene::net exception
                fc_elog(fc::logger::get("sync"),
                      "Error when pushing block, current head block is ${head}:\n${e}",
@@ -923,7 +923,7 @@ namespace detail {
       api_access _apiaccess;
 
       //std::shared_ptr<graphene::db::object_database>   _pending_trx_db;
-      std::shared_ptr<steemit::chain::database>        _chain_db;
+      std::shared_ptr<bmchain::chain::database>        _chain_db;
       std::shared_ptr<graphene::net::node>             _p2p_network;
       std::shared_ptr<fc::http::websocket_server>      _websocket_server;
       std::shared_ptr<fc::http::websocket_tls_server>  _websocket_tls_server;

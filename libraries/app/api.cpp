@@ -23,16 +23,16 @@
  */
 #include <cctype>
 
-#include <steemit/app/api.hpp>
-#include <steemit/app/api_access.hpp>
-#include <steemit/app/application.hpp>
-#include <steemit/app/impacted.hpp>
+#include <bmchain/app/api.hpp>
+#include <bmchain/app/api_access.hpp>
+#include <bmchain/app/application.hpp>
+#include <bmchain/app/impacted.hpp>
 
-#include <steemit/protocol/get_config.hpp>
+#include <bmchain/protocol/get_config.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/transaction_object.hpp>
+#include <bmchain/chain/database.hpp>
+#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/transaction_object.hpp>
 #include <fc/time.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
@@ -43,7 +43,7 @@
 #include <graphene/utilities/git_revision.hpp>
 #include <fc/git_revision.hpp>
 
-namespace steemit { namespace app {
+namespace bmchain { namespace app {
 
     login_api::login_api(const api_context& ctx)
     :_ctx(ctx)
@@ -338,4 +338,4 @@ namespace steemit { namespace app {
        return _app.p2p_node()->set_advanced_node_parameters(params);
     }
 
-} } // steemit::app
+} } // bmchain::app

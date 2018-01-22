@@ -1,10 +1,10 @@
-#include <steemit/app/api_context.hpp>
-#include <steemit/app/application.hpp>
-#include <steemit/app/database_api.hpp>
+#include <bmchain/app/api_context.hpp>
+#include <bmchain/app/application.hpp>
+#include <bmchain/app/database_api.hpp>
 
-#include <steemit/protocol/get_config.hpp>
+#include <bmchain/protocol/get_config.hpp>
 
-#include <steemit/chain/util/reward.hpp>
+#include <bmchain/chain/util/reward.hpp>
 
 #include <fc/bloom_filter.hpp>
 #include <fc/smart_ref_impl.hpp>
@@ -21,7 +21,7 @@
 
 #define GET_REQUIRED_FEES_MAX_RECURSION 4
 
-namespace steemit {
+namespace bmchain {
     namespace app {
 
         class database_api_impl;
@@ -29,7 +29,7 @@ namespace steemit {
 
         class database_api_impl : public std::enable_shared_from_this<database_api_impl> {
         public:
-            database_api_impl(const steemit::app::api_context &ctx);
+            database_api_impl(const bmchain::app::api_context &ctx);
 
             ~database_api_impl();
 
@@ -97,8 +97,8 @@ namespace steemit {
 
             std::function<void(const fc::variant &)> _block_applied_callback;
 
-            steemit::chain::database &_db;
-            std::shared_ptr<steemit::follow::follow_api> _follow_api;
+            bmchain::chain::database &_db;
+            std::shared_ptr<bmchain::follow::follow_api> _follow_api;
 
             boost::signals2::scoped_connection _block_applied_connection;
 
@@ -154,12 +154,12 @@ namespace steemit {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        database_api::database_api(const steemit::app::api_context &ctx)
+        database_api::database_api(const bmchain::app::api_context &ctx)
                 : my(new database_api_impl(ctx)) {}
 
         database_api::~database_api() {}
 
-        database_api_impl::database_api_impl(const steemit::app::api_context &ctx)
+        database_api_impl::database_api_impl(const bmchain::app::api_context &ctx)
                 : _db(*ctx.app.chain_database()) {
             wlog("creating database api ${x}", ("x", int64_t(this)));
 
@@ -167,7 +167,7 @@ namespace steemit {
 
             try {
                 ctx.app.get_plugin<follow::follow_plugin>(FOLLOW_PLUGIN_NAME);
-                _follow_api = std::make_shared<steemit::follow::follow_api>(ctx);
+                _follow_api = std::make_shared<bmchain::follow::follow_api>(ctx);
             }
             catch (fc::assert_exception) { ilog("Follow Plugin not loaded"); }
         }
@@ -245,7 +245,7 @@ namespace steemit {
         }
 
         fc::variant_object database_api_impl::get_config() const {
-            return steemit::protocol::get_config();
+            return bmchain::protocol::get_config();
         }
 
         dynamic_global_property_api_obj database_api::get_dynamic_global_properties() const {
@@ -377,7 +377,7 @@ namespace steemit {
         vector<account_id_type> database_api_impl::get_account_references(account_id_type account_id) const {
             /*const auto& idx = _db.get_index<account_index>();
    const auto& aidx = dynamic_cast<const primary_index<account_index>&>(idx);
-   const auto& refs = aidx.get_secondary_index<steemit::chain::account_member_index>();
+   const auto& refs = aidx.get_secondary_index<bmchain::chain::account_member_index>();
    auto itr = refs.account_to_account_memberships.find(account_id);
    vector<account_id_type> result;
 
@@ -1039,7 +1039,7 @@ namespace steemit {
             if (total_r2 > 0) {
                 uint128_t vshares;
                 const auto &rf = my->_db.get_reward_fund(my->_db.get_comment(d.author, d.permlink));
-                vshares = d.net_rshares.value > 0 ? steemit::chain::util::evaluate_reward_curve(d.net_rshares.value,
+                vshares = d.net_rshares.value > 0 ? bmchain::chain::util::evaluate_reward_curve(d.net_rshares.value,
                                                                                                 rf.author_reward_curve,
                                                                                                 rf.content_constant) : 0;
 
@@ -2471,4 +2471,4 @@ namespace steemit {
         }
 
     }
-} // steemit::app
+} // bmchain::app
