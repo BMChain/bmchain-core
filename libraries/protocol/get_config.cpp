@@ -1,10 +1,10 @@
-#include <steemit/protocol/get_config.hpp>
-#include <steemit/protocol/config.hpp>
-#include <steemit/protocol/asset.hpp>
-#include <steemit/protocol/types.hpp>
-#include <steemit/protocol/version.hpp>
+#include <bmchain/protocol/get_config.hpp>
+#include <bmchain/protocol/config.hpp>
+#include <bmchain/protocol/asset.hpp>
+#include <bmchain/protocol/types.hpp>
+#include <bmchain/protocol/version.hpp>
 
-namespace steemit { namespace protocol {
+namespace bmchain { namespace protocol {
 
 fc::variant_object get_config()
 {
@@ -184,4 +184,4 @@ fc::variant_object get_config()
    return result;
 }
 
-} } // steemit::protocol
+} } // bmchain::protocol

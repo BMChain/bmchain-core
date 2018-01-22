@@ -1,11 +1,11 @@
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/witness_objects.hpp>
-#include <steemit/chain/witness_schedule.hpp>
+#include <bmchain/chain/database.hpp>
+#include <bmchain/chain/witness_objects.hpp>
+#include <bmchain/chain/witness_schedule.hpp>
 
-#include <steemit/protocol/config.hpp>
+#include <bmchain/protocol/config.hpp>
 
-namespace steemit { namespace chain {
+namespace bmchain { namespace chain {
 
 void reset_virtual_schedule_time( database& db )
 {

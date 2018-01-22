@@ -1,15 +1,15 @@
-#include <steemit/tags/tags_plugin.hpp>
+#include <bmchain/tags/tags_plugin.hpp>
 
-#include <steemit/app/impacted.hpp>
+#include <bmchain/app/impacted.hpp>
 
-#include <steemit/protocol/config.hpp>
+#include <bmchain/protocol/config.hpp>
 
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/hardfork.hpp>
-#include <steemit/chain/index.hpp>
-#include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/account_object.hpp>
-#include <steemit/chain/comment_object.hpp>
+#include <bmchain/chain/database.hpp>
+#include <bmchain/chain/hardfork.hpp>
+#include <bmchain/chain/index.hpp>
+#include <bmchain/chain/operation_notification.hpp>
+#include <bmchain/chain/account_object.hpp>
+#include <bmchain/chain/comment_object.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/thread/thread.hpp>
@@ -19,11 +19,11 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/algorithm/string.hpp>
 
-namespace steemit { namespace tags {
+namespace bmchain { namespace tags {
 
 namespace detail {
 
-using namespace steemit::protocol;
+using namespace bmchain::protocol;
 
 class tags_plugin_impl
 {
@@ -33,7 +33,7 @@ class tags_plugin_impl
       { }
       virtual ~tags_plugin_impl();
 
-      steemit::chain::database& database()
+      bmchain::chain::database& database()
       {
          return _self.database();
       }
@@ -531,13 +531,13 @@ void tags_plugin::plugin_initialize(const boost::program_options::variables_map&
 
 void tags_plugin::plugin_startup()
 {
-    auto ov = steemit::tags::detail::operation_visitor( database() );
+    auto ov = bmchain::tags::detail::operation_visitor( database() );
     const auto & cidx = database().get_index< comment_index >().indices().get< by_permlink >();
     for (auto idx = cidx.cbegin(); idx != cidx.cend(); ++idx){
         ov.update_tags(*idx, true);
     }
 }
 
-} } /// steemit::tags
+} } /// bmchain::tags
 
-STEEMIT_DEFINE_PLUGIN( tags, steemit::tags::tags_plugin )
+STEEMIT_DEFINE_PLUGIN( tags, bmchain::tags::tags_plugin )

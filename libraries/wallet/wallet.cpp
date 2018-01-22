@@ -2,15 +2,15 @@
 #include <graphene/utilities/key_conversion.hpp>
 #include <graphene/utilities/words.hpp>
 
-#include <steemit/app/api.hpp>
-#include <steemit/protocol/base.hpp>
-#include <steemit/follow/follow_operations.hpp>
-#include <steemit/private_message/private_message_operations.hpp>
-#include <steemit/wallet/wallet.hpp>
-#include <steemit/wallet/api_documentation.hpp>
-#include <steemit/wallet/reflect_util.hpp>
+#include <bmchain/app/api.hpp>
+#include <bmchain/protocol/base.hpp>
+#include <bmchain/follow/follow_operations.hpp>
+#include <bmchain/private_message/private_message_operations.hpp>
+#include <bmchain/wallet/wallet.hpp>
+#include <bmchain/wallet/api_documentation.hpp>
+#include <bmchain/wallet/reflect_util.hpp>
 
-#include <steemit/account_by_key/account_by_key_api.hpp>
+#include <bmchain/account_by_key/account_by_key_api.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -60,7 +60,7 @@
 
 #define BRAIN_KEY_WORD_COUNT 16
 
-namespace steemit { namespace wallet {
+namespace bmchain { namespace wallet {
 
 namespace detail {
 
@@ -388,7 +388,7 @@ public:
       fc::optional<fc::ecc::private_key> optional_private_key = wif_to_key(wif_key);
       if (!optional_private_key)
          FC_THROW("Invalid private key");
-      steemit::chain::public_key_type wif_pub_key = optional_private_key->get_public_key();
+      bmchain::chain::public_key_type wif_pub_key = optional_private_key->get_public_key();
 
       _keys[wif_pub_key] = wif_key;
       return true;
@@ -459,7 +459,7 @@ public:
       for (int key_index = 0; ; ++key_index)
       {
          fc::ecc::private_key derived_private_key = derive_private_key(key_to_wif(parent_key), key_index);
-         steemit::chain::public_key_type derived_public_key = derived_private_key.get_public_key();
+         bmchain::chain::public_key_type derived_public_key = derived_private_key.get_public_key();
          if( _keys.find(derived_public_key) == _keys.end() )
          {
             if (number_of_consecutive_unused_keys)
@@ -495,9 +495,9 @@ public:
          int memo_key_index = find_first_unused_derived_key_index(active_privkey);
          fc::ecc::private_key memo_privkey = derive_private_key( key_to_wif(active_privkey), memo_key_index);
 
-         steemit::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
-         steemit::chain::public_key_type active_pubkey = active_privkey.get_public_key();
-         steemit::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
+         bmchain::chain::public_key_type owner_pubkey = owner_privkey.get_public_key();
+         bmchain::chain::public_key_type active_pubkey = active_privkey.get_public_key();
+         bmchain::chain::public_key_type memo_pubkey = memo_privkey.get_public_key();
 
          account_create_operation account_create_op;
 
@@ -972,11 +972,11 @@ public:
    const string _wallet_filename_extension = ".wallet";
 };
 
-} } } // steemit::wallet::detail
+} } } // bmchain::wallet::detail
 
 
 
-namespace steemit { namespace wallet {
+namespace bmchain { namespace wallet {
 
 wallet_api::wallet_api(const wallet_data& initial_data, fc::api<login_api> rapi)
    : my(new detail::wallet_api_impl(*this, initial_data, rapi))
@@ -2835,5 +2835,5 @@ std::string wallet_api::try_decrypt_content( const extended_encrypted_content& c
    }
 }
 
-} } // steemit::wallet
+} } // bmchain::wallet
 

@@ -1,26 +1,26 @@
-#include <steemit/protocol/steem_operations.hpp>
+#include <bmchain/protocol/steem_operations.hpp>
 
-#include <steemit/chain/block_summary_object.hpp>
-#include <steemit/chain/compound.hpp>
-#include <steemit/chain/custom_operation_interpreter.hpp>
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/database_exceptions.hpp>
-#include <steemit/chain/db_with.hpp>
-#include <steemit/chain/evaluator_registry.hpp>
-#include <steemit/chain/global_property_object.hpp>
-#include <steemit/chain/history_object.hpp>
-#include <steemit/chain/index.hpp>
-#include <steemit/chain/steem_evaluator.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/transaction_object.hpp>
-#include <steemit/chain/shared_db_merkle.hpp>
-#include <steemit/chain/operation_notification.hpp>
-#include <steemit/chain/witness_schedule.hpp>
+#include <bmchain/chain/block_summary_object.hpp>
+#include <bmchain/chain/compound.hpp>
+#include <bmchain/chain/custom_operation_interpreter.hpp>
+#include <bmchain/chain/database.hpp>
+#include <bmchain/chain/database_exceptions.hpp>
+#include <bmchain/chain/db_with.hpp>
+#include <bmchain/chain/evaluator_registry.hpp>
+#include <bmchain/chain/global_property_object.hpp>
+#include <bmchain/chain/history_object.hpp>
+#include <bmchain/chain/index.hpp>
+#include <bmchain/chain/steem_evaluator.hpp>
+#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/transaction_object.hpp>
+#include <bmchain/chain/shared_db_merkle.hpp>
+#include <bmchain/chain/operation_notification.hpp>
+#include <bmchain/chain/witness_schedule.hpp>
 
-#include <steemit/chain/util/asset.hpp>
-#include <steemit/chain/util/reward.hpp>
-#include <steemit/chain/util/uint256.hpp>
-#include <steemit/chain/util/reward.hpp>
+#include <bmchain/chain/util/asset.hpp>
+#include <bmchain/chain/util/reward.hpp>
+#include <bmchain/chain/util/uint256.hpp>
+#include <bmchain/chain/util/reward.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/uint128.hpp>
@@ -34,7 +34,7 @@
 #include <fstream>
 #include <functional>
 
-namespace steemit { namespace chain {
+namespace bmchain { namespace chain {
 
 //namespace db2 = graphene::db2;
 
@@ -60,11 +60,11 @@ struct db_schema
 
 } }
 
-FC_REFLECT( steemit::chain::object_schema_repr, (space_type)(type) )
-FC_REFLECT( steemit::chain::operation_schema_repr, (id)(type) )
-FC_REFLECT( steemit::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types) )
+FC_REFLECT( bmchain::chain::object_schema_repr, (space_type)(type) )
+FC_REFLECT( bmchain::chain::operation_schema_repr, (id)(type) )
+FC_REFLECT( bmchain::chain::db_schema, (types)(object_types)(operation_type)(custom_operation_types) )
 
-namespace steemit { namespace chain {
+namespace bmchain { namespace chain {
 
 using boost::container::flat_set;
 
@@ -3991,4 +3991,4 @@ const content_order_object& database::get_content_order_by_id( uint32_t id )cons
     } FC_CAPTURE_AND_RETHROW( (id) )
 }
 
-} } //steemit::chain
+} } //bmchain::chain

@@ -1,15 +1,15 @@
-#include <steemit/chain/steem_evaluator.hpp>
-#include <steemit/chain/database.hpp>
-#include <steemit/chain/custom_operation_interpreter.hpp>
-#include <steemit/chain/steem_objects.hpp>
-#include <steemit/chain/witness_objects.hpp>
-#include <steemit/chain/block_summary_object.hpp>
-#include <steemit/private_message/private_message_evaluators.hpp>
-#include <steemit/private_message/private_message_operations.hpp>
-#include <steemit/private_message/private_message_plugin.hpp>
+#include <bmchain/chain/steem_evaluator.hpp>
+#include <bmchain/chain/database.hpp>
+#include <bmchain/chain/custom_operation_interpreter.hpp>
+#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/witness_objects.hpp>
+#include <bmchain/chain/block_summary_object.hpp>
+#include <bmchain/private_message/private_message_evaluators.hpp>
+#include <bmchain/private_message/private_message_operations.hpp>
+#include <bmchain/private_message/private_message_plugin.hpp>
 #include <locale>
 
-#include <steemit/chain/util/reward.hpp>
+#include <bmchain/chain/util/reward.hpp>
 
 #ifndef IS_LOW_MEM
 #include <diff_match_patch.h>
@@ -34,7 +34,7 @@ std::string wstring_to_utf8(const std::wstring& str)
 
 #include <limits>
 
-namespace steemit { namespace chain {
+namespace bmchain { namespace chain {
    using fc::uint128_t;
 
 inline void validate_permlink_0_1( const string& permlink )
@@ -1499,7 +1499,7 @@ try {
 } FC_CAPTURE_AND_RETHROW( (o)) }
 
 void custom_evaluator::do_apply( const custom_operation& o ){
-    using namespace steemit::private_message;
+    using namespace bmchain::private_message;
     if (o.id == 777){
        database& d = db();
        std::shared_ptr< custom_operation_interpreter > eval = d.get_custom_json_evaluator( "private_message" );
@@ -2265,4 +2265,4 @@ void content_order_cancel_evaluator::do_apply( const content_order_cancel_operat
     });
 }
 
-} } // steemit::chain
+} } // bmchain::chain
