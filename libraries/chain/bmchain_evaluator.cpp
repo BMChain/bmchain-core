@@ -110,8 +110,8 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
    FC_ASSERT( creator.balance >= o.fee, "Insufficient balance to create account.", ( "creator.balance", creator.balance )( "required", o.fee ) );
 
    const witness_schedule_object& wso = _db.get_witness_schedule_object();
-   FC_ASSERT( o.fee >= asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, BMT_SYMBOL ), "Insufficient Fee: ${f} required, ${p} provided.",
-              ("f", wso.median_props.account_creation_fee * asset( BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, BMT_SYMBOL ) )
+   FC_ASSERT( o.fee >= asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER, BMT_SYMBOL ), "Insufficient Fee: ${f} required, ${p} provided.",
+              ("f", wso.median_props.account_creation_fee * asset( BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER, BMT_SYMBOL ) )
               ("p", o.fee) );
 
    for (auto &a : o.owner.account_auths) {
@@ -157,12 +157,12 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
       _db.create_vesting( new_account, o.fee );
 
    if( BMCHAIN_ENABLE ){
-      auto new_steem = asset(BMCHAIN_USER_EMISSION_RATE, BMT_SYMBOL);
-      _db.create_vesting(new_account, new_steem);
+      auto new_bmt = asset(BMCHAIN_USER_EMISSION_RATE, BMT_SYMBOL);
+      _db.create_vesting(new_account, new_bmt);
       _db.modify( props, [&]( dynamic_global_property_object& props )
       {
-          props.virtual_supply += new_steem;
-          props.current_supply += new_steem;
+          props.virtual_supply += new_bmt;
+          props.current_supply += new_bmt;
       } );
       //_db.process_funds_bmchain(BMCHAIN_USER_EMISSION_RATE);
    }
@@ -182,7 +182,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
                ( "creator.vesting_shares", creator.vesting_shares )
                ( "creator.delegated_vesting_shares", creator.delegated_vesting_shares )( "required", o.delegation ) );
 
-   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_vesting_share_price();
+   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_vesting_share_price();
 
    auto current_delegation = asset( o.fee.amount * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_vesting_share_price() + o.delegation;
 
@@ -2063,9 +2063,9 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
 
    asset reward_vesting_bmt_to_move = asset( 0, BMT_SYMBOL );
    if( op.reward_vests == acnt.reward_vesting_balance )
-      reward_vesting_bmt_to_move = acnt.reward_vesting_steem;
+      reward_vesting_bmt_to_move = acnt.reward_vesting_bmt;
    else
-      reward_vesting_bmt_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_vesting_steem.amount.value ) )
+      reward_vesting_bmt_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_vesting_bmt.amount.value ) )
          / uint128_t( acnt.reward_vesting_balance.amount.value ) ).to_uint64(), BMT_SYMBOL );
 
    _db.adjust_reward_balance( acnt, -op.reward_bmt );
@@ -2075,7 +2075,7 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
    {
       a.vesting_shares += op.reward_vests;
       a.reward_vesting_balance -= op.reward_vests;
-      a.reward_vesting_steem -= reward_vesting_bmt_to_move;
+      a.reward_vesting_bmt -= reward_vesting_bmt_to_move;
    });
 
    _db.modify( _db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )

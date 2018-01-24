@@ -4900,7 +4900,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
       BOOST_TEST_MESSAGE( "--- Test success using only BMT to reach target delegation." );
 
       tx.clear();
-      op.fee=asset( db.get_witness_schedule_object().median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL );
+      op.fee=asset( db.get_witness_schedule_object().median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL );
       op.delegation = asset(0, REP_SYMBOL);
       op.new_account_name = "sam";
       tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
@@ -4920,7 +4920,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
       STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
 
       BOOST_TEST_MESSAGE( "--- Test failure when insufficient fee fo reach target delegation." );
-      fund( "alice" , asset( db.get_witness_schedule_object().median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO , BMT_SYMBOL ));
+      fund( "alice" , asset( db.get_witness_schedule_object().median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO , BMT_SYMBOL ));
       STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
 
       validate_database();
@@ -4966,7 +4966,7 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_apply )
          {
             a.reward_bmt_balance = ASSET( "10.000 TESTS" );
             a.reward_vesting_balance = ASSET( "10.000000 VESTS" );
-            a.reward_vesting_steem = ASSET( "10.000 TESTS" );
+            a.reward_vesting_bmt = ASSET( "10.000 TESTS" );
          });
 
          db.modify( db.get_dynamic_global_properties(), []( dynamic_global_property_object& gpo )
@@ -5013,7 +5013,7 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_apply )
       BOOST_REQUIRE( db.get_account( "alice" ).reward_bmt_balance == ASSET( "10.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "alice" ).vesting_shares == alice_vests + op.reward_vests );
       BOOST_REQUIRE( db.get_account( "alice" ).reward_vesting_balance == ASSET( "5.000000 VESTS" ) );
-      BOOST_REQUIRE( db.get_account( "alice" ).reward_vesting_steem == ASSET( "5.000 TESTS" ) );
+      BOOST_REQUIRE( db.get_account( "alice" ).reward_vesting_bmt == ASSET( "5.000 TESTS" ) );
       validate_database();
 
       alice_vests += op.reward_vests;
@@ -5031,7 +5031,7 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_apply )
       BOOST_REQUIRE( db.get_account( "alice" ).reward_bmt_balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "alice" ).vesting_shares == alice_vests + op.reward_vests );
       BOOST_REQUIRE( db.get_account( "alice" ).reward_vesting_balance == ASSET( "0.000000 VESTS" ) );
-      BOOST_REQUIRE( db.get_account( "alice" ).reward_vesting_steem == ASSET( "0.000 TESTS" ) );
+      BOOST_REQUIRE( db.get_account( "alice" ).reward_vesting_bmt == ASSET( "0.000 TESTS" ) );
             validate_database();
    }
    FC_LOG_AND_RETHROW()
@@ -5542,9 +5542,9 @@ BOOST_AUTO_TEST_CASE( comment_beneficiaries_apply )
       generate_block();
 
       BOOST_REQUIRE( db.get_account( "bob" ).reward_bmt_balance == ASSET( "0.000 TESTS" ) );
-      BOOST_REQUIRE( db.get_account( "bob" ).reward_vesting_steem.amount + db.get_account( "sam" ).reward_vesting_steem.amount == db.get_comment( "alice", string( "test" ) ).beneficiary_payout_value.amount );
-      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) == db.get_account( "bob" ).reward_vesting_steem.amount + 2 );
-      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) * 2 == db.get_account( "sam" ).reward_vesting_steem.amount + 3 );
+      BOOST_REQUIRE( db.get_account( "bob" ).reward_vesting_bmt.amount + db.get_account( "sam" ).reward_vesting_bmt.amount == db.get_comment( "alice", string( "test" ) ).beneficiary_payout_value.amount );
+      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_bmt.amount ) == db.get_account( "bob" ).reward_vesting_bmt.amount + 2 );
+      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_bmt.amount ) * 2 == db.get_account( "sam" ).reward_vesting_bmt.amount + 3 );
    }
    FC_LOG_AND_RETHROW()
 }

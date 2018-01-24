@@ -992,7 +992,7 @@ asset database::create_vesting( const account_object& to_account, asset steem, b
          if( to_reward_balance )
          {
             to.reward_vesting_balance += new_vesting;
-            to.reward_vesting_steem += steem;
+            to.reward_vesting_bmt += steem;
          }
          else
             to.vesting_shares += new_vesting;
@@ -1191,17 +1191,17 @@ void database::clear_null_account_balance()
    {
       const auto& gpo = get_dynamic_global_properties();
 
-      total_steem += null_account.reward_vesting_steem;
+      total_steem += null_account.reward_vesting_bmt;
 
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
          g.pending_rewarded_vesting_shares -= null_account.reward_vesting_balance;
-         g.pending_rewarded_vesting_steem -= null_account.reward_vesting_steem;
+         g.pending_rewarded_vesting_steem -= null_account.reward_vesting_bmt;
       });
 
       modify( null_account, [&]( account_object& a )
       {
-         a.reward_vesting_steem.amount = 0;
+         a.reward_vesting_bmt.amount = 0;
          a.reward_vesting_balance.amount = 0;
       });
    }
@@ -3241,7 +3241,7 @@ void database::validate_invariants()const
          total_supply += itr->reward_bmt_balance;
          total_vesting += itr->vesting_shares;
          total_vesting += itr->reward_vesting_balance;
-         pending_vesting_steem += itr->reward_vesting_steem;
+         pending_vesting_steem += itr->reward_vesting_bmt;
          total_vsf_votes += ( itr->proxy == BMCHAIN_PROXY_TO_SELF_ACCOUNT ?
                                  itr->witness_vote_weight() :
                                  ( BMCHAIN_MAX_PROXY_RECURSION_DEPTH > 0 ?

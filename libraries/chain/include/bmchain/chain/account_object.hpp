@@ -62,7 +62,7 @@ namespace bmchain { namespace chain {
 
          asset             reward_bmt_balance = asset( 0, BMT_SYMBOL );
          asset             reward_vesting_balance = asset( 0, REP_SYMBOL );
-         asset             reward_vesting_steem = asset( 0, BMT_SYMBOL );
+         asset             reward_vesting_bmt = asset( 0, BMT_SYMBOL );
 
          share_type        curation_rewards = 0;
          share_type        posting_rewards = 0;
@@ -446,7 +446,7 @@ FC_REFLECT( bmchain::chain::account_object,
              (balance)
              (savings_balance)
              (savings_withdraw_requests)
-             (reward_bmt_balance)(reward_vesting_balance)(reward_vesting_steem)
+             (reward_bmt_balance)(reward_vesting_balance)(reward_vesting_bmt)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
              (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
