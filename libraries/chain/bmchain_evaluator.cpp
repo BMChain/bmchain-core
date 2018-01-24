@@ -414,7 +414,7 @@ void comment_options_evaluator::do_apply( const comment_options_operation& o )
 
    _db.modify( comment, [&]( comment_object& c ) {
        c.max_accepted_payout   = o.max_accepted_payout;
-       c.percent_steem_dollars = o.percent_steem_dollars;
+       c.percent_bmt_dollars = o.percent_bmt_dollars;
        c.allow_votes           = o.allow_votes;
        c.allow_curation_rewards = o.allow_curation_rewards;
    });
@@ -822,13 +822,13 @@ void escrow_transfer_evaluator::do_apply( const escrow_transfer_operation& o )
       FC_ASSERT( o.ratification_deadline > _db.head_block_time(), "The escorw ratification deadline must be after head block time." );
       FC_ASSERT( o.escrow_expiration > _db.head_block_time(), "The escrow expiration must be after head block time." );
 
-      asset steem_spent = o.steem_amount;
+      asset bmt_spent = o.steem_amount;
       if( o.fee.symbol == BMT_SYMBOL )
-         steem_spent += o.fee;
+         bmt_spent += o.fee;
 
-      FC_ASSERT( from_account.balance >= steem_spent, "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}", ("r",steem_spent)("a",from_account.balance) );
+      FC_ASSERT( from_account.balance >= bmt_spent, "Account cannot cover BMT costs of escrow. Required: ${r} Available: ${a}", ("r",bmt_spent)("a",from_account.balance) );
 
-      _db.adjust_balance( from_account, -steem_spent );
+      _db.adjust_balance( from_account, -bmt_spent );
 
       _db.create<escrow_object>([&]( escrow_object& esc )
       {
@@ -1003,7 +1003,7 @@ void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operatio
    const auto& from_account = _db.get_account(o.from);
    const auto& to_account = o.to.size() ? _db.get_account(o.to) : from_account;
 
-   FC_ASSERT( _db.get_balance( from_account, BMT_SYMBOL) >= o.amount, "Account does not have sufficient STEEM for transfer." );
+   FC_ASSERT( _db.get_balance( from_account, BMT_SYMBOL) >= o.amount, "Account does not have sufficient BMT for transfer." );
    _db.adjust_balance( from_account, -o.amount );
    _db.create_vesting( to_account, o.amount );
 }
@@ -2056,7 +2056,7 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
 {
    const auto& acnt = _db.get_account( op.account );
 
-   FC_ASSERT( op.reward_steem <= acnt.reward_steem_balance, "Cannot claim that much STEEM. Claim: ${c} Actual: ${a}",
+   FC_ASSERT( op.reward_steem <= acnt.reward_steem_balance, "Cannot claim that much BMT. Claim: ${c} Actual: ${a}",
       ("c", op.reward_steem)("a", acnt.reward_steem_balance) );
    FC_ASSERT( op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
       ("c", op.reward_vests)("a", acnt.reward_vesting_balance) );

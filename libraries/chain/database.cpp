@@ -964,7 +964,7 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when)const
 
 /**
  * @param to_account - the account to receive the new vesting shares
- * @param STEEM - STEEM to be converted to vesting shares
+ * @param BMT - BMT to be converted to vesting shares
  */
 asset database::create_vesting( const account_object& to_account, asset steem, bool to_reward_balance )
 {
@@ -1472,7 +1472,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             author_tokens -= total_beneficiary;
 
-            auto _steem = (author_tokens * comment.percent_steem_dollars) / (2 * BMCHAIN_100_PERCENT);
+            auto _steem = (author_tokens * comment.percent_bmt_dollars) / (2 * BMCHAIN_100_PERCENT);
             auto steem = asset( _steem, BMT_SYMBOL);
             auto vesting_steem = author_tokens - _steem;
 
@@ -1739,7 +1739,7 @@ share_type database::pay_reward_funds( share_type reward )
 
       used_rewards += r;
 
-      // Sanity check to ensure we aren't printing more STEEM than has been allocated through inflation
+      // Sanity check to ensure we aren't printing more BMT than has been allocated through inflation
       FC_ASSERT( used_rewards <= reward );
    }
 

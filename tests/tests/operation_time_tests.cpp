@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
       // A,B,D : posters
       // U,V,W : voters
 
-      // set a ridiculously high STEEM price ($1 / satoshi) to disable dust threshold
+      // set a ridiculously high BMT price ($1 / satoshi) to disable dust threshold
       set_price_feed( price( ASSET( "0.001 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       for( const auto& voter : voters )
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_dust )
 
       generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time );
 
-      // If comments are paid out independent of order, then the last satoshi of STEEM cannot be divided among them
+      // If comments are paid out independent of order, then the last satoshi of BMT cannot be divided among them
       const auto rf = db.get< reward_fund_object, by_name >( BMCHAIN_POST_REWARD_FUND_NAME );
       BOOST_REQUIRE( rf.reward_balance == ASSET( "0.001 TESTS" ) );
 
@@ -1361,7 +1361,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
    try
    {
    /*
-      BOOST_TEST_MESSAGE( "Testing STEEM Inflation until the vesting start block" );
+      BOOST_TEST_MESSAGE( "Testing BMT Inflation until the vesting start block" );
 
       auto gpo = db.get_dynamic_global_properties();
       auto virtual_supply = gpo.virtual_supply;

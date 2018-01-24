@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
       BOOST_REQUIRE( acct.balance.amount.value == ASSET( "0.000 TESTS" ).amount.value );
       BOOST_REQUIRE( acct.id._id == acct_auth.id._id );
 
-      /// because init_witness has created vesting shares and blocks have been produced, 100 STEEM is worth less than 100 vesting shares due to rounding
+      /// because init_witness has created vesting shares and blocks have been produced, 100 BMT is worth less than 100 vesting shares due to rounding
       BOOST_REQUIRE( acct.vesting_shares.amount.value == ( op.fee * ( vest_shares / vests ) ).amount.value );
       BOOST_REQUIRE( acct.vesting_withdraw_rate.amount.value == ASSET( "0.000000 VESTS" ).amount.value );
       BOOST_REQUIRE( acct.proxied_vsf_votes_total().value == 0 );
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
       BOOST_REQUIRE( acct.memo_key == priv_key.get_public_key() );
       BOOST_REQUIRE( acct.proxy == "" );
       BOOST_REQUIRE( acct.created == db.head_block_time() );
-      BOOST_REQUIRE( acct.balance.amount.value == ASSET( "0.000 STEEM " ).amount.value );
+      BOOST_REQUIRE( acct.balance.amount.value == ASSET( "0.000 BMT " ).amount.value );
       BOOST_REQUIRE( acct.vesting_shares.amount.value == ( op.fee * ( vest_shares / vests ) ).amount.value );
       BOOST_REQUIRE( acct.vesting_withdraw_rate.amount.value == ASSET( "0.000000 VESTS" ).amount.value );
       BOOST_REQUIRE( acct.proxied_vsf_votes_total().value == 0 );
@@ -3974,7 +3974,7 @@ BOOST_AUTO_TEST_CASE( transfer_to_savings_validate )
       op.amount = ASSET( "1.000 VESTS" );
       STEEMIT_REQUIRE_THROW( op.validate(), fc::exception );
 
-      BOOST_TEST_MESSAGE( "success when amount is STEEM" );
+      BOOST_TEST_MESSAGE( "success when amount is BMT" );
       op.amount = ASSET( "1.000 TESTS" );
       op.validate();
    }
@@ -4055,7 +4055,7 @@ BOOST_AUTO_TEST_CASE( transfer_to_savings_apply )
       validate_database();
 
 
-      BOOST_TEST_MESSAGE( "--- success transferring STEEM to self" );
+      BOOST_TEST_MESSAGE( "--- success transferring BMT to self" );
       op.to = "alice";
 
       tx.clear();
@@ -4075,7 +4075,7 @@ BOOST_AUTO_TEST_CASE( transfer_to_savings_apply )
       validate_database();
 
 
-      BOOST_TEST_MESSAGE( "--- success transferring STEEM to other" );
+      BOOST_TEST_MESSAGE( "--- success transferring BMT to other" );
       op.to = "bob";
       op.amount = ASSET( "1.000 TESTS" );
 
@@ -4132,7 +4132,7 @@ BOOST_AUTO_TEST_CASE( transfer_from_savings_validate )
       op.amount = ASSET( "1.000 VESTS" );
       STEEMIT_REQUIRE_THROW( op.validate(), fc::exception );
 
-      BOOST_TEST_MESSAGE( "success when amount is STEEM" );
+      BOOST_TEST_MESSAGE( "success when amount is BMT" );
       op.amount = ASSET( "1.000 TESTS" );
       op.validate();
    }
@@ -4226,7 +4226,7 @@ BOOST_AUTO_TEST_CASE( transfer_from_savings_apply )
       STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
 
 
-      BOOST_TEST_MESSAGE( "--- success withdrawing STEEM to self" );
+      BOOST_TEST_MESSAGE( "--- success withdrawing BMT to self" );
       op.to = "alice";
 
       tx.clear();
@@ -4269,7 +4269,7 @@ BOOST_AUTO_TEST_CASE( transfer_from_savings_apply )
       STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
 
 
-      BOOST_TEST_MESSAGE( "--- success withdrawing STEEM to other" );
+      BOOST_TEST_MESSAGE( "--- success withdrawing BMT to other" );
       op.to = "bob";
       op.amount = ASSET( "1.000 TESTS" );
       op.request_id = 3;
@@ -4724,7 +4724,7 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_validate )
       op.reward_vests.amount = 0;
 
 
-      BOOST_TEST_MESSAGE( "Testing wrong STEEM symbol" );
+      BOOST_TEST_MESSAGE( "Testing wrong BMT symbol" );
       op.reward_steem = ASSET( "1.000 WRONG" );
       STEEMIT_REQUIRE_THROW( op.validate(), fc::assert_exception );
 
@@ -4832,7 +4832,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
       BOOST_TEST_MESSAGE( "Testing: account_create_with_delegation_apply" );
       signed_transaction tx;
       ACTORS( (alice) );
-      // 150 * fee = ( 5 * STEEM ) + SP
+      // 150 * fee = ( 5 * BMT ) + SP
       auto gpo = db.get_dynamic_global_properties();
       generate_blocks(1);
       fund( "alice", ASSET("1510.000 TESTS") );
@@ -4897,7 +4897,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
 
       generate_block();
 
-      BOOST_TEST_MESSAGE( "--- Test success using only STEEM to reach target delegation." );
+      BOOST_TEST_MESSAGE( "--- Test success using only BMT to reach target delegation." );
 
       tx.clear();
       op.fee=asset( db.get_witness_schedule_object().median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL );
@@ -4985,7 +4985,7 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_apply )
       auto alice_vests = db.get_account( "alice" ).vesting_shares;
 
 
-      BOOST_TEST_MESSAGE( "--- Attempting to claim more STEEM than exists in the reward balance." );
+      BOOST_TEST_MESSAGE( "--- Attempting to claim more BMT than exists in the reward balance." );
 
       claim_reward_balance_operation op;
       signed_transaction tx;

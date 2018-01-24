@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
        std::cerr << "publ_key: " << publ_key << std::endl;
 
       std::cerr << "------------------------------------------------------\n\n";
-      std::cerr << "            STARTING STEEM NETWORK\n\n";
+      std::cerr << "            STARTING BMT NETWORK\n\n";
       std::cerr << "------------------------------------------------------\n";
       std::cerr << "initminer public key: " << BMCHAIN_INIT_PUBLIC_KEY_STR << "\n";
       std::cerr << "chain id: " << std::string(BMCHAIN_CHAIN_ID) << "\n";

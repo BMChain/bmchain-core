@@ -12,7 +12,7 @@
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("testnet"))
 
 #define REP_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
-#define BMT_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< STEEM with 3 digits of precision
+#define BMT_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< BMT with 3 digits of precision
 #define STMD_SYMBOL   (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('S') << 16) | (uint64_t('T') << 24) | (uint64_t('D') << 32) ) ///< Test Dollars with 3 digits of precision
 
 #define BMCHAIN_SYMBOL                          "TEST"
@@ -37,13 +37,13 @@
 #define BMCHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::seconds(12)
 #define BMCHAIN_OWNER_UPDATE_LIMIT                          fc::seconds(0)
 #define BMCHAIN_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
-#else // IS LIVE STEEM NETWORK
+#else // IS LIVE BMT NETWORK
 
 #define BMCHAIN_INIT_PUBLIC_KEY_STR             "BMT76G5486bhLKXkXgN1nSkeDbpWEaiavF7i6tDULdpvyr69CLbHC"
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain"))
 #define REP_SYMBOL  (uint64_t(6) | (uint64_t('R') << 8) | (uint64_t('E') << 16) | (uint64_t('P') << 24) ) ///< RPT with 6 digits of precision
-#define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< STEEM with 3 digits of precision
-#define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< STEEM Dollars with 3 digits of precision
+#define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precision
+#define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< BMT Dollars with 3 digits of precision
 #define BMCHAIN_SYMBOL                          "BMT"
 #define BMCHAIN_ADDRESS_PREFIX                  "BMT"
 

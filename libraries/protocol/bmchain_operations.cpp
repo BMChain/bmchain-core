@@ -13,7 +13,7 @@ namespace bmchain { namespace protocol {
    void account_create_operation::validate() const
    {
       validate_account_name( new_account_name );
-      FC_ASSERT( is_asset_type( fee, BMT_SYMBOL ), "Account creation fee must be STEEM" );
+      FC_ASSERT( is_asset_type( fee, BMT_SYMBOL ), "Account creation fee must be BMT" );
       owner.validate();
       active.validate();
 
@@ -29,7 +29,7 @@ namespace bmchain { namespace protocol {
    {
       validate_account_name( new_account_name );
       validate_account_name( creator );
-      FC_ASSERT( is_asset_type( fee, BMT_SYMBOL ), "Account creation fee must be STEEM" );
+      FC_ASSERT( is_asset_type( fee, BMT_SYMBOL ), "Account creation fee must be BMT" );
       FC_ASSERT( is_asset_type( delegation, REP_SYMBOL ), "Delegation must be VESTS" );
 
       owner.validate();
@@ -120,7 +120,7 @@ namespace bmchain { namespace protocol {
    void comment_options_operation::validate()const
    {
       validate_account_name( author );
-      FC_ASSERT( percent_steem_dollars <= BMCHAIN_100_PERCENT, "Percent cannot exceed 100%" );
+      FC_ASSERT( percent_bmt_dollars <= BMCHAIN_100_PERCENT, "Percent cannot exceed 100%" );
       FC_ASSERT( max_accepted_payout.symbol == BMT_SYMBOL, "Max accepted payout must be in SBD" );
       FC_ASSERT( max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout" );
       validate_permlink( permlink );
@@ -167,7 +167,7 @@ namespace bmchain { namespace protocol {
    void transfer_to_vesting_operation::validate() const
    {
       validate_account_name( from );
-      FC_ASSERT( is_asset_type( amount, BMT_SYMBOL ), "Amount must be STEEM" );
+      FC_ASSERT( is_asset_type( amount, BMT_SYMBOL ), "Amount must be BMT" );
       if ( to != account_name_type() ) validate_account_name( to );
       FC_ASSERT( amount > asset( 0, BMT_SYMBOL ), "Must transfer a nonzero amount" );
    }
@@ -354,7 +354,7 @@ namespace bmchain { namespace protocol {
       validate_account_name( publisher );
       FC_ASSERT( ( is_asset_type( exchange_rate.base, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) )
          || ( is_asset_type( exchange_rate.base, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ),
-         "Price feed must be a STEEM/SBD price" );
+         "Price feed must be a BMT/SBD price" );
       exchange_rate.validate();
    }
 
@@ -363,7 +363,7 @@ namespace bmchain { namespace protocol {
       validate_account_name( owner );
       FC_ASSERT( ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( min_to_receive, BMT_SYMBOL ) )
          || ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( min_to_receive, BMT_SYMBOL ) ),
-         "Limit order must be for the STEEM:SBD market" );
+         "Limit order must be for the BMT:SBD market" );
       (amount_to_sell / min_to_receive).validate();
    }
    void limit_order_create2_operation::validate()const
@@ -374,7 +374,7 @@ namespace bmchain { namespace protocol {
 
       FC_ASSERT( ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ) ||
                  ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ),
-                 "Limit order must be for the STEEM:SBD market" );
+                 "Limit order must be for the BMT:SBD market" );
 
       FC_ASSERT( (amount_to_sell * exchange_rate).amount > 0, "Amount to sell cannot round to 0 when traded" );
    }
@@ -387,9 +387,9 @@ namespace bmchain { namespace protocol {
    void convert_operation::validate()const
    {
       validate_account_name( owner );
-      /// only allow conversion from SBD to STEEM, allowing the opposite can enable traders to abuse
+      /// only allow conversion from SBD to BMT, allowing the opposite can enable traders to abuse
       /// market fluxuations through converting large quantities without moving the price.
-      FC_ASSERT( is_asset_type( amount, BMT_SYMBOL ), "Can only convert SBD to STEEM" );
+      FC_ASSERT( is_asset_type( amount, BMT_SYMBOL ), "Can only convert SBD to BMT" );
       FC_ASSERT( amount.amount > 0, "Must convert some SBD" );
    }
 

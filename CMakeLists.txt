@@ -263,7 +263,7 @@ endif(ENABLE_INSTALLER)
 if( BUILD_STEEM_TESTNET )
   MESSAGE( STATUS "\n\n             CONFIGURED FOR TEST NETWORK             \n\n" )
 else()
-  MESSAGE( STATUS "\n\n             CONFIGURED FOR STEEM NETWORK             \n\n" )
+  MESSAGE( STATUS "\n\n             CONFIGURED FOR BMT NETWORK             \n\n" )
 endif()
 
 if( LOW_MEMORY_NODE )

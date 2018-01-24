@@ -379,10 +379,10 @@ class wallet_api
        *  that is paid by the creator. The current account creation fee can be found with the
        *  'info' wallet command.
        *
-       *  These accounts are created with combination of STEEM and delegated SP
+       *  These accounts are created with combination of BMT and delegated SP
        *
        *  @param creator The account creating the new account
-       *  @param steem_fee The amount of the fee to be paid with STEEM
+       *  @param steem_fee The amount of the fee to be paid with BMT
        *  @param delegated_vests The amount of the fee to be paid with delegation
        *  @param new_account_name The name of the new account
        *  @param json_meta JSON Metadata associated with the new account
@@ -396,10 +396,10 @@ class wallet_api
        * wallet. There is a fee associated with account creation that is paid by the creator.
        * The current account creation fee can be found with the 'info' wallet command.
        *
-       * These accounts are created with combination of STEEM and delegated SP
+       * These accounts are created with combination of BMT and delegated SP
        *
        * @param creator The account creating the new account
-       * @param steem_fee The amount of the fee to be paid with STEEM
+       * @param steem_fee The amount of the fee to be paid with BMT
        * @param delegated_vests The amount of the fee to be paid with delegation
        * @param newname The name of the new account
        * @param json_meta JSON Metadata associated with the new account
@@ -597,24 +597,24 @@ class wallet_api
                                           bool broadcast = false);
 
       /**
-       * Transfer funds from one account to another. STEEM and SBD can be transferred.
+       * Transfer funds from one account to another. BMT and SBD can be transferred.
        *
        * @param from The account the funds are coming from
        * @param to The account the funds are going to
-       * @param amount The funds being transferred. i.e. "100.000 STEEM"
+       * @param amount The funds being transferred. i.e. "100.000 BMT"
        * @param memo A memo for the transactionm, encrypted with the to account's public memo key
        * @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction transfer(string from, string to, asset amount, string memo, bool broadcast = false);
 
       /**
-       * Transfer funds from one account to another using escrow. STEEM and SBD can be transferred.
+       * Transfer funds from one account to another using escrow. BMT and SBD can be transferred.
        *
        * @param from The account the funds are coming from
        * @param to The account the funds are going to
        * @param agent The account acting as the agent in case of dispute
        * @param escrow_id A unique id for the escrow transfer. (from, escrow_id) must be a unique pair
-       * @param steem_amount The amount of STEEM to transfer
+       * @param steem_amount The amount of BMT to transfer
        * @param fee The fee paid to the agent
        * @param ratification_deadline The deadline for 'to' and 'agent' to approve the escrow transfer
        * @param escrow_expiration The expiration of the escrow transfer, after which either party can claim the funds
@@ -676,7 +676,7 @@ class wallet_api
        * @param who The account authorizing the release
        * @param receiver The account that will receive funds being released
        * @param escrow_id A unique id for the escrow transfer
-       * @param steem_amount The amount of STEEM that will be released
+       * @param steem_amount The amount of BMT that will be released
        * @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction
@@ -684,13 +684,13 @@ class wallet_api
                            asset steem_amount, bool broadcast);
 
       /**
-       * Transfer STEEM into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
+       * Transfer BMT into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
        * for a minimum of one coin year and can be withdrawn once a week over a two year withdraw period.
-       * VESTS are protected against dilution up until 90% of STEEM is vesting.
+       * VESTS are protected against dilution up until 90% of BMT is vesting.
        *
-       * @param from The account the STEEM is coming from
+       * @param from The account the BMT is coming from
        * @param to The account getting the VESTS
-       * @param amount The amount of STEEM to vest i.e. "100.00 STEEM"
+       * @param amount The amount of BMT to vest i.e. "100.00 BMT"
        * @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction transfer_to_vesting(string from, string to, asset amount, bool broadcast = false);
@@ -718,7 +718,7 @@ class wallet_api
        *
        * @param from The account the VESTS are withdrawn from
        * @param vesting_shares The amount of VESTS to withdraw over the next two years. Each week (amount/104) shares are
-       *    withdrawn and deposited back as STEEM. i.e. "10.000000 VESTS"
+       *    withdrawn and deposited back as BMT. i.e. "10.000000 VESTS"
        * @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction withdraw_vesting( string from, asset vesting_shares, bool broadcast = false );
@@ -728,18 +728,18 @@ class wallet_api
        * based on the specified weights.
        *
        * @param from The account the VESTS are withdrawn from.
-       * @param to   The account receiving either VESTS or STEEM.
+       * @param to   The account receiving either VESTS or BMT.
        * @param percent The percent of the withdraw to go to the 'to' account. This is denoted in hundreths of a percent.
        *    i.e. 100 is 1% and 10000 is 100%. This value must be between 1 and 100000
        * @param auto_vest Set to true if the from account should receive the VESTS as VESTS, or false if it should receive
-       *    them as STEEM.
+       *    them as BMT.
        * @param broadcast true if you wish to broadcast the transaction.
        */
       annotated_signed_transaction set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
 
       /**
-       * A witness can public a price feed for the STEEM:SBD market. The median price feed is used
-       * to process conversion requests from SBD to STEEM.
+       * A witness can public a price feed for the BMT:SBD market. The median price feed is used
+       * to process conversion requests from SBD to BMT.
        *
        * @param witness The witness publishing the price feed
        * @param exchange_rate The desired exchange rate
@@ -798,7 +798,7 @@ class wallet_api
       message_body try_decrypt_message( const message_api_obj& mo );
 
       /**
-       * Vote on a comment to be paid STEEM
+       * Vote on a comment to be paid BMT
        *
        * @param voter The account voting
        * @param author The author of the comment to be voted on

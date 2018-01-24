@@ -401,7 +401,7 @@ namespace detail
 
          if( _db.is_producing() )
             STEEMIT_ASSERT( has_bandwidth, chain::plugin_exception,
-               "Account: ${account} bandwidth limit exceeded. Please wait to transact or power up STEEM.",
+               "Account: ${account} bandwidth limit exceeded. Please wait to transact or power up BMT.",
                ("account", a.name)
                ("account_vshares", account_vshares)
                ("account_average_bandwidth", account_average_bandwidth)
