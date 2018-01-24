@@ -6,7 +6,7 @@
 #include <bmchain/chain/database.hpp>
 #include <bmchain/chain/database_exceptions.hpp>
 #include <bmchain/chain/hardfork.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 
 #include <bmchain/chain/util/reward.hpp>
 

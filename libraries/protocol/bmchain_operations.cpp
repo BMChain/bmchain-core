@@ -1,4 +1,4 @@
-#include <bmchain/protocol/steem_operations.hpp>
+#include <bmchain/protocol/bmchain_operations.hpp>
 #include <fc/io/json.hpp>
 
 #include <locale>

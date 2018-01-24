@@ -24,7 +24,7 @@
 #pragma once
 
 #include <bmchain/app/plugin.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 
 namespace bmchain { namespace delayed_node {
 namespace detail { struct delayed_node_plugin_impl; }

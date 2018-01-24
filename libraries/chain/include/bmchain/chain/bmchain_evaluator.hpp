@@ -1,6 +1,6 @@
 #pragma once
 
-#include <bmchain/protocol/steem_operations.hpp>
+#include <bmchain/protocol/bmchain_operations.hpp>
 
 #include <bmchain/chain/evaluator.hpp>
 

@@ -26,8 +26,8 @@
 #include <bmchain/app/application.hpp>
 #include <bmchain/app/plugin.hpp>
 
-#include <bmchain/chain/steem_objects.hpp>
-#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
+#include <bmchain/chain/bmchain_object_types.hpp>
 #include <bmchain/chain/database_exceptions.hpp>
 
 #include <fc/time.hpp>

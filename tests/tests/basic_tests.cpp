@@ -27,7 +27,7 @@
 #include <bmchain/chain/database.hpp>
 #include <bmchain/protocol/protocol.hpp>
 
-#include <bmchain/protocol/steem_operations.hpp>
+#include <bmchain/protocol/bmchain_operations.hpp>
 
 #include <fc/crypto/digest.hpp>
 #include <fc/crypto/hex.hpp>

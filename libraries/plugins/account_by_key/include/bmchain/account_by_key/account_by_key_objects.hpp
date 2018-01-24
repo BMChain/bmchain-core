@@ -1,5 +1,5 @@
 #pragma once
-#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/bmchain_object_types.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 

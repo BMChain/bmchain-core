@@ -2,7 +2,7 @@
 
 #include <bmchain/follow/follow_plugin.hpp>
 
-#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/bmchain_object_types.hpp>
 
 namespace bmchain { namespace follow {
 

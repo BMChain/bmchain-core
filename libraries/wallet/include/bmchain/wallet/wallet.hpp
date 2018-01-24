@@ -3,7 +3,7 @@
 #include <bmchain/app/api.hpp>
 #include <bmchain/private_message/private_message_plugin.hpp>
 #include <bmchain/follow/follow_plugin.hpp>
-#include <bmchain/app/steem_api_objects.hpp>
+#include <bmchain/app/bmchain_api_objects.hpp>
 
 #include <graphene/utilities/key_conversion.hpp>
 

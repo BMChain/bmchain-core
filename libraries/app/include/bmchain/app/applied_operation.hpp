@@ -1,7 +1,7 @@
 #pragma once
 
 #include <bmchain/protocol/operations.hpp>
-#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/bmchain_object_types.hpp>
 
 namespace bmchain { namespace app {
 

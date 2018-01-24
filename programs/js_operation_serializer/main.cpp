@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 #include <bmchain/protocol/protocol.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 #include <fc/smart_ref_impl.hpp>
 #include <iostream>
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <bmchain/protocol/operation_util.hpp>
-#include <bmchain/protocol/steem_operations.hpp>
-#include <bmchain/protocol/steem_virtual_operations.hpp>
+#include <bmchain/protocol/bmchain_operations.hpp>
+#include <bmchain/protocol/bmchain_virtual_operations.hpp>
 
 namespace bmchain { namespace protocol {
 

@@ -24,7 +24,7 @@
 #ifdef IS_TEST_NET
 #include <boost/test/unit_test.hpp>
 
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/database.hpp>
 
 #include <fc/crypto/digest.hpp>

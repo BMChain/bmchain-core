@@ -4,7 +4,7 @@
 
 #include <bmchain/chain/database.hpp>
 #include <bmchain/chain/hardfork.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 
 #include <fc/crypto/digest.hpp>
 

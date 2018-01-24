@@ -30,7 +30,7 @@
 #include <bmchain/chain/database_exceptions.hpp>
 #include <bmchain/chain/generic_custom_operation_interpreter.hpp>
 #include <bmchain/chain/index.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 
 #include <fc/time.hpp>
 

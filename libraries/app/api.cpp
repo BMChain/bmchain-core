@@ -31,7 +31,7 @@
 #include <bmchain/protocol/get_config.hpp>
 
 #include <bmchain/chain/database.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/transaction_object.hpp>
 #include <fc/time.hpp>
 

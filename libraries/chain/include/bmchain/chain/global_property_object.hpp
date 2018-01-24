@@ -1,7 +1,7 @@
 #pragma once
 #include <fc/uint128.hpp>
 
-#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/bmchain_object_types.hpp>
 
 #include <bmchain/protocol/asset.hpp>
 

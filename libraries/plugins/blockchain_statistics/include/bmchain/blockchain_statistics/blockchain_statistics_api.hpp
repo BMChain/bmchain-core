@@ -22,7 +22,7 @@ struct statistics
    uint32_t             operations = 0;                              ///< Operations evaluated
    uint32_t             transactions = 0;                            ///< Transactions processed
    uint32_t             transfers = 0;                               ///< Account to account transfers
-   share_type           steem_transferred = 0;                       ///< STEEM transferred from account to account
+   share_type           bmt_transferred = 0;                       ///< BMT transferred from account to account
    uint32_t             accounts_created = 0;                        ///< Total accounts created
    uint32_t             paid_accounts_created = 0;                   ///< Accounts created with fee
    uint32_t             mined_accounts_created = 0;                  ///< Accounts mined for free
@@ -46,18 +46,18 @@ struct statistics
    uint32_t             changed_reply_votes = 0;                     ///< Changed votes on replies
    uint32_t             payouts = 0;                                 ///< Number of comment payouts
    share_type           vests_paid_to_authors = 0;                   ///< Ammount of VESS paid to authors
-   share_type           vests_paid_to_curators = 0;                  ///< Ammount of VESTS paid to curators
-   share_type           liquidity_rewards_paid = 0;                  ///< Ammount of STEEM paid to market makers
-   uint32_t             transfers_to_vesting = 0;                    ///< Transfers of STEEM into VESTS
-   share_type           steem_vested = 0;                            ///< Ammount of STEEM vested
+   share_type           vests_paid_to_curators = 0;                  ///< Ammount of REP paid to curators
+   share_type           liquidity_rewards_paid = 0;                  ///< Ammount of BMT paid to market makers
+   uint32_t             transfers_to_vesting = 0;                    ///< Transfers of BMT into REP
+   share_type           bmt_vested = 0;                              ///< Ammount of BMT vested
    uint32_t             new_vesting_withdrawal_requests = 0;         ///< New vesting withdrawal requests
    uint32_t             modified_vesting_withdrawal_requests = 0;    ///< Changes to vesting withdrawal requests
    share_type           vesting_withdraw_rate_delta = 0;
    uint32_t             vesting_withdrawals_processed = 0;           ///< Number of vesting withdrawals
    uint32_t             finished_vesting_withdrawals = 0;            ///< Processed vesting withdrawals that are now finished
-   share_type           vests_withdrawn = 0;                         ///< Ammount of VESTS withdrawn to STEEM
-   share_type           vests_transferred = 0;                       ///< Ammount of VESTS transferred to another account
-   share_type           steem_converted = 0;                         ///< Amount of STEEM that was converted
+   share_type           vests_withdrawn = 0;                         ///< Ammount of REP withdrawn to BMT
+   share_type           vests_transferred = 0;                       ///< Ammount of REP transferred to another account
+   share_type           bmt_converted = 0;                         ///< Amount of BMT that was converted
    uint32_t             limit_orders_created = 0;                    ///< Limit orders created
    uint32_t             limit_orders_filled = 0;                     ///< Limit orders filled
    uint32_t             limit_orders_cancelled = 0;                  ///< Limit orders cancelled
@@ -107,7 +107,7 @@ FC_REFLECT( bmchain::blockchain_statistics::statistics,
    (operations)
    (transactions)
    (transfers)
-   (steem_transferred)
+   (bmt_transferred)
    (accounts_created)
    (paid_accounts_created)
    (mined_accounts_created)
@@ -134,7 +134,7 @@ FC_REFLECT( bmchain::blockchain_statistics::statistics,
    (vests_paid_to_curators)
    (liquidity_rewards_paid)
    (transfers_to_vesting)
-   (steem_vested)
+   (bmt_vested)
    (new_vesting_withdrawal_requests)
    (modified_vesting_withdrawal_requests)
    (vesting_withdraw_rate_delta)
@@ -142,7 +142,7 @@ FC_REFLECT( bmchain::blockchain_statistics::statistics,
    (finished_vesting_withdrawals)
    (vests_withdrawn)
    (vests_transferred)
-   (steem_converted)
+   (bmt_converted)
    (limit_orders_created)
    (limit_orders_filled)
    (limit_orders_cancelled)

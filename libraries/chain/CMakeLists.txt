@@ -22,9 +22,9 @@ add_library( steemit_chain
              fork_database.cpp
              witness_schedule.cpp
 
-             steem_evaluator.cpp
+             bmchain_evaluator.cpp
 
-             steem_objects.cpp
+             bmchain_objects.cpp
              shared_authority.cpp
              block_log.cpp
 

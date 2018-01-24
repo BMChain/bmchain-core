@@ -1,7 +1,7 @@
 #pragma once
 #include <bmchain/protocol/transaction.hpp>
 
-#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/bmchain_object_types.hpp>
 
 #include <boost/multi_index/hashed_index.hpp>
 

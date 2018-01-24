@@ -3,7 +3,7 @@
 
 #include <graphene/utilities/tempdir.hpp>
 
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/history_object.hpp>
 #include <bmchain/account_history/account_history_plugin.hpp>
 #include <bmchain/witness/witness_plugin.hpp>

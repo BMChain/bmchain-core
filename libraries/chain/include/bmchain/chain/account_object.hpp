@@ -2,9 +2,9 @@
 #include <fc/fixed_string.hpp>
 
 #include <bmchain/protocol/authority.hpp>
-#include <bmchain/protocol/steem_operations.hpp>
+#include <bmchain/protocol/bmchain_operations.hpp>
 
-#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/bmchain_object_types.hpp>
 #include <bmchain/chain/witness_objects.hpp>
 #include <bmchain/chain/shared_authority.hpp>
 

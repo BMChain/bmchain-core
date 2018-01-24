@@ -4,7 +4,7 @@
 #include <bmchain/chain/comment_object.hpp>
 #include <bmchain/chain/global_property_object.hpp>
 #include <bmchain/chain/history_object.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/transaction_object.hpp>
 #include <bmchain/chain/witness_objects.hpp>
 

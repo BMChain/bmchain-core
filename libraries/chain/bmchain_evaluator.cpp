@@ -1,7 +1,7 @@
-#include <bmchain/chain/steem_evaluator.hpp>
+#include <bmchain/chain/bmchain_evaluator.hpp>
 #include <bmchain/chain/database.hpp>
 #include <bmchain/chain/custom_operation_interpreter.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/witness_objects.hpp>
 #include <bmchain/chain/block_summary_object.hpp>
 #include <bmchain/private_message/private_message_evaluators.hpp>

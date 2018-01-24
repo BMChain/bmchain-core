@@ -1,4 +1,4 @@
-#include <bmchain/protocol/steem_operations.hpp>
+#include <bmchain/protocol/bmchain_operations.hpp>
 
 #include <bmchain/chain/block_summary_object.hpp>
 #include <bmchain/chain/compound.hpp>
@@ -10,8 +10,8 @@
 #include <bmchain/chain/global_property_object.hpp>
 #include <bmchain/chain/history_object.hpp>
 #include <bmchain/chain/index.hpp>
-#include <bmchain/chain/steem_evaluator.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_evaluator.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/transaction_object.hpp>
 #include <bmchain/chain/shared_db_merkle.hpp>
 #include <bmchain/chain/operation_notification.hpp>

@@ -26,7 +26,7 @@
 #include <fc/container/flat.hpp>
 #include <bmchain/protocol/operations.hpp>
 #include <bmchain/protocol/transaction.hpp>
-#include <bmchain/chain/steem_object_types.hpp>
+#include <bmchain/chain/bmchain_object_types.hpp>
 
 #include <fc/string.hpp>
 

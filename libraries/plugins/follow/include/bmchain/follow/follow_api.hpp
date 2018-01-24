@@ -1,7 +1,7 @@
 #pragma once
 
 #include <bmchain/app/application.hpp>
-#include <bmchain/app/steem_api_objects.hpp>
+#include <bmchain/app/bmchain_api_objects.hpp>
 
 #include <bmchain/follow/follow_objects.hpp>
 

@@ -1,10 +1,10 @@
 #pragma once
 #include <bmchain/app/applied_operation.hpp>
-#include <bmchain/app/steem_api_objects.hpp>
+#include <bmchain/app/bmchain_api_objects.hpp>
 
 #include <bmchain/chain/global_property_object.hpp>
 #include <bmchain/chain/account_object.hpp>
-#include <bmchain/chain/steem_objects.hpp>
+#include <bmchain/chain/bmchain_objects.hpp>
 
 namespace bmchain { namespace app {
    using std::string;
