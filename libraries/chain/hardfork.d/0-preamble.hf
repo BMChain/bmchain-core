@@ -48,4 +48,4 @@ FC_REFLECT( bmchain::chain::hardfork_property_object,
    (next_hardfork)(next_hardfork_time) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::hardfork_property_object, bmchain::chain::hardfork_property_index )
 
-#define STEEMIT_NUM_HARDFORKS 0
+#define BMCHAIN_NUM_HARDFORKS 0

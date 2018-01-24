@@ -72,7 +72,7 @@ struct reward_fund_context
 {
    uint128_t   recent_claims = 0;
    asset       reward_balance = asset( 0, BMT_SYMBOL );
-   share_type  steem_awarded = 0;
+   share_type  bmt_awarded = 0;
 };
 
 class database_impl
@@ -155,7 +155,7 @@ void database::reindex( const fc::path& data_dir, const fc::path& shared_mem_dir
       _fork_db.reset();    // override effect of _fork_db.start_block() call in open()
 
       auto start = fc::time_point::now();
-      STEEMIT_ASSERT( _block_log.head(), block_log_exception, "No blocks in block log. Cannot reindex an empty chain." );
+      BMCHAIN_ASSERT( _block_log.head(), block_log_exception, "No blocks in block log. Cannot reindex an empty chain." );
 
       ilog( "Replaying blocks..." );
 
@@ -849,7 +849,7 @@ void database::pop_block()
 
       /// save the head block so we can recover its transactions
       optional<signed_block> head_block = fetch_block_by_id( head_id );
-      STEEMIT_ASSERT( head_block.valid(), pop_empty_chain, "there are no blocks to pop" );
+      BMCHAIN_ASSERT( head_block.valid(), pop_empty_chain, "there are no blocks to pop" );
 
       _fork_db.pop_block();
       undo();
@@ -878,12 +878,12 @@ void database::notify_pre_apply_operation( operation_notification& note )
    note.trx_in_block = _current_trx_in_block;
    note.op_in_trx    = _current_op_in_trx;
 
-   STEEMIT_TRY_NOTIFY( pre_apply_operation, note )
+   BMCHAIN_TRY_NOTIFY( pre_apply_operation, note )
 }
 
 void database::notify_post_apply_operation( const operation_notification& note )
 {
-   STEEMIT_TRY_NOTIFY( post_apply_operation, note )
+   BMCHAIN_TRY_NOTIFY( post_apply_operation, note )
 }
 
 inline const void database::push_virtual_operation( const operation& op, bool force )
@@ -903,22 +903,22 @@ inline const void database::push_virtual_operation( const operation& op, bool fo
 
 void database::notify_applied_block( const signed_block& block )
 {
-   STEEMIT_TRY_NOTIFY( applied_block, block )
+   BMCHAIN_TRY_NOTIFY( applied_block, block )
 }
 
 void database::notify_on_pending_transaction( const signed_transaction& tx )
 {
-   STEEMIT_TRY_NOTIFY( on_pending_transaction, tx )
+   BMCHAIN_TRY_NOTIFY( on_pending_transaction, tx )
 }
 
 void database::notify_on_pre_apply_transaction( const signed_transaction& tx )
 {
-   STEEMIT_TRY_NOTIFY( on_pre_apply_transaction, tx )
+   BMCHAIN_TRY_NOTIFY( on_pre_apply_transaction, tx )
 }
 
 void database::notify_on_applied_transaction( const signed_transaction& tx )
 {
-   STEEMIT_TRY_NOTIFY( on_applied_transaction, tx )
+   BMCHAIN_TRY_NOTIFY( on_applied_transaction, tx )
 }
 
 account_name_type database::get_scheduled_witness( uint32_t slot_num )const
@@ -966,7 +966,7 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when)const
  * @param to_account - the account to receive the new vesting shares
  * @param BMT - BMT to be converted to vesting shares
  */
-asset database::create_vesting( const account_object& to_account, asset steem, bool to_reward_balance )
+asset database::create_vesting( const account_object& to_account, asset bmt, bool to_reward_balance )
 {
    try
    {
@@ -985,14 +985,14 @@ asset database::create_vesting( const account_object& to_account, asset steem, b
        *
        *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
        */
-      asset new_vesting = steem * ( to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price() );
+      asset new_vesting = bmt * ( to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price() );
 
       modify( to_account, [&]( account_object& to )
       {
          if( to_reward_balance )
          {
             to.reward_vesting_balance += new_vesting;
-            to.reward_vesting_bmt += steem;
+            to.reward_vesting_bmt += bmt;
          }
          else
             to.vesting_shares += new_vesting;
@@ -1003,11 +1003,11 @@ asset database::create_vesting( const account_object& to_account, asset steem, b
          if( to_reward_balance )
          {
             props.pending_rewarded_vesting_shares += new_vesting;
-            props.pending_rewarded_vesting_bmt += steem;
+            props.pending_rewarded_vesting_bmt += bmt;
          }
          else
          {
-            props.total_vesting_fund_bmt += steem;
+            props.total_vesting_fund_bmt += bmt;
             props.total_vesting_shares += new_vesting;
          }
       } );
@@ -1017,7 +1017,7 @@ asset database::create_vesting( const account_object& to_account, asset steem, b
 
       return new_vesting;
    }
-   FC_CAPTURE_AND_RETHROW( (to_account.name)(steem) )
+   FC_CAPTURE_AND_RETHROW( (to_account.name)(bmt) )
 }
 
 fc::sha256 database::get_pow_target()const
@@ -1148,29 +1148,29 @@ void database::clear_witness_votes( const account_object& a )
 void database::clear_null_account_balance()
 {
    const auto& null_account = get_account( BMCHAIN_NULL_ACCOUNT );
-   asset total_steem( 0, BMT_SYMBOL );
+   asset total_bmt( 0, BMT_SYMBOL );
 
    if( null_account.balance.amount > 0 )
    {
-      total_steem += null_account.balance;
+      total_bmt += null_account.balance;
       adjust_balance( null_account, -null_account.balance );
    }
 
    if( null_account.savings_balance.amount > 0 )
    {
-      total_steem += null_account.savings_balance;
+      total_bmt += null_account.savings_balance;
       adjust_savings_balance( null_account, -null_account.savings_balance );
    }
 
    if( null_account.vesting_shares.amount > 0 )
    {
       const auto& gpo = get_dynamic_global_properties();
-      auto converted_steem = null_account.vesting_shares * gpo.get_vesting_share_price();
+      auto converted_bmt = null_account.vesting_shares * gpo.get_vesting_share_price();
 
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
          g.total_vesting_shares -= null_account.vesting_shares;
-         g.total_vesting_fund_bmt -= converted_steem;
+         g.total_vesting_fund_bmt -= converted_bmt;
       });
 
       modify( null_account, [&]( account_object& a )
@@ -1178,12 +1178,12 @@ void database::clear_null_account_balance()
          a.vesting_shares.amount = 0;
       });
 
-      total_steem += converted_steem;
+      total_bmt += converted_bmt;
    }
 
    if( null_account.reward_bmt_balance.amount > 0 )
    {
-      total_steem += null_account.reward_bmt_balance;
+      total_bmt += null_account.reward_bmt_balance;
       adjust_reward_balance( null_account, -null_account.reward_bmt_balance );
    }
 
@@ -1191,7 +1191,7 @@ void database::clear_null_account_balance()
    {
       const auto& gpo = get_dynamic_global_properties();
 
-      total_steem += null_account.reward_vesting_bmt;
+      total_bmt += null_account.reward_vesting_bmt;
 
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
@@ -1206,8 +1206,8 @@ void database::clear_null_account_balance()
       });
    }
 
-   if( total_steem.amount > 0 )
-      adjust_supply( -total_steem );
+   if( total_bmt.amount > 0 )
+      adjust_supply( -total_bmt );
 }
 
 /**
@@ -1270,11 +1270,11 @@ void database::process_vesting_withdrawals()
       else
          to_withdraw = std::min( from_account.vesting_shares.amount, from_account.vesting_withdraw_rate.amount ).value;
 
-      share_type vests_deposited_as_steem = 0;
+      share_type vests_deposited_as_bmt = 0;
       share_type vests_deposited_as_vests = 0;
-      asset total_steem_converted = asset( 0, BMT_SYMBOL );
+      asset total_bmt_converted = asset( 0, BMT_SYMBOL );
 
-      // Do two passes, the first for vests, the second for steem. Try to maintain as much accuracy for vests as possible.
+      // Do two passes, the first for REP, the second for BMT. Try to maintain as much accuracy for vests as possible.
       for( auto itr = didx.upper_bound( boost::make_tuple( from_account.id, account_id_type() ) );
            itr != didx.end() && itr->from_account == from_account.id;
            ++itr )
@@ -1309,37 +1309,37 @@ void database::process_vesting_withdrawals()
             const auto& to_account = get(itr->to_account);
 
             share_type to_deposit = ( ( fc::uint128_t ( to_withdraw.value ) * itr->percent ) / BMCHAIN_100_PERCENT ).to_uint64();
-            vests_deposited_as_steem += to_deposit;
-            auto converted_steem = asset( to_deposit, REP_SYMBOL ) * cprops.get_vesting_share_price();
-            total_steem_converted += converted_steem;
+            vests_deposited_as_bmt += to_deposit;
+            auto converted_bmt = asset( to_deposit, REP_SYMBOL ) * cprops.get_vesting_share_price();
+            total_bmt_converted += converted_bmt;
 
             if( to_deposit > 0 )
             {
                modify( to_account, [&]( account_object& a )
                {
-                  a.balance += converted_steem;
+                  a.balance += converted_bmt;
                });
 
                modify( cprops, [&]( dynamic_global_property_object& o )
                {
-                  o.total_vesting_fund_bmt -= converted_steem;
+                  o.total_vesting_fund_bmt -= converted_bmt;
                   o.total_vesting_shares.amount -= to_deposit;
                });
 
-               push_virtual_operation( fill_vesting_withdraw_operation( from_account.name, to_account.name, asset( to_deposit, REP_SYMBOL), converted_steem ) );
+               push_virtual_operation( fill_vesting_withdraw_operation( from_account.name, to_account.name, asset( to_deposit, REP_SYMBOL), converted_bmt ) );
             }
          }
       }
 
-      share_type to_convert = to_withdraw - vests_deposited_as_steem - vests_deposited_as_vests;
+      share_type to_convert = to_withdraw - vests_deposited_as_bmt - vests_deposited_as_vests;
       FC_ASSERT( to_convert >= 0, "Deposited more vests than were supposed to be withdrawn" );
 
-      auto converted_steem = asset( to_convert, REP_SYMBOL ) * cprops.get_vesting_share_price();
+      auto converted_bmt = asset( to_convert, REP_SYMBOL ) * cprops.get_vesting_share_price();
 
       modify( from_account, [&]( account_object& a )
       {
          a.vesting_shares.amount -= to_withdraw;
-         a.balance += converted_steem;
+         a.balance += converted_bmt;
          a.withdrawn += to_withdraw;
 
          if( a.withdrawn >= a.to_withdraw || a.vesting_shares.amount == 0 )
@@ -1355,14 +1355,14 @@ void database::process_vesting_withdrawals()
 
       modify( cprops, [&]( dynamic_global_property_object& o )
       {
-         o.total_vesting_fund_bmt -= converted_steem;
+         o.total_vesting_fund_bmt -= converted_bmt;
          o.total_vesting_shares.amount -= to_convert;
       });
 
       if( to_withdraw > 0 )
          adjust_proxied_witness_votes( from_account, -to_withdraw );
 
-      push_virtual_operation( fill_vesting_withdraw_operation( from_account.name, from_account.name, asset( to_withdraw, REP_SYMBOL ), converted_steem ) );
+      push_virtual_operation( fill_vesting_withdraw_operation( from_account.name, from_account.name, asset( to_withdraw, REP_SYMBOL ), converted_bmt ) );
    }
 }
 
@@ -1472,17 +1472,17 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             author_tokens -= total_beneficiary;
 
-            auto _steem = (author_tokens * comment.percent_bmt_dollars) / (2 * BMCHAIN_100_PERCENT);
-            auto steem = asset( _steem, BMT_SYMBOL);
-            auto vesting_steem = author_tokens - _steem;
+            auto _bmt = (author_tokens * comment.percent_bmt_dollars) / (2 * BMCHAIN_100_PERCENT);
+            auto bmt = asset( _bmt, BMT_SYMBOL);
+            auto vesting_bmt = author_tokens - _bmt;
 
             const auto &author = get_account(comment.author);
-            auto vest_created = create_vesting(author, vesting_steem);
-            adjust_balance( author, steem );
+            auto vest_created = create_vesting(author, vesting_bmt);
+            adjust_balance( author, bmt );
 
-            adjust_total_payout( comment, steem + asset( vesting_steem, BMT_SYMBOL ), asset( curation_tokens, BMT_SYMBOL ), asset( total_beneficiary, BMT_SYMBOL ) );
+            adjust_total_payout( comment, bmt + asset( vesting_bmt, BMT_SYMBOL ), asset( curation_tokens, BMT_SYMBOL ), asset( total_beneficiary, BMT_SYMBOL ) );
 
-            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, BMT_SYMBOL ), steem, vest_created ) );
+            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, BMT_SYMBOL ), bmt, vest_created ) );
             push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, BMT_SYMBOL ) ) );
 
 #ifndef IS_LOW_MEM
@@ -1557,10 +1557,10 @@ void database::process_comment_cashout()
        return;
 
    util::comment_reward_context ctx;
-   ctx.current_steem_price = get_feed_history().current_median_history;
+   ctx.current_bmt_price = get_feed_history().current_median_history;
 
    vector< reward_fund_context > funds;
-   vector< share_type > steem_awarded;
+   vector< share_type > bmt_awarded;
    const auto& reward_idx = get_index< reward_fund_index, by_id >();
 
    // Decay recent rshares of each fund
@@ -1616,8 +1616,8 @@ void database::process_comment_cashout()
    {
        auto fund_id = get_reward_fund(*current).id._id;
        ctx.total_reward_shares2 = funds[fund_id].recent_claims;
-       ctx.total_reward_fund_steem = funds[fund_id].reward_balance;
-       funds[ fund_id ].steem_awarded += cashout_comment_helper( ctx, *current );
+       ctx.total_reward_fund_bmt = funds[fund_id].reward_balance;
+       funds[ fund_id ].bmt_awarded += cashout_comment_helper( ctx, *current );
        current = cidx.begin();
    }
 
@@ -1629,7 +1629,7 @@ void database::process_comment_cashout()
          modify( get< reward_fund_object, by_id >( reward_fund_id_type( i ) ), [&]( reward_fund_object& rfo )
          {
             rfo.recent_claims = funds[ i ].recent_claims;
-            rfo.reward_balance -= funds[ i ].steem_awarded;
+            rfo.reward_balance -= funds[ i ].bmt_awarded;
          });
       }
    }
@@ -1707,7 +1707,7 @@ asset database::get_pow_reward()const
    const auto& props = get_dynamic_global_properties();
 
 #ifndef IS_TEST_NET
-   /// 0 block rewards until at least STEEMIT_MAX_WITNESSES have produced a POW
+   /// 0 block rewards until at least BMCHAIN_MAX_WITNESSES have produced a POW
    if( props.num_pow_witnesses < BMCHAIN_MAX_WITNESSES && props.head_block_number < BMCHAIN_START_VESTING_BLOCK )
       return asset( 0, BMT_SYMBOL );
 #endif
@@ -2035,7 +2035,7 @@ void database::init_genesis( uint64_t init_supply )
       } inhibitor(*this);
 
       // Create blockchain accounts
-      public_key_type      init_public_key(STEEMIT_INIT_PUBLIC_KEY);
+      public_key_type      init_public_key(BMCHAIN_INIT_PUBLIC_KEY);
 
       create< account_object >( [&]( account_object& a )
       {
@@ -2189,7 +2189,7 @@ void database::init_genesis( uint64_t init_supply )
        });
 
 
-       // STEEMIT_HARDFORK_0_17:
+       // BMCHAIN_HARDFORK_0_17:
 
        static_assert(
                BMCHAIN_MAX_VOTED_WITNESSES_HF0 + BMCHAIN_MAX_MINER_WITNESSES_HF0 + BMCHAIN_MAX_RUNNER_WITNESSES_HF0 ==
@@ -2214,9 +2214,9 @@ void database::init_genesis( uint64_t init_supply )
            rfo.content_constant = BMCHAIN_CONTENT_CONSTANT_HF0;
            rfo.percent_curation_rewards = BMCHAIN_1_PERCENT * 25;
            rfo.percent_content_rewards = BMCHAIN_100_PERCENT;
-           rfo.reward_balance = gpo.total_reward_fund_steem;
+           rfo.reward_balance = gpo.total_reward_fund_bmt;
 #ifndef IS_TEST_NET
-           rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
+           rfo.recent_claims = BMCHAIN_HF_17_RECENT_CLAIMS;
 #endif
            rfo.author_reward_curve = curve_id::quadratic;
            rfo.curation_reward_curve = curve_id::quadratic_curation;
@@ -2227,7 +2227,7 @@ void database::init_genesis( uint64_t init_supply )
        FC_ASSERT(post_rf.id._id == 0);
 
        modify(gpo, [&](dynamic_global_property_object &g) {
-           g.total_reward_fund_steem = asset(0, BMT_SYMBOL);
+           g.total_reward_fund_bmt = asset(0, BMT_SYMBOL);
            g.total_reward_shares2 = 0;
        });
 
@@ -2246,9 +2246,9 @@ void database::init_genesis( uint64_t init_supply )
        //const auto &comment_idx = get_index<comment_index, by_cashout_time>();
        const auto &by_root_idx = get_index<comment_index, by_root>();
        vector<const comment_object *> root_posts;
-       root_posts.reserve(STEEMIT_HF_17_NUM_POSTS);
+       root_posts.reserve(BMCHAIN_HF_17_NUM_POSTS);
        vector<const comment_object *> replies;
-       replies.reserve(STEEMIT_HF_17_NUM_REPLIES);
+       replies.reserve(BMCHAIN_HF_17_NUM_REPLIES);
 
        for (auto itr = comment_idx.begin();
             itr != comment_idx.end() && itr->cashout_time < fc::time_point_sec::maximum(); ++itr) {
@@ -2274,7 +2274,7 @@ void database::init_genesis( uint64_t init_supply )
        }
 
 
-       // STEEMIT_HARDFORK_0_19:
+       // BMCHAIN_HARDFORK_0_19:
 
        modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &gpo) {
            gpo.vote_power_reserve_rate = 10;
@@ -2282,7 +2282,7 @@ void database::init_genesis( uint64_t init_supply )
 
        modify(get<reward_fund_object, by_name>(BMCHAIN_POST_REWARD_FUND_NAME), [&](reward_fund_object &rfo) {
 #ifndef IS_TEST_NET
-           rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
+           rfo.recent_claims = BMCHAIN_HF_19_RECENT_CLAIMS;
 #endif
            rfo.recent_claims = 0; /// bmchain
            //rfo.author_reward_curve = curve_id::linear;
@@ -2332,7 +2332,7 @@ void database::notify_changed_objects()
    {
       /*vector< graphene::chainbase::generic_id > ids;
       get_changed_ids( ids );
-      STEEMIT_TRY_NOTIFY( changed_objects, ids )*/
+      BMCHAIN_TRY_NOTIFY( changed_objects, ids )*/
       /*
       if( _undo_db.enabled() )
       {
@@ -2347,7 +2347,7 @@ void database::notify_changed_objects()
             changed_ids.push_back( item.first );
             removed.emplace_back( item.second.get() );
          }
-         STEEMIT_TRY_NOTIFY( changed_objects, changed_ids )
+         BMCHAIN_TRY_NOTIFY( changed_objects, changed_ids )
       }
       */
    }
@@ -2648,7 +2648,7 @@ void database::_apply_transaction(const signed_transaction& trx)
 
       try
       {
-         trx.verify_authority( chain_id, get_active, get_owner, get_posting, STEEMIT_MAX_SIG_CHECK_DEPTH );
+         trx.verify_authority( chain_id, get_active, get_owner, get_posting, BMCHAIN_MAX_SIG_CHECK_DEPTH );
       }
       catch( protocol::tx_missing_active_auth& e )
       {
@@ -2665,18 +2665,18 @@ void database::_apply_transaction(const signed_transaction& trx)
       {
          const auto& tapos_block_summary = get< block_summary_object >( trx.ref_block_num );
          //Verify TaPoS block summary has correct ID prefix, and that this block's time is not past the expiration
-         STEEMIT_ASSERT( trx.ref_block_prefix == tapos_block_summary.block_id._hash[1], transaction_tapos_exception,
+         BMCHAIN_ASSERT( trx.ref_block_prefix == tapos_block_summary.block_id._hash[1], transaction_tapos_exception,
                     "", ("trx.ref_block_prefix", trx.ref_block_prefix)
                     ("tapos_block_summary",tapos_block_summary.block_id._hash[1]));
       }
 
       fc::time_point_sec now = head_block_time();
 
-      STEEMIT_ASSERT( trx.expiration <= now + fc::seconds(BMCHAIN_MAX_TIME_UNTIL_EXPIRATION), transaction_expiration_exception,
+      BMCHAIN_ASSERT( trx.expiration <= now + fc::seconds(BMCHAIN_MAX_TIME_UNTIL_EXPIRATION), transaction_expiration_exception,
                   "", ("trx.expiration",trx.expiration)("now",now)("max_til_exp",BMCHAIN_MAX_TIME_UNTIL_EXPIRATION));
       // Simple solution to pending trx bug when now == trx.expiration
-      STEEMIT_ASSERT( now < trx.expiration, transaction_expiration_exception, "", ("now",now)("trx.exp",trx.expiration) );
-      STEEMIT_ASSERT( now <= trx.expiration, transaction_expiration_exception, "", ("now",now)("trx.exp",trx.expiration) );
+      BMCHAIN_ASSERT( now < trx.expiration, transaction_expiration_exception, "", ("now",now)("trx.exp",trx.expiration) );
+      BMCHAIN_ASSERT( now <= trx.expiration, transaction_expiration_exception, "", ("now",now)("trx.exp",trx.expiration) );
    }
 
    //Insert transaction into unique transactions database.
@@ -2789,7 +2789,7 @@ void database::update_global_dynamic_data( const signed_block& b )
 
    if( !(get_node_properties().skip_flags & skip_undo_history_check) )
    {
-      STEEMIT_ASSERT( _dgp.head_block_number - _dgp.last_irreversible_block_num  < BMCHAIN_MAX_UNDO_HISTORY, undo_database_exception,
+      BMCHAIN_ASSERT( _dgp.head_block_number - _dgp.last_irreversible_block_num  < BMCHAIN_MAX_UNDO_HISTORY, undo_database_exception,
                  "The database does not have enough undo history to support a blockchain with so many missed blocks. "
                  "Please add a checkpoint if you would like to continue applying blocks beyond this point.",
                  ("last_irreversible_block_num",_dgp.last_irreversible_block_num)("head", _dgp.head_block_number)
@@ -3150,9 +3150,9 @@ void database::init_hardforks()
    _hardfork_times[ 0 ] = fc::time_point_sec( BMCHAIN_GENESIS_TIME );
    _hardfork_versions[ 0 ] = hardfork_version( 0, 0 );
    const auto& hardforks = get_hardfork_property_object();
-   FC_ASSERT( hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("STEEMIT_NUM_HARDFORKS",STEEMIT_NUM_HARDFORKS) );
+   FC_ASSERT( hardforks.last_hardfork <= BMCHAIN_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("BMCHAIN_NUM_HARDFORKS",BMCHAIN_NUM_HARDFORKS) );
    FC_ASSERT( _hardfork_versions[ hardforks.last_hardfork ] <= BMCHAIN_BLOCKCHAIN_VERSION, "Blockchain version is older than last applied hardfork" );
-   FC_ASSERT( BMCHAIN_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[ STEEMIT_NUM_HARDFORKS ] );
+   FC_ASSERT( BMCHAIN_BLOCKCHAIN_HARDFORK_VERSION == _hardfork_versions[ BMCHAIN_NUM_HARDFORKS ] );
 }
 
 void database::process_hardforks()
@@ -3164,7 +3164,7 @@ void database::process_hardforks()
 
        while (_hardfork_versions[hardforks.last_hardfork] < hardforks.next_hardfork
               && hardforks.next_hardfork_time <= head_block_time()) {
-           if (hardforks.last_hardfork < STEEMIT_NUM_HARDFORKS) {
+           if (hardforks.last_hardfork < BMCHAIN_NUM_HARDFORKS) {
                apply_hardfork(hardforks.last_hardfork + 1);
            } else
                throw unknown_hardfork_exception();
@@ -3182,7 +3182,7 @@ void database::set_hardfork( uint32_t hardfork, bool apply_now )
 {
    auto const& hardforks = get_hardfork_property_object();
 
-   for( uint32_t i = hardforks.last_hardfork + 1; i <= hardfork && i <= STEEMIT_NUM_HARDFORKS; i++ )
+   for( uint32_t i = hardforks.last_hardfork + 1; i <= hardfork && i <= BMCHAIN_NUM_HARDFORKS; i++ )
    {
       modify( hardforks, [&]( hardfork_property_object& hpo )
       {
@@ -3224,7 +3224,7 @@ void database::validate_invariants()const
       const auto& account_idx = get_index<account_index>().indices().get<by_name>();
       asset total_supply = asset( 0, BMT_SYMBOL );
       asset total_vesting = asset( 0, REP_SYMBOL );
-      asset pending_vesting_steem = asset( 0, BMT_SYMBOL );
+      asset pending_vesting_bmt = asset( 0, BMT_SYMBOL );
       share_type total_vsf_votes = share_type( 0 );
 
       auto gpo = get_dynamic_global_properties();
@@ -3241,7 +3241,7 @@ void database::validate_invariants()const
          total_supply += itr->reward_bmt_balance;
          total_vesting += itr->vesting_shares;
          total_vesting += itr->reward_vesting_balance;
-         pending_vesting_steem += itr->reward_vesting_bmt;
+         pending_vesting_bmt += itr->reward_vesting_bmt;
          total_vsf_votes += ( itr->proxy == BMCHAIN_PROXY_TO_SELF_ACCOUNT ?
                                  itr->witness_vote_weight() :
                                  ( BMCHAIN_MAX_PROXY_RECURSION_DEPTH > 0 ?
@@ -3319,12 +3319,12 @@ void database::validate_invariants()const
            }
        }
 
-      total_supply += gpo.total_vesting_fund_bmt + gpo.total_reward_fund_steem + gpo.pending_rewarded_vesting_bmt;
+      total_supply += gpo.total_vesting_fund_bmt + gpo.total_reward_fund_bmt + gpo.pending_rewarded_vesting_bmt;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
       FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_vesting, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_vesting",total_vesting) );
       FC_ASSERT( gpo.total_vesting_shares.amount == total_vsf_votes, "", ("total_vesting_shares",gpo.total_vesting_shares)("total_vsf_votes",total_vsf_votes) );
-      FC_ASSERT( gpo.pending_rewarded_vesting_bmt == pending_vesting_steem, "", ("pending_rewarded_vesting_bmt",gpo.pending_rewarded_vesting_bmt)("pending_vesting_steem", pending_vesting_steem));
+      FC_ASSERT( gpo.pending_rewarded_vesting_bmt == pending_vesting_bmt, "", ("pending_rewarded_vesting_bmt",gpo.pending_rewarded_vesting_bmt)("pending_vesting_bmt", pending_vesting_bmt));
 
       FC_ASSERT( gpo.virtual_supply >= gpo.current_supply );
       if ( !get_feed_history().current_median_history.is_null() )
@@ -3487,16 +3487,16 @@ void database::retally_witness_vote_counts( bool force )
    }
 }
 
-void database::process_funds_bmchain(int64_t new_steem)
+void database::process_funds_bmchain(int64_t new_bmt)
 {
     const auto& props = get_dynamic_global_properties();
 
     /// 90% in reward funds
-    share_type content_reward = ( new_steem * (BMCHAIN_CONTENT_REWARD_PERCENT) ) / BMCHAIN_100_PERCENT;
+    share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT) ) / BMCHAIN_100_PERCENT;
     content_reward = pay_reward_funds( content_reward );
 
     /// 10% to wintess
-    auto witness_reward = new_steem - content_reward;
+    auto witness_reward = new_bmt - content_reward;
     const auto& cwit = get_witness( props.current_witness );
     modify( get_account( cwit.owner ), [&]( account_object& acnt ){
         acnt.balance += asset( witness_reward, BMT_SYMBOL );
@@ -3506,8 +3506,8 @@ void database::process_funds_bmchain(int64_t new_steem)
     /// global properties
     modify( props, [&]( dynamic_global_property_object& p )
     {
-        p.current_supply += asset( new_steem, BMT_SYMBOL );
-        p.virtual_supply += asset( new_steem, BMT_SYMBOL );
+        p.current_supply += asset( new_bmt, BMT_SYMBOL );
+        p.virtual_supply += asset( new_bmt, BMT_SYMBOL );
     });
 }
 

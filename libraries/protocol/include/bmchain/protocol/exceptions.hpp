@@ -3,7 +3,7 @@
 #include <fc/exception/exception.hpp>
 #include <bmchain/protocol/protocol.hpp>
 
-#define STEEMIT_ASSERT( expr, exc_type, FORMAT, ... )                \
+#define BMCHAIN_ASSERT( expr, exc_type, FORMAT, ... )                \
    FC_MULTILINE_MACRO_BEGIN                                           \
    if( !(expr) )                                                      \
       FC_THROW_EXCEPTION( exc_type, FORMAT, __VA_ARGS__ );            \

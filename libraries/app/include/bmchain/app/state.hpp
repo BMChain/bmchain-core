@@ -119,14 +119,14 @@ namespace bmchain { namespace app {
       double          low = 0;
       double          open = 0;
       double          close = 0;
-      double          steem_volume = 0;
+      double          bmchain_volume = 0;
       double          dollar_volume = 0;
    };
 
    struct order_history_item {
       time_point_sec time;
       string         type; // buy or sell
-      asset          steem_quantity;
+      asset          bmchain_quantity;
       double         real_price = 0;
    };
 
@@ -193,6 +193,6 @@ FC_REFLECT_DERIVED( bmchain::app::discussion, (bmchain::app::comment_api_obj), (
 FC_REFLECT( bmchain::app::state, (current_route)(props)(tag_idx)(tags)(content)(accounts)(pow_queue)(witnesses)(discussion_idx)(witness_schedule)(feed_price)(error)(market_data) )
 
 FC_REFLECT_DERIVED( bmchain::app::extended_limit_order, (bmchain::app::limit_order_api_obj), (real_price)(rewarded) )
-FC_REFLECT( bmchain::app::order_history_item, (time)(type)(steem_quantity)(real_price) );
+FC_REFLECT( bmchain::app::order_history_item, (time)(type)(bmchain_quantity)(real_price) );
 FC_REFLECT( bmchain::app::market, (bids)(asks)(history)(price_history)(available_candlesticks)(available_zoom)(current_candlestick)(current_zoom) )
-FC_REFLECT( bmchain::app::candle_stick, (open_time)(period)(high)(low)(open)(close)(steem_volume)(dollar_volume) );
+FC_REFLECT( bmchain::app::candle_stick, (open_time)(period)(high)(low)(open)(close)(bmchain_volume)(dollar_volume) );

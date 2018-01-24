@@ -294,7 +294,7 @@ void debug_node_api_impl::debug_set_hardfork( uint32_t hardfork_id )
 {
    using namespace bmchain::chain;
 
-   if( hardfork_id > STEEMIT_NUM_HARDFORKS )
+   if( hardfork_id > BMCHAIN_NUM_HARDFORKS )
       return;
 
    get_plugin()->debug_update( [=]( database& db )

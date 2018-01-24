@@ -119,27 +119,27 @@ BOOST_AUTO_TEST_CASE( asset_test )
       BOOST_CHECK_EQUAL( asset().to_string(), "0.000 TESTS" );
 
       BOOST_TEST_MESSAGE( "Asset Test" );
-      asset steem = asset::from_string( "123.456 TESTS" );
+      asset bmt = asset::from_string( "123.456 TESTS" );
       asset tmp = asset::from_string( "0.456 TESTS" );
       BOOST_CHECK_EQUAL( tmp.amount.value, 456 );
       tmp = asset::from_string( "0.056 TESTS" );
       BOOST_CHECK_EQUAL( tmp.amount.value, 56 );
 
-      BOOST_CHECK( std::abs( steem.to_real() - 123.456 ) < 0.0005 );
-      BOOST_CHECK_EQUAL( steem.amount.value, 123456 );
-      BOOST_CHECK_EQUAL( steem.decimals(), 3 );
-      BOOST_CHECK_EQUAL( steem.symbol_name(), "TESTS" );
-      BOOST_CHECK_EQUAL( steem.to_string(), "123.456 TESTS" );
-      BOOST_CHECK_EQUAL( steem.symbol, BMT_SYMBOL);
+      BOOST_CHECK( std::abs( bmt.to_real() - 123.456 ) < 0.0005 );
+      BOOST_CHECK_EQUAL( bmt.amount.value, 123456 );
+      BOOST_CHECK_EQUAL( bmt.decimals(), 3 );
+      BOOST_CHECK_EQUAL( bmt.symbol_name(), "TESTS" );
+      BOOST_CHECK_EQUAL( bmt.to_string(), "123.456 TESTS" );
+      BOOST_CHECK_EQUAL( bmt.symbol, BMT_SYMBOL);
       BOOST_CHECK_EQUAL( asset(50, BMT_SYMBOL).to_string(), "0.050 TESTS" );
       BOOST_CHECK_EQUAL( asset(50000, BMT_SYMBOL).to_string(), "50.000 TESTS" );
 
-      BOOST_CHECK_THROW( steem.set_decimals(100), fc::exception );
-      char* steem_sy = (char*) &steem.symbol;
-      steem_sy[0] = 100;
-      BOOST_CHECK_THROW( steem.decimals(), fc::exception );
-      steem_sy[6] = 'A';
-      steem_sy[7] = 'A';
+      BOOST_CHECK_THROW( bmt.set_decimals(100), fc::exception );
+      char* bmt_sy = (char*) &bmt.symbol;
+      bmt_sy[0] = 100;
+      BOOST_CHECK_THROW( bmt.decimals(), fc::exception );
+      bmt_sy[6] = 'A';
+      bmt_sy[7] = 'A';
 
       auto check_sym = []( const asset& a ) -> std::string
       {
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE( asset_test )
          return symbol;
       };
 
-      BOOST_CHECK_THROW( check_sym(steem), fc::exception );
+      BOOST_CHECK_THROW( check_sym(bmt), fc::exception );
       BOOST_CHECK_THROW( asset::from_string( "1.00000000000000000000 TESTS" ), fc::exception );
       BOOST_CHECK_THROW( asset::from_string( "1.000TESTS" ), fc::exception );
       BOOST_CHECK_THROW( asset::from_string( "1. 333 TESTS" ), fc::exception ); // Fails because symbol is '333 TESTS', which is too long
@@ -251,19 +251,19 @@ BOOST_AUTO_TEST_CASE( version_test )
       BOOST_REQUIRE( ver == version( 12, 34, 56 ) );
 
       ver_str = fc::variant( "256.0.0" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
 
       ver_str = fc::variant( "0.256.0" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
 
       ver_str = fc::variant( "0.0.65536" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
 
       ver_str = fc::variant( "1.0" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
 
       ver_str = fc::variant( "1.0.0.1" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
    }
    FC_LOG_AND_RETHROW();
 }
@@ -296,20 +296,20 @@ BOOST_AUTO_TEST_CASE( hardfork_version_test )
       BOOST_REQUIRE( ver == hardfork_version( 12, 34 ) );
 
       ver_str = fc::variant( "256.0.0" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
 
       ver_str = fc::variant( "0.256.0" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
 
       ver_str = fc::variant( "0.0.1" );
       fc::from_variant( ver_str, ver );
       BOOST_REQUIRE( ver == hardfork_version( 0, 0 ) );
 
       ver_str = fc::variant( "1.0" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
 
       ver_str = fc::variant( "1.0.0.1" );
-      STEEMIT_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( fc::from_variant( ver_str, ver ), fc::exception );
    }
    FC_LOG_AND_RETHROW();
 }

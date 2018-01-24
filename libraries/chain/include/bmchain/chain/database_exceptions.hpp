@@ -42,7 +42,7 @@
       msg                                                             \
       )
 
-#define STEEMIT_TRY_NOTIFY( signal, ... )                                     \
+#define BMCHAIN_TRY_NOTIFY( signal, ... )                                     \
    try                                                                        \
    {                                                                          \
       signal( __VA_ARGS__ );                                                  \

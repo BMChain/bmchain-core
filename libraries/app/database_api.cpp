@@ -727,7 +727,7 @@ namespace bmchain {
                                                                   _db.get<account_authority_object, by_account>(
                                                                           account_name).posting);
                                                       },
-                                                      STEEMIT_MAX_SIG_CHECK_DEPTH);
+                                                      BMCHAIN_MAX_SIG_CHECK_DEPTH);
 //   wdump((result));
             return result;
         }
@@ -762,7 +762,7 @@ namespace bmchain {
                             result.insert(k);
                         return authority(auth);
                     },
-                    STEEMIT_MAX_SIG_CHECK_DEPTH
+                    BMCHAIN_MAX_SIG_CHECK_DEPTH
             );
 
 //   wdump((result));
@@ -789,7 +789,7 @@ namespace bmchain {
                                      return authority(
                                              _db.get<account_authority_object, by_account>(account_name).posting);
                                  },
-                                 STEEMIT_MAX_SIG_CHECK_DEPTH);
+                                 BMCHAIN_MAX_SIG_CHECK_DEPTH);
             return true;
         }
 

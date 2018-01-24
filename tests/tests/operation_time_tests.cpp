@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
          db.push_transaction( tx, 0 );
       }
 
-      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_steem;
+      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_bmt;
 
       // generate a few blocks to seed the reward fund
       generate_blocks(10);
@@ -449,7 +449,7 @@ BOOST_AUTO_TEST_CASE( recent_claims_decay )
 
       //generate_blocks( db.get_comment( "bob", string( "test" ) ).cashout_time - BMCHAIN_BLOCK_INTERVAL, true );
 
-      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "1.667 TESTS" );
+      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_bmt + ASSET( "1.667 TESTS" );
       auto total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto bob_comment_rshares = db.get_comment( "bob", string( "test" ) ).net_rshares;
       auto bob_vest_shares = db.get_account( "bob" ).vesting_shares;
@@ -463,7 +463,7 @@ BOOST_AUTO_TEST_CASE( recent_claims_decay )
 
       generate_block();
 
-      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem == reward_bmt - bob_comment_payout );
+      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_bmt == reward_bmt - bob_comment_payout );
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value == bob_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price());
       BOOST_REQUIRE( db.get_account( "bob" ).vesting_shares == bob_vest_shares + bob_comment_vesting_reward );
 
@@ -651,7 +651,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).net_rshares.value > 0 );
       validate_database();
 
-      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "2.000 TESTS" );
+      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_bmt + ASSET( "2.000 TESTS" );
       auto total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto bob_comment_vote_total = db.get_comment( "bob", string( "test" ) ).total_vote_weight;
       auto bob_comment_rshares = db.get_comment( "bob", string( "test" ) ).net_rshares;
@@ -679,7 +679,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
 
       auto bob_comment_reward = get_last_operations( 1 )[0].get< comment_reward_operation >();
 
-      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem.amount.value == reward_bmt.amount.value - ( bob_comment_payout + bob_comment_vote_rewards - unclaimed_payments ).amount.value );
+      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_bmt.amount.value == reward_bmt.amount.value - ( bob_comment_payout + bob_comment_vote_rewards - unclaimed_payments ).amount.value );
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value.amount.value == ( ( bob_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price() )).amount.value );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value > 0 );
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).net_rshares.value == 0 );
@@ -716,7 +716,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
 
       BOOST_TEST_MESSAGE( "Generate block to cause payout" );
 
-      reward_bmt = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "2.000 TESTS" );
+      reward_bmt = db.get_dynamic_global_properties().total_reward_fund_bmt + ASSET( "2.000 TESTS" );
       total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto alice_comment_vote_total = db.get_comment( "alice", string( "test" ) ).total_vote_weight;
       auto alice_comment_rshares = db.get_comment( "alice", string( "test" ) ).net_rshares;
@@ -749,7 +749,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       generate_block();
       auto alice_comment_reward = get_last_operations( 1 )[0].get< comment_reward_operation >();
 
-      BOOST_REQUIRE( ( db.get_dynamic_global_properties().total_reward_fund_steem + alice_comment_payout + alice_comment_vote_rewards - unclaimed_payments ).amount.value == reward_bmt.amount.value );
+      BOOST_REQUIRE( ( db.get_dynamic_global_properties().total_reward_fund_bmt + alice_comment_payout + alice_comment_vote_rewards - unclaimed_payments ).amount.value == reward_bmt.amount.value );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).total_payout_value.amount.value == ( ( alice_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price() )).amount.value );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value == 0 );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value == 0 );
@@ -922,7 +922,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time - fc::seconds( BMCHAIN_BLOCK_INTERVAL ), true );
 
       auto gpo = db.get_dynamic_global_properties();
-      uint128_t reward_bmt = gpo.total_reward_fund_steem.amount.value + ASSET( "2.000 TESTS" ).amount.value;
+      uint128_t reward_bmt = gpo.total_reward_fund_bmt.amount.value + ASSET( "2.000 TESTS" ).amount.value;
       uint128_t total_rshares2 = gpo.total_reward_shares2;
 
       auto alice_comment = db.get_comment( "alice", string( "test" ) );
@@ -1326,7 +1326,7 @@ BOOST_AUTO_TEST_CASE( vesting_withdraw_route )
       tx.operations.push_back( op );
       tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
       tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
 
       BOOST_TEST_MESSAGE( "Test from_account receiving no withdraw" );
 
@@ -1356,7 +1356,7 @@ BOOST_AUTO_TEST_CASE( vesting_withdraw_route )
    FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE( steem_inflation )
+BOOST_AUTO_TEST_CASE( bmt_inflation )
 {
    try
    {
@@ -1373,18 +1373,18 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
          + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
       auto witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
       auto witness_pay_shares = asset( 0, REP_SYMBOL );
-      auto new_vesting_steem = asset( 0, BMT_SYMBOL );
+      auto new_vesting_bmt = asset( 0, BMT_SYMBOL );
       auto new_vesting_shares = gpo.total_vesting_shares;
 
       if ( db.get_account( witness_name ).vesting_shares.amount.value == 0 )
       {
-         new_vesting_steem += witness_pay;
+         new_vesting_bmt += witness_pay;
          new_vesting_shares += witness_pay * ( gpo.total_vesting_shares / gpo.total_vesting_fund_bmt );
       }
 
-      auto new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_steem;
-      new_rewards += gpo.total_reward_fund_steem;
-      new_vesting_steem += gpo.total_vesting_fund_bmt;
+      auto new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_bmt;
+      new_rewards += gpo.total_reward_fund_bmt;
+      new_vesting_bmt += gpo.total_vesting_fund_bmt;
 
       generate_block();
 
@@ -1392,8 +1392,8 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
       BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
       BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
-      BOOST_REQUIRE( gpo.total_reward_fund_steem.amount.value == new_rewards.amount.value );
-      BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_steem.amount.value );
+      BOOST_REQUIRE( gpo.total_reward_fund_bmt.amount.value == new_rewards.amount.value );
+      BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_bmt.amount.value );
       BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == new_vesting_shares.amount.value );
       BOOST_REQUIRE( db.get_account( witness_name ).balance.amount.value == ( old_witness_balance + witness_pay ).amount.value );
 
@@ -1410,21 +1410,21 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
          new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
             + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
          witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
-         new_vesting_steem = asset( 0, BMT_SYMBOL );
+         new_vesting_bmt = asset( 0, BMT_SYMBOL );
          new_vesting_shares = gpo.total_vesting_shares;
 
          if ( db.get_account( witness_name ).vesting_shares.amount.value == 0 )
          {
-            new_vesting_steem += witness_pay;
+            new_vesting_bmt += witness_pay;
             witness_pay_shares = witness_pay * gpo.get_vesting_share_price();
             new_vesting_shares += witness_pay_shares;
             new_supply += witness_pay;
             witness_pay = asset( 0, BMT_SYMBOL );
          }
 
-         new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_steem;
-         new_rewards += gpo.total_reward_fund_steem;
-         new_vesting_steem += gpo.total_vesting_fund_bmt;
+         new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_bmt;
+         new_rewards += gpo.total_reward_fund_bmt;
+         new_vesting_bmt += gpo.total_vesting_fund_bmt;
 
          generate_block();
 
@@ -1432,8 +1432,8 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
          BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
-         BOOST_REQUIRE( gpo.total_reward_fund_steem.amount.value == new_rewards.amount.value );
-         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_steem.amount.value );
+         BOOST_REQUIRE( gpo.total_reward_fund_bmt.amount.value == new_rewards.amount.value );
+         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_bmt.amount.value );
          BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == new_vesting_shares.amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).balance.amount.value == ( old_witness_balance + witness_pay ).amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).vesting_shares.amount.value == ( old_witness_shares + witness_pay_shares ).amount.value );
@@ -1453,21 +1453,21 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
             + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
          witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
          auto witness_pay_shares = asset( 0, REP_SYMBOL );
-         new_vesting_steem = asset( ( witness_pay + new_rewards ).amount * 9, BMT_SYMBOL );
+         new_vesting_bmt = asset( ( witness_pay + new_rewards ).amount * 9, BMT_SYMBOL );
          new_vesting_shares = gpo.total_vesting_shares;
 
          if ( db.get_account( witness_name ).vesting_shares.amount.value == 0 )
          {
-            new_vesting_steem += witness_pay;
+            new_vesting_bmt += witness_pay;
             witness_pay_shares = witness_pay * gpo.get_vesting_share_price();
             new_vesting_shares += witness_pay_shares;
             new_supply += witness_pay;
             witness_pay = asset( 0, BMT_SYMBOL );
          }
 
-         new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_steem;
-         new_rewards += gpo.total_reward_fund_steem;
-         new_vesting_steem += gpo.total_vesting_fund_bmt;
+         new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_bmt;
+         new_rewards += gpo.total_reward_fund_bmt;
+         new_vesting_bmt += gpo.total_vesting_fund_bmt;
 
          generate_block();
 
@@ -1475,8 +1475,8 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
          BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
-         BOOST_REQUIRE( gpo.total_reward_fund_steem.amount.value == new_rewards.amount.value );
-         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_steem.amount.value );
+         BOOST_REQUIRE( gpo.total_reward_fund_bmt.amount.value == new_rewards.amount.value );
+         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_bmt.amount.value );
          BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == new_vesting_shares.amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).balance.amount.value == ( old_witness_balance + witness_pay ).amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).vesting_shares.amount.value == ( old_witness_shares + witness_pay_shares ).amount.value );
@@ -1494,11 +1494,11 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
             + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
          witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
          witness_pay_shares = witness_pay * gpo.get_vesting_share_price();
-         new_vesting_steem = asset( ( witness_pay + new_rewards ).amount * 9, BMT_SYMBOL ) + witness_pay;
+         new_vesting_bmt = asset( ( witness_pay + new_rewards ).amount * 9, BMT_SYMBOL ) + witness_pay;
          new_vesting_shares = gpo.total_vesting_shares + witness_pay_shares;
-         new_supply = gpo.current_supply + new_rewards + new_vesting_steem;
-         new_rewards += gpo.total_reward_fund_steem;
-         new_vesting_steem += gpo.total_vesting_fund_bmt;
+         new_supply = gpo.current_supply + new_rewards + new_vesting_bmt;
+         new_rewards += gpo.total_reward_fund_bmt;
+         new_vesting_bmt += gpo.total_vesting_fund_bmt;
 
          generate_block();
 
@@ -1506,8 +1506,8 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
          BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
-         BOOST_REQUIRE( gpo.total_reward_fund_steem.amount.value == new_rewards.amount.value );
-         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_steem.amount.value );
+         BOOST_REQUIRE( gpo.total_reward_fund_bmt.amount.value == new_rewards.amount.value );
+         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_bmt.amount.value );
          BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == new_vesting_shares.amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).vesting_shares.amount.value == ( old_witness_shares + witness_pay_shares ).amount.value );
 
@@ -1516,8 +1516,8 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
       virtual_supply = gpo.virtual_supply;
       vesting_shares = gpo.total_vesting_shares;
-      vesting_steem = gpo.total_vesting_fund_bmt;
-      reward_bmt = gpo.total_reward_fund_steem;
+      vesting_bmt = gpo.total_vesting_fund_bmt;
+      reward_bmt = gpo.total_reward_fund_bmt;
 
       witness_name = db.get_scheduled_witness(1);
       old_witness_shares = db.get_account( witness_name ).vesting_shares;
@@ -1527,13 +1527,13 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
       gpo = db.get_dynamic_global_properties();
 
       BOOST_REQUIRE_EQUAL( gpo.total_vesting_fund_bmt.amount.value,
-         ( vesting_steem.amount.value
+         ( vesting_bmt.amount.value
             + ( ( ( uint128_t( virtual_supply.amount.value ) / 10 ) / BMCHAIN_BLOCKS_PER_YEAR ) * 9 )
             + ( uint128_t( virtual_supply.amount.value ) / 100 / BMCHAIN_BLOCKS_PER_YEAR ) ).to_uint64() );
-      BOOST_REQUIRE_EQUAL( gpo.total_reward_fund_steem.amount.value,
+      BOOST_REQUIRE_EQUAL( gpo.total_reward_fund_bmt.amount.value,
          reward_bmt.amount.value + virtual_supply.amount.value / 10 / BMCHAIN_BLOCKS_PER_YEAR + virtual_supply.amount.value / 10 / BMCHAIN_BLOCKS_PER_DAY );
       BOOST_REQUIRE_EQUAL( db.get_account( witness_name ).vesting_shares.amount.value,
-         old_witness_shares.amount.value + ( asset( ( ( virtual_supply.amount.value / BMCHAIN_BLOCKS_PER_YEAR ) * BMCHAIN_1_PERCENT ) / BMCHAIN_100_PERCENT, BMT_SYMBOL ) * ( vesting_shares / vesting_steem ) ).amount.value );
+         old_witness_shares.amount.value + ( asset( ( ( virtual_supply.amount.value / BMCHAIN_BLOCKS_PER_YEAR ) * BMCHAIN_1_PERCENT ) / BMCHAIN_100_PERCENT, BMT_SYMBOL ) * ( vesting_shares / vesting_bmt ) ).amount.value );
       validate_database();
       */
    }
@@ -1734,7 +1734,7 @@ BOOST_AUTO_TEST_CASE( comment_freeze )
 
       tx.operations.push_back( comment );
       tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
    }
    FC_LOG_AND_RETHROW()
 }

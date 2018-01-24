@@ -382,13 +382,13 @@ class wallet_api
        *  These accounts are created with combination of BMT and delegated SP
        *
        *  @param creator The account creating the new account
-       *  @param steem_fee The amount of the fee to be paid with BMT
+       *  @param bmt_fee The amount of the fee to be paid with BMT
        *  @param delegated_vests The amount of the fee to be paid with delegation
        *  @param new_account_name The name of the new account
        *  @param json_meta JSON Metadata associated with the new account
        *  @param broadcast true if you wish to broadcast the transaction
        */
-      annotated_signed_transaction create_account_delegated( string creator, asset steem_fee, asset delegated_vests, string new_account_name, string json_meta, bool broadcast );
+      annotated_signed_transaction create_account_delegated( string creator, asset bmt_fee, asset delegated_vests, string new_account_name, string json_meta, bool broadcast );
 
       /**
        * This method is used by faucets to create new accounts for other users which must
@@ -399,7 +399,7 @@ class wallet_api
        * These accounts are created with combination of BMT and delegated SP
        *
        * @param creator The account creating the new account
-       * @param steem_fee The amount of the fee to be paid with BMT
+       * @param bmt_fee The amount of the fee to be paid with BMT
        * @param delegated_vests The amount of the fee to be paid with delegation
        * @param newname The name of the new account
        * @param json_meta JSON Metadata associated with the new account
@@ -410,7 +410,7 @@ class wallet_api
        * @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction create_account_with_keys_delegated( string creator,
-                                            asset steem_fee,
+                                            asset bmt_fee,
                                             asset delegated_vests,
                                             string newname,
                                             string json_meta,

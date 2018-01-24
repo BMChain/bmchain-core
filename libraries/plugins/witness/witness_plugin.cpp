@@ -113,7 +113,7 @@ namespace detail
 
       void operator()( const comment_payout_beneficiaries& cpb )const
       {
-         STEEMIT_ASSERT( cpb.beneficiaries.size() <= 8,
+         BMCHAIN_ASSERT( cpb.beneficiaries.size() <= 8,
             chain::plugin_exception,
             "Cannot specify more than 8 beneficiaries." );
       }
@@ -148,27 +148,27 @@ namespace detail
       for( auto& key_weight_pair : auth.owner.key_auths )
       {
          for( auto& key : keys )
-            STEEMIT_ASSERT( key_weight_pair.first != key, chain::plugin_exception,
+            BMCHAIN_ASSERT( key_weight_pair.first != key, chain::plugin_exception,
                "Detected private owner key in memo field. You should change your owner keys." );
       }
 
       for( auto& key_weight_pair : auth.active.key_auths )
       {
          for( auto& key : keys )
-            STEEMIT_ASSERT( key_weight_pair.first != key, chain::plugin_exception,
+            BMCHAIN_ASSERT( key_weight_pair.first != key, chain::plugin_exception,
                "Detected private active key in memo field. You should change your active keys." );
       }
 
       for( auto& key_weight_pair : auth.posting.key_auths )
       {
          for( auto& key : keys )
-            STEEMIT_ASSERT( key_weight_pair.first != key, chain::plugin_exception,
+            BMCHAIN_ASSERT( key_weight_pair.first != key, chain::plugin_exception,
                "Detected private posting key in memo field. You should change your posting keys." );
       }
 
       const auto& memo_key = account.memo_key;
       for( auto& key : keys )
-         STEEMIT_ASSERT( memo_key != key, chain::plugin_exception,
+         BMCHAIN_ASSERT( memo_key != key, chain::plugin_exception,
             "Detected private memo key in memo field. You should change your memo key." );
    }
 
@@ -202,7 +202,7 @@ namespace detail
             const auto& parent = _db.find_comment( o.parent_author, o.parent_permlink );
 
             if( parent != nullptr )
-            STEEMIT_ASSERT( parent->depth < BMCHAIN_SOFT_MAX_COMMENT_DEPTH,
+            BMCHAIN_ASSERT( parent->depth < BMCHAIN_SOFT_MAX_COMMENT_DEPTH,
                chain::plugin_exception,
                "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->depth)("y",BMCHAIN_SOFT_MAX_COMMENT_DEPTH) );
          }
@@ -213,7 +213,7 @@ namespace detail
          {
             auto edit_lock = _db.find< content_edit_lock_object, by_account >( o.author );
 
-            STEEMIT_ASSERT( edit_lock != nullptr && _db.head_block_time() < edit_lock->lock_time,
+            BMCHAIN_ASSERT( edit_lock != nullptr && _db.head_block_time() < edit_lock->lock_time,
                chain::plugin_exception,
                "The comment is archived" );
          }
@@ -400,7 +400,7 @@ namespace detail
          has_bandwidth = ( account_vshares * max_virtual_bandwidth ) > ( account_average_bandwidth * total_vshares );
 
          if( _db.is_producing() )
-            STEEMIT_ASSERT( has_bandwidth, chain::plugin_exception,
+            BMCHAIN_ASSERT( has_bandwidth, chain::plugin_exception,
                "Account: ${account} bandwidth limit exceeded. Please wait to transact or power up BMT.",
                ("account", a.name)
                ("account_vshares", account_vshares)

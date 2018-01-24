@@ -53,7 +53,7 @@ namespace bmchain { namespace chain {
          asset       current_supply             = asset( 0, BMT_SYMBOL );
          asset       total_vesting_fund_bmt   = asset( 0, BMT_SYMBOL );
          asset       total_vesting_shares       = asset( 0, REP_SYMBOL );
-         asset       total_reward_fund_steem    = asset( 0, BMT_SYMBOL );
+         asset       total_reward_fund_bmt    = asset( 0, BMT_SYMBOL );
          fc::uint128 total_reward_shares2; ///< the running total of REWARD^2
          asset       pending_rewarded_vesting_shares = asset( 0, REP_SYMBOL );
          asset       pending_rewarded_vesting_bmt = asset( 0, BMT_SYMBOL );
@@ -128,7 +128,7 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (current_supply)
              (total_vesting_fund_bmt)
              (total_vesting_shares)
-             (total_reward_fund_steem)
+             (total_reward_fund_bmt)
              (total_reward_shares2)
              (pending_rewarded_vesting_shares)
              (pending_rewarded_vesting_bmt)

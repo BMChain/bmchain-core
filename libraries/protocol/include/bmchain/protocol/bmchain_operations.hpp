@@ -700,7 +700,7 @@ namespace bmchain { namespace protocol {
    /**
     * This operation is used to report a miner who signs two blocks
     * at the same time. To be valid, the violation must be reported within
-    * STEEMIT_MAX_WITNESSES blocks of the head block (1 round) and the
+    * BMCHAIN_MAX_WITNESSES blocks of the head block (1 round) and the
     * producer must be in the ACTIVE witness set.
     *
     * Users not in the ACTIVE witness set should not have to worry about their

@@ -319,7 +319,7 @@ namespace bmchain { namespace chain {
          share_type pay_curators( const comment_object& c, share_type& max_rewards );
          share_type cashout_comment_helper( util::comment_reward_context& ctx, const comment_object& comment );
          void process_comment_cashout();
-         void process_funds_bmchain(int64_t new_steem);
+         void process_funds_bmchain(int64_t new_bmt);
          void process_savings_withdraws();
          void account_recovery_processing();
          void expire_escrow_ratification();
@@ -441,8 +441,8 @@ namespace bmchain { namespace chain {
 
          vector< signed_transaction >  _pending_tx;
          fork_database                 _fork_db;
-         fc::time_point_sec            _hardfork_times[ STEEMIT_NUM_HARDFORKS + 1 ];
-         protocol::hardfork_version    _hardfork_versions[ STEEMIT_NUM_HARDFORKS + 1 ];
+         fc::time_point_sec            _hardfork_times[ BMCHAIN_NUM_HARDFORKS + 1 ];
+         protocol::hardfork_version    _hardfork_versions[ BMCHAIN_NUM_HARDFORKS + 1 ];
 
          block_log                     _block_log;
 

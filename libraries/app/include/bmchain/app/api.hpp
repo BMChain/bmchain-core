@@ -170,14 +170,14 @@ namespace bmchain { namespace app {
          application& _app;
    };
 
-   struct steem_version_info
+   struct bmchain_version_info
    {
-      steem_version_info() {}
-      steem_version_info( fc::string bc_v, fc::string s_v, fc::string fc_v )
-         :blockchain_version( bc_v ), steem_revision( s_v ), fc_revision( fc_v ) {}
+      bmchain_version_info() {}
+      bmchain_version_info( fc::string bc_v, fc::string s_v, fc::string fc_v )
+         :blockchain_version( bc_v ), bmchain_revision( s_v ), fc_revision( fc_v ) {}
 
       fc::string blockchain_version;
-      fc::string steem_revision;
+      fc::string bmchain_revision;
       fc::string fc_revision;
    };
 
@@ -205,7 +205,7 @@ namespace bmchain { namespace app {
 
          fc::api_ptr get_api_by_name( const string& api_name )const;
 
-         steem_version_info get_version();
+         bmchain_version_info get_version();
 
          /// internal method, not exposed via JSON RPC
          void on_api_startup();
@@ -218,7 +218,7 @@ namespace bmchain { namespace app {
 
 FC_REFLECT( bmchain::app::network_broadcast_api::transaction_confirmation,
         (id)(block_num)(trx_num)(expired) )
-FC_REFLECT( bmchain::app::steem_version_info, (blockchain_version)(steem_revision)(fc_revision) )
+FC_REFLECT( bmchain::app::bmchain_version_info, (blockchain_version)(bmchain_revision)(fc_revision) )
 //FC_REFLECT_TYPENAME( fc::ecc::compact_signature );
 //FC_REFLECT_TYPENAME( fc::ecc::commitment_type );
 

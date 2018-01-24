@@ -262,10 +262,10 @@ BOOST_AUTO_TEST_CASE( switch_forks_undo_create )
       db1.push_block(b);
       b = db2.generate_block(db2.get_slot_time(1), db2.get_scheduled_witness(1), init_account_priv_key, database::skip_nothing);
       db1.push_block(b);
-      STEEMIT_REQUIRE_THROW(db2.get(alice_id), std::exception);
+      BMCHAIN_REQUIRE_THROW(db2.get(alice_id), std::exception);
       db1.get(alice_id); /// it should be included in the pending state
       db1.clear_pending(); // clear it so that we can verify it was properly removed from pending state.
-      STEEMIT_REQUIRE_THROW(db1.get(alice_id), std::exception);
+      BMCHAIN_REQUIRE_THROW(db1.get(alice_id), std::exception);
 
       PUSH_TX( db2, trx );
 
@@ -431,7 +431,7 @@ BOOST_FIXTURE_TEST_CASE( optional_tapos, clean_database_fixture )
       tx.signatures.clear();
       tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
       tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
 
       BOOST_TEST_MESSAGE( "ref_block_num=1, ref_block_prefix=12345678" );
 
@@ -440,7 +440,7 @@ BOOST_FIXTURE_TEST_CASE( optional_tapos, clean_database_fixture )
       tx.signatures.clear();
       tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
       tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
 
       BOOST_TEST_MESSAGE( "ref_block_num=9999, ref_block_prefix=12345678" );
 
@@ -449,7 +449,7 @@ BOOST_FIXTURE_TEST_CASE( optional_tapos, clean_database_fixture )
       tx.signatures.clear();
       tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
       tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
+      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
    }
    catch (fc::exception& e)
    {
@@ -482,17 +482,17 @@ BOOST_FIXTURE_TEST_CASE( double_sign_check, clean_database_fixture )
    trx.validate();
 
    BOOST_TEST_MESSAGE( "Verify that not-signing causes an exception" );
-   STEEMIT_REQUIRE_THROW( db.push_transaction(trx, 0), fc::exception );
+   BMCHAIN_REQUIRE_THROW( db.push_transaction(trx, 0), fc::exception );
 
    BOOST_TEST_MESSAGE( "Verify that double-signing causes an exception" );
    trx.sign( bob_private_key, db.get_chain_id() );
    trx.sign( bob_private_key, db.get_chain_id() );
-   STEEMIT_REQUIRE_THROW( db.push_transaction(trx, 0), tx_duplicate_sig );
+   BMCHAIN_REQUIRE_THROW( db.push_transaction(trx, 0), tx_duplicate_sig );
 
    BOOST_TEST_MESSAGE( "Verify that signing with an extra, unused key fails" );
    trx.signatures.pop_back();
    trx.sign( generate_private_key("bogus" ), db.get_chain_id() );
-   STEEMIT_REQUIRE_THROW( db.push_transaction(trx, 0), tx_irrelevant_sig );
+   BMCHAIN_REQUIRE_THROW( db.push_transaction(trx, 0), tx_irrelevant_sig );
 
    BOOST_TEST_MESSAGE( "Verify that signing once with the proper key passes" );
    trx.signatures.pop_back();
@@ -750,13 +750,13 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
 
       BOOST_TEST_MESSAGE( "Check hardfork not applied at genesis" );
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( !db.has_hardfork( STEEMIT_HARDFORK_0_1 ) );
+      BOOST_REQUIRE( !db.has_hardfork( BMCHAIN_HARDFORK_0_1 ) );
 
       BOOST_TEST_MESSAGE( "Generate blocks up to the hardfork time and check hardfork still not applied" );
-      generate_blocks( fc::time_point_sec( STEEMIT_HARDFORK_0_1_TIME - BMCHAIN_BLOCK_INTERVAL ), true );
+      generate_blocks( fc::time_point_sec( BMCHAIN_HARDFORK_0_1_TIME - BMCHAIN_BLOCK_INTERVAL ), true );
 
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( !db.has_hardfork( STEEMIT_HARDFORK_0_1 ) );
+      BOOST_REQUIRE( !db.has_hardfork( BMCHAIN_HARDFORK_0_1 ) );
 
       BOOST_TEST_MESSAGE( "Generate a block and check hardfork is applied" );
       generate_block();
@@ -766,7 +766,7 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
       itr--;
 
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( db.has_hardfork( STEEMIT_HARDFORK_0_1 ) );
+      BOOST_REQUIRE( db.has_hardfork( BMCHAIN_HARDFORK_0_1 ) );
       BOOST_REQUIRE( get_last_operations( 1 )[0].get< custom_operation >().data == vector< char >( op_msg.begin(), op_msg.end() ) );
       BOOST_REQUIRE( db.get(itr->op).timestamp == db.head_block_time() );
 
@@ -777,7 +777,7 @@ BOOST_FIXTURE_TEST_CASE( hardfork_test, database_fixture )
       itr--;
 
       BOOST_REQUIRE( db.has_hardfork( 0 ) );
-      BOOST_REQUIRE( db.has_hardfork( STEEMIT_HARDFORK_0_1 ) );
+      BOOST_REQUIRE( db.has_hardfork( BMCHAIN_HARDFORK_0_1 ) );
       BOOST_REQUIRE( get_last_operations( 1 )[0].get< custom_operation >().data == vector< char >( op_msg.begin(), op_msg.end() ) );
       BOOST_REQUIRE( db.get(itr->op).timestamp == db.head_block_time() - BMCHAIN_BLOCK_INTERVAL );
    }

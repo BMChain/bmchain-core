@@ -103,8 +103,8 @@ int main(int argc, char** argv) {
 
       if( options.count("version") )
       {
-         std::cout << "steem_blockchain_version: " << fc::string( BMCHAIN_BLOCKCHAIN_VERSION ) << "\n";
-         std::cout << "steem_git_revision:       " << fc::string( graphene::utilities::git_revision_sha ) << "\n";
+         std::cout << "bmchain_blockchain_version: " << fc::string( BMCHAIN_BLOCKCHAIN_VERSION ) << "\n";
+         std::cout << "bmchain_git_revision:       " << fc::string( graphene::utilities::git_revision_sha ) << "\n";
          std::cout << "fc_git_revision:          " << fc::string( fc::git_revision_sha ) << "\n";
          return 0;
       }
