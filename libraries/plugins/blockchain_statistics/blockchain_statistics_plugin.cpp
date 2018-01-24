@@ -55,17 +55,11 @@ struct operation_process
 
          if( op.amount.symbol == BMT_SYMBOL )
             b.steem_transferred += op.amount.amount;
-         else
-            b.sbd_transferred += op.amount.amount;
       });
    }
 
    void operator()( const interest_operation& op )const
    {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.sbd_paid_as_interest += op.interest.amount;
-      });
    }
 
    void operator()( const account_create_operation& op )const
@@ -154,7 +148,6 @@ struct operation_process
       _db.modify( _bucket, [&]( bucket_object& b )
       {
          b.payouts++;
-         b.sbd_paid_to_authors += op.sbd_payout.amount;
          b.vests_paid_to_authors += op.vesting_payout.amount;
       });
    }
@@ -227,18 +220,12 @@ struct operation_process
 
    void operator()( const convert_operation& op )const
    {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.sbd_conversion_requests_created++;
-         b.sbd_to_be_converted += op.amount.amount;
-      });
    }
 
    void operator()( const fill_convert_request_operation& op )const
    {
       _db.modify( _bucket, [&]( bucket_object& b )
       {
-         b.sbd_conversion_requests_filled++;
          b.steem_converted += op.amount_out.amount;
       });
    }

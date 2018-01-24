@@ -10,11 +10,10 @@ namespace bmchain { namespace protocol {
    struct author_reward_operation : public virtual_operation {
       author_reward_operation(){}
       author_reward_operation( const account_name_type& a, const string& p, const asset& s, const asset& st, const asset& v )
-         :author(a), permlink(p), sbd_payout(s), steem_payout(st), vesting_payout(v){}
+         :author(a), permlink(p), steem_payout(st), vesting_payout(v){}
 
       account_name_type author;
       string            permlink;
-      asset             sbd_payout;
       asset             steem_payout;
       asset             vesting_payout;
    };
@@ -178,7 +177,7 @@ namespace bmchain { namespace protocol {
 
 } } //bmchain::protocol
 
-FC_REFLECT( bmchain::protocol::author_reward_operation, (author)(permlink)(sbd_payout)(steem_payout)(vesting_payout) )
+FC_REFLECT( bmchain::protocol::author_reward_operation, (author)(permlink)(steem_payout)(vesting_payout) )
 FC_REFLECT( bmchain::protocol::curation_reward_operation, (curator)(reward)(comment_author)(comment_permlink) )
 FC_REFLECT( bmchain::protocol::comment_reward_operation, (author)(permlink)(payout) )
 FC_REFLECT( bmchain::protocol::fill_convert_request_operation, (owner)(requestid)(amount_in)(amount_out) )

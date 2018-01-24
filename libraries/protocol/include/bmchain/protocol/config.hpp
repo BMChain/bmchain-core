@@ -117,7 +117,6 @@
 #define BMCHAIN_100_PERCENT                     10000
 #define BMCHAIN_1_PERCENT                       (BMCHAIN_100_PERCENT/100)
 #define BMCHAIN_1_TENTH_PERCENT                 (BMCHAIN_100_PERCENT/1000)
-#define BMCHAIN_DEFAULT_SBD_INTEREST_RATE       (10*BMCHAIN_1_PERCENT) ///< 10% APR
 
 #define BMCHAIN_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
 #define BMCHAIN_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
@@ -203,10 +202,7 @@
 #define BMCHAIN_PRODUCER_APR_PERCENT             750
 #define BMCHAIN_POW_APR_PERCENT                  750
 
-#define BMCHAIN_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
-
-#define BMCHAIN_SBD_STOP_PERCENT                (5*BMCHAIN_1_PERCENT ) // Stop printing SBD at 5% Market Cap
-#define BMCHAIN_SBD_START_PERCENT               (2*BMCHAIN_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
+#define BMCHAIN_MIN_PAYOUT                      (asset(20, BMT_SYMBOL))
 
 #define BMCHAIN_MIN_ACCOUNT_NAME_LENGTH          3
 #define BMCHAIN_MAX_ACCOUNT_NAME_LENGTH         16
@@ -222,7 +218,6 @@
 #define BMCHAIN_MIN_TRANSACTION_SIZE_LIMIT      1024
 #define BMCHAIN_SECONDS_PER_YEAR                (uint64_t(60*60*24*365ll))
 
-#define BMCHAIN_SBD_INTEREST_COMPOUND_INTERVAL_SEC  (60*60*24*30)
 #define BMCHAIN_MAX_TRANSACTION_SIZE            (1024*64)
 #define BMCHAIN_MIN_BLOCK_SIZE_LIMIT            (BMCHAIN_MAX_TRANSACTION_SIZE)
 #define BMCHAIN_MAX_BLOCK_SIZE                  (BMCHAIN_MAX_TRANSACTION_SIZE*BMCHAIN_BLOCK_INTERVAL*2000)

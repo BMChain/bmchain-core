@@ -281,12 +281,10 @@ namespace bmchain { namespace chain {
           */
          uint32_t get_slot_at_time(fc::time_point_sec when)const;
 
-         /** @return the sbd created and deposited to_account, may return STEEM if there is no median feed */
-         std::pair< asset, asset > create_sbd( const account_object& to_account, asset steem, bool to_reward_balance=false );
          asset create_vesting( const account_object& to_account, asset steem, bool to_reward_balance=false );
-         void adjust_total_payout( const comment_object& a, const asset& sbd, const asset& curator_sbd_value, const asset& beneficiary_value );
+         void adjust_total_payout(const comment_object &a, const asset &bmt, const asset &curator_bmt_value,
+                                  const asset &beneficiary_value);
 
-         void        adjust_liquidity_reward( const account_object& owner, const asset& volume, bool is_bid );
          void        adjust_balance( const account_object& a, const asset& delta );
          void        adjust_savings_balance( const account_object& a, const asset& delta );
          void        adjust_reward_balance( const account_object& a, const asset& delta );
@@ -321,9 +319,7 @@ namespace bmchain { namespace chain {
          share_type pay_curators( const comment_object& c, share_type& max_rewards );
          share_type cashout_comment_helper( util::comment_reward_context& ctx, const comment_object& comment );
          void process_comment_cashout();
-         void process_funds();
          void process_funds_bmchain(int64_t new_steem);
-         void process_conversions();
          void process_savings_withdraws();
          void account_recovery_processing();
          void expire_escrow_ratification();
@@ -339,15 +335,6 @@ namespace bmchain { namespace chain {
          uint16_t get_curation_rewards_percent( const comment_object& c ) const;
 
          share_type pay_reward_funds( share_type reward );
-
-         void  pay_liquidity_reward();
-
-         /**
-          * Helper method to return the current sbd value of a given amount of
-          * STEEM.  Return 0 SBD if there isn't a current_median_history
-          */
-         asset to_sbd( const asset& steem )const;
-         asset to_steem( const asset& sbd )const;
 
          time_point_sec   head_block_time()const;
          uint32_t         head_block_num()const;
@@ -387,7 +374,6 @@ namespace bmchain { namespace chain {
          void retally_comment_children();
          void retally_witness_votes();
          void retally_witness_vote_counts( bool force = false );
-         void retally_liquidity_weight();
          void update_virtual_supply();
 
          bool has_hardfork( uint32_t hardfork )const;

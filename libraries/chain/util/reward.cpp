@@ -57,10 +57,6 @@ uint64_t get_rshare_reward( const comment_reward_context& ctx )
    if( is_comment_payout_dust( ctx.current_steem_price, payout ) )
       payout = 0;
 
-   asset max_steem = to_steem( ctx.current_steem_price, ctx.max_sbd );
-
-   payout = std::min( payout, uint64_t( max_steem.amount.value ) );
-
    return payout;
    } FC_CAPTURE_AND_RETHROW( (ctx) )
 }

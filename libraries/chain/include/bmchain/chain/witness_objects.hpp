@@ -67,9 +67,6 @@ namespace bmchain { namespace chain {
          public_key_type   signing_key;
 
          chain_properties  props;
-         price             sbd_exchange_rate;
-         time_point_sec    last_sbd_exchange_update;
-
 
          /**
           *  The total votes for this witness. This determines how the witness is ranked for
@@ -243,7 +240,6 @@ FC_REFLECT( bmchain::chain::witness_object,
              (url)(votes)(schedule)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(total_missed)
              (last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)
              (props)
-             (sbd_exchange_rate)(last_sbd_exchange_update)
              (last_work)
              (running_version)
              (hardfork_version_vote)(hardfork_time_vote)

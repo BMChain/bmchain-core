@@ -18,7 +18,7 @@ namespace bmchain { namespace chain {
    typedef protocol::fixed_string_16 reward_fund_name_type;
 
    /**
-    *  This object is used to track pending requests to convert sbd to steem
+    *  This object is used to track pending requests to convert
     */
    class convert_request_object : public object< convert_request_object_type, convert_request_object >
    {
@@ -59,7 +59,6 @@ namespace bmchain { namespace chain {
          account_name_type agent;
          time_point_sec    ratification_deadline;
          time_point_sec    escrow_expiration;
-         asset             sbd_balance;
          asset             steem_balance;
          asset             pending_fee;
          bool              to_approved = false;
@@ -91,61 +90,6 @@ namespace bmchain { namespace chain {
          asset             amount;
          time_point_sec    complete;
    };
-
-
-   /**
-    *  If last_update is greater than 1 week, then volume gets reset to 0
-    *
-    *  When a user is a maker, their volume increases
-    *  When a user is a taker, their volume decreases
-    *
-    *  Every 1000 blocks, the account that has the highest volume_weight() is paid the maximum of
-    *  1000 STEEM or 1000 * virtual_supply / (100*blocks_per_year) aka 10 * virtual_supply / blocks_per_year
-    *
-    *  After being paid volume gets reset to 0
-    */
-   class liquidity_reward_balance_object : public object< liquidity_reward_balance_object_type, liquidity_reward_balance_object >
-   {
-      public:
-         template< typename Constructor, typename Allocator >
-         liquidity_reward_balance_object( Constructor&& c, allocator< Allocator > a )
-         {
-            c( *this );
-         }
-
-         liquidity_reward_balance_object(){}
-
-         id_type           id;
-
-         account_id_type   owner;
-         int64_t           steem_volume = 0;
-         int64_t           sbd_volume = 0;
-         uint128_t         weight = 0;
-
-         time_point_sec    last_update = fc::time_point_sec::min(); /// used to decay negative liquidity balances. block num
-
-         /// this is the sort index
-         uint128_t volume_weight()const
-         {
-            return steem_volume * sbd_volume * is_positive();
-         }
-
-         uint128_t min_volume_weight()const
-         {
-            return std::min(steem_volume,sbd_volume) * is_positive();
-         }
-
-         void update_weight( bool hf9 )
-         {
-             weight = hf9 ? min_volume_weight() : volume_weight();
-         }
-
-         inline int is_positive()const
-         {
-            return ( steem_volume > 0 && sbd_volume > 0 ) ? 1 : 0;
-         }
-   };
-
 
    /**
     *  This object gets updated once per hour, on the hour
@@ -355,22 +299,6 @@ namespace bmchain { namespace chain {
    struct by_volume_weight;
 
    typedef multi_index_container<
-      liquidity_reward_balance_object,
-      indexed_by<
-         ordered_unique< tag< by_id >, member< liquidity_reward_balance_object, liquidity_reward_balance_id_type, &liquidity_reward_balance_object::id > >,
-         ordered_unique< tag< by_owner >, member< liquidity_reward_balance_object, account_id_type, &liquidity_reward_balance_object::owner > >,
-         ordered_unique< tag< by_volume_weight >,
-            composite_key< liquidity_reward_balance_object,
-                member< liquidity_reward_balance_object, fc::uint128, &liquidity_reward_balance_object::weight >,
-                member< liquidity_reward_balance_object, account_id_type, &liquidity_reward_balance_object::owner >
-            >,
-            composite_key_compare< std::greater< fc::uint128 >, std::less< account_id_type > >
-         >
-      >,
-      allocator< liquidity_reward_balance_object >
-   > liquidity_reward_balance_index;
-
-   typedef multi_index_container<
       feed_history_object,
       indexed_by<
          ordered_unique< tag< by_id >, member< feed_history_object, feed_history_id_type, &feed_history_object::id > >
@@ -405,7 +333,6 @@ namespace bmchain { namespace chain {
    struct by_to;
    struct by_agent;
    struct by_ratification_deadline;
-   struct by_sbd_balance;
    typedef multi_index_container<
       escrow_object,
       indexed_by<
@@ -435,13 +362,6 @@ namespace bmchain { namespace chain {
                member< escrow_object, escrow_id_type, &escrow_object::id >
             >,
             composite_key_compare< std::less< bool >, std::less< time_point_sec >, std::less< escrow_id_type > >
-         >,
-         ordered_unique< tag< by_sbd_balance >,
-            composite_key< escrow_object,
-               member< escrow_object, asset, &escrow_object::sbd_balance >,
-               member< escrow_object, escrow_id_type, &escrow_object::id >
-            >,
-            composite_key_compare< std::greater< asset >, std::less< escrow_id_type > >
          >
       >,
       allocator< escrow_object >
@@ -552,10 +472,6 @@ FC_REFLECT( bmchain::chain::convert_request_object,
              (id)(owner)(requestid)(amount)(conversion_date) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::convert_request_object, bmchain::chain::convert_request_index )
 
-FC_REFLECT( bmchain::chain::liquidity_reward_balance_object,
-             (id)(owner)(steem_volume)(sbd_volume)(weight)(last_update) )
-CHAINBASE_SET_INDEX_TYPE( bmchain::chain::liquidity_reward_balance_object, bmchain::chain::liquidity_reward_balance_index )
-
 FC_REFLECT( bmchain::chain::withdraw_vesting_route_object,
              (id)(from_account)(to_account)(percent)(auto_vest) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::withdraw_vesting_route_object, bmchain::chain::withdraw_vesting_route_index )
@@ -567,7 +483,7 @@ CHAINBASE_SET_INDEX_TYPE( bmchain::chain::savings_withdraw_object, bmchain::chai
 FC_REFLECT( bmchain::chain::escrow_object,
              (id)(escrow_id)(from)(to)(agent)
              (ratification_deadline)(escrow_expiration)
-             (sbd_balance)(steem_balance)(pending_fee)
+             (steem_balance)(pending_fee)
              (to_approved)(agent_approved)(disputed) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::escrow_object, bmchain::chain::escrow_index )
 

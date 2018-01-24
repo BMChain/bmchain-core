@@ -51,9 +51,6 @@ namespace bmchain { namespace chain {
 
          asset       virtual_supply             = asset( 0, BMT_SYMBOL );
          asset       current_supply             = asset( 0, BMT_SYMBOL );
-         asset       confidential_supply        = asset( 0, BMT_SYMBOL ); ///< total asset held in confidential balances
-         asset       current_sbd_supply         = asset( 0, SBD_SYMBOL );
-         asset       confidential_sbd_supply    = asset( 0, SBD_SYMBOL ); ///< total asset held in confidential balances
          asset       total_vesting_fund_steem   = asset( 0, BMT_SYMBOL );
          asset       total_vesting_shares       = asset( 0, REP_SYMBOL );
          asset       total_reward_fund_steem    = asset( 0, BMT_SYMBOL );
@@ -67,22 +64,13 @@ namespace bmchain { namespace chain {
                return price ( asset( 1000, BMT_SYMBOL ), asset( 1000000, REP_SYMBOL ) );
 
             return price( total_vesting_shares, total_vesting_fund_steem );
-            //return price ( asset( 1000, BMT_SYMBOL ), asset( 1000000, REP_SYMBOL ) );
          }
 
          price get_reward_vesting_share_price() const
          {
             return price( total_vesting_shares + pending_rewarded_vesting_shares,
                total_vesting_fund_steem + pending_rewarded_vesting_steem );
-            //return get_vesting_share_price();
          }
-
-         /**
-          *  This property defines the interest rate that SBD deposits receive.
-          */
-         uint16_t sbd_interest_rate = 0;
-
-         uint16_t sbd_print_rate = 0; /// bmchain /// BMCHAIN_100_PERCENT;
 
          /**
           *  Maximum block size is decided by the set of active witnesses which change every round.
@@ -138,17 +126,12 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (num_pow_witnesses)
              (virtual_supply)
              (current_supply)
-             (confidential_supply)
-             (current_sbd_supply)
-             (confidential_sbd_supply)
              (total_vesting_fund_steem)
              (total_vesting_shares)
              (total_reward_fund_steem)
              (total_reward_shares2)
              (pending_rewarded_vesting_shares)
              (pending_rewarded_vesting_steem)
-             (sbd_interest_rate)
-             (sbd_print_rate)
              (maximum_block_size)
              (current_aslot)
              (recent_slots_filled)

@@ -963,56 +963,6 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when)const
 }
 
 /**
- *  Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
- *  by STEEM and increasing the sbd supply by the specified amount.
- */
-std::pair< asset, asset > database::create_sbd( const account_object& to_account, asset steem, bool to_reward_balance )
-{
-   std::pair< asset, asset > assets( asset( 0, SBD_SYMBOL ), asset( 0, BMT_SYMBOL ) );
-
-   try
-   {
-      if( steem.amount == 0 )
-         return assets;
-
-      const auto& median_price = get_feed_history().current_median_history;
-      const auto& gpo = get_dynamic_global_properties();
-
-      if( !median_price.is_null() )
-      {
-         auto to_sbd = ( gpo.sbd_print_rate * steem.amount ) / BMCHAIN_100_PERCENT;
-         auto to_steem = steem.amount - to_sbd;
-
-         auto sbd = asset( to_sbd, BMT_SYMBOL ) * median_price;
-
-         if( to_reward_balance )
-         {
-            adjust_reward_balance( to_account, sbd );
-            adjust_reward_balance( to_account, asset( to_steem, BMT_SYMBOL ) );
-         }
-         else
-         {
-            adjust_balance( to_account, sbd );
-            adjust_balance( to_account, asset( to_steem, BMT_SYMBOL ) );
-         }
-
-         adjust_supply( asset( -to_sbd, BMT_SYMBOL ) );
-         adjust_supply( sbd );
-         assets.first = sbd;
-         assets.second = to_steem;
-      }
-      else
-      {
-         adjust_balance( to_account, steem );
-         assets.second = steem;
-      }
-   }
-   FC_CAPTURE_LOG_AND_RETHROW( (to_account.name)(steem) )
-
-   return assets;
-}
-
-/**
  * @param to_account - the account to receive the new vesting shares
  * @param STEEM - STEEM to be converted to vesting shares
  */
@@ -1199,7 +1149,6 @@ void database::clear_null_account_balance()
 {
    const auto& null_account = get_account( BMCHAIN_NULL_ACCOUNT );
    asset total_steem( 0, BMT_SYMBOL );
-   asset total_sbd( 0, SBD_SYMBOL );
 
    if( null_account.balance.amount > 0 )
    {
@@ -1211,18 +1160,6 @@ void database::clear_null_account_balance()
    {
       total_steem += null_account.savings_balance;
       adjust_savings_balance( null_account, -null_account.savings_balance );
-   }
-
-   if( null_account.sbd_balance.amount > 0 )
-   {
-      total_sbd += null_account.sbd_balance;
-      adjust_balance( null_account, -null_account.sbd_balance );
-   }
-
-   if( null_account.savings_sbd_balance.amount > 0 )
-   {
-      total_sbd += null_account.savings_sbd_balance;
-      adjust_savings_balance( null_account, -null_account.savings_sbd_balance );
    }
 
    if( null_account.vesting_shares.amount > 0 )
@@ -1250,12 +1187,6 @@ void database::clear_null_account_balance()
       adjust_reward_balance( null_account, -null_account.reward_steem_balance );
    }
 
-   if( null_account.reward_sbd_balance.amount > 0 )
-   {
-      total_sbd += null_account.reward_sbd_balance;
-      adjust_reward_balance( null_account, -null_account.reward_sbd_balance );
-   }
-
    if( null_account.reward_vesting_balance.amount > 0 )
    {
       const auto& gpo = get_dynamic_global_properties();
@@ -1277,9 +1208,6 @@ void database::clear_null_account_balance()
 
    if( total_steem.amount > 0 )
       adjust_supply( -total_steem );
-
-   if( total_sbd.amount > 0 )
-      adjust_supply( -total_sbd );
 }
 
 /**
@@ -1438,13 +1366,14 @@ void database::process_vesting_withdrawals()
    }
 }
 
-void database::adjust_total_payout( const comment_object& cur, const asset& sbd_created, const asset& curator_sbd_value, const asset& beneficiary_value )
+void database::adjust_total_payout(const comment_object &cur, const asset &bmt_created, const asset &curator_bmt_value,
+                                   const asset &beneficiary_value)
 {
    modify( cur, [&]( comment_object& c )
    {
-      if( c.total_payout_value.symbol == sbd_created.symbol )
-         c.total_payout_value += sbd_created;
-         c.curator_payout_value += curator_sbd_value;
+      if( c.total_payout_value.symbol == bmt_created.symbol )
+         c.total_payout_value += bmt_created;
+         c.curator_payout_value += curator_bmt_value;
          c.beneficiary_payout_value += beneficiary_value;
    } );
    /// TODO: potentially modify author's total payout numbers as well
@@ -1505,7 +1434,6 @@ void fill_comment_reward_context_local_state( util::comment_reward_context& ctx,
 {
    ctx.rshares = comment.net_rshares;
    ctx.reward_weight = comment.reward_weight;
-   ctx.max_sbd = comment.max_accepted_payout;
 }
 
 share_type database::cashout_comment_helper( util::comment_reward_context& ctx, const comment_object& comment )
@@ -1544,17 +1472,18 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             author_tokens -= total_beneficiary;
 
-            auto sbd_steem = (author_tokens * comment.percent_steem_dollars) / (2 * BMCHAIN_100_PERCENT);
-            auto vesting_steem = author_tokens - sbd_steem;
+            auto _steem = (author_tokens * comment.percent_steem_dollars) / (2 * BMCHAIN_100_PERCENT);
+            auto steem = asset( _steem, BMT_SYMBOL);
+            auto vesting_steem = author_tokens - _steem;
 
             const auto &author = get_account(comment.author);
             auto vest_created = create_vesting(author, vesting_steem);
-            auto sbd_payout = create_sbd(author, sbd_steem);
+            adjust_balance( author, steem );
 
-            adjust_total_payout( comment, sbd_payout.first + to_sbd( sbd_payout.second + asset( vesting_steem, BMT_SYMBOL ) ), to_sbd( asset( curation_tokens, BMT_SYMBOL ) ), to_sbd( asset( total_beneficiary, BMT_SYMBOL ) ) );
+            adjust_total_payout( comment, steem + asset( vesting_steem, BMT_SYMBOL ), asset( curation_tokens, BMT_SYMBOL ), asset( total_beneficiary, BMT_SYMBOL ) );
 
-            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), sbd_payout.first, sbd_payout.second, vest_created ) );
-            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), to_sbd( asset( claimed_reward, BMT_SYMBOL ) ) ) );
+            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, SBD_SYMBOL ), steem, vest_created ) );
+            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, SBD_SYMBOL ) ) );
 
 #ifndef IS_LOW_MEM
             modify( comment, [&]( comment_object& c )
@@ -1676,8 +1605,7 @@ void database::process_comment_cashout()
     *
     * Each payout follows a similar pattern, but for a different reason.
     * Cashout comment helper does not know about the reward fund it is paying from.
-    * The helper only does token allocation based on curation rewards and the SBD
-    * global %, etc.
+    * The helper only does token allocation based on curation rewards global %, etc.
     *
     * Each context is used by get_rshare_reward to determine what part of each budget
     * the comment is entitled to. Prior to hardfork 17, all payouts are done against
@@ -1705,66 +1633,6 @@ void database::process_comment_cashout()
          });
       }
    }
-}
-
-/**
- *  Overall the network has an inflation rate of 102% of virtual steem per year
- *  90% of inflation is directed to vesting shares
- *  10% of inflation is directed to subjective proof of work voting
- *  1% of inflation is directed to liquidity providers
- *  1% of inflation is directed to block producers
- *
- *  This method pays out vesting and reward shares every block, and liquidity shares once per day.
- *  This method does not pay out witnesses.
- */
-void database::process_funds()
-{
-   const auto& props = get_dynamic_global_properties();
-   const auto& wso = get_witness_schedule_object();
-
-    /*
-    * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
-    * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
-    */
-    int64_t start_inflation_rate = int64_t(BMCHAIN_INFLATION_RATE_START_PERCENT);
-    int64_t inflation_rate_adjustment = int64_t((head_block_num()) / BMCHAIN_INFLATION_NARROWING_PERIOD);
-    int64_t inflation_rate_floor = int64_t(BMCHAIN_INFLATION_RATE_STOP_PERCENT);
-
-    // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-    int64_t current_inflation_rate = std::max(start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor);
-
-    auto new_steem = (props.virtual_supply.amount * current_inflation_rate) /
-                     (int64_t(BMCHAIN_100_PERCENT) * int64_t(BMCHAIN_BLOCKS_PER_YEAR));
-    auto content_reward =
-            (new_steem * (BMCHAIN_CONTENT_REWARD_PERCENT + BMCHAIN_VESTING_FUND_PERCENT)) / BMCHAIN_100_PERCENT;
-    content_reward = pay_reward_funds(content_reward); /// 75% to content creator
-    auto vesting_reward = (new_steem * BMCHAIN_VESTING_FUND_PERCENT) / BMCHAIN_100_PERCENT; /// 15% to vesting fund
-    auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
-
-    const auto &cwit = get_witness(props.current_witness);
-    witness_reward *= BMCHAIN_MAX_WITNESSES;
-
-    if (cwit.schedule == witness_object::timeshare)
-        witness_reward *= wso.timeshare_weight;
-    else if (cwit.schedule == witness_object::miner)
-        witness_reward *= wso.miner_weight;
-    else if (cwit.schedule == witness_object::top19)
-        witness_reward *= wso.top19_weight;
-    else
-        wlog("Encountered unknown witness type for witness: ${w}", ("w", cwit.owner));
-
-    witness_reward /= wso.witness_pay_normalization_factor;
-
-    new_steem = content_reward + vesting_reward + witness_reward;
-
-    modify(props, [&](dynamic_global_property_object &p) {
-        p.total_vesting_fund_steem += asset(vesting_reward, BMT_SYMBOL);
-        p.current_supply += asset(new_steem, BMT_SYMBOL);
-        p.virtual_supply += asset(new_steem, BMT_SYMBOL);
-    });
-
-    const auto &producer_reward = create_vesting(get_account(cwit.owner), asset(witness_reward, BMT_SYMBOL));
-    push_virtual_operation( producer_reward_operation( cwit.owner, producer_reward ) );
 }
 
 void database::process_savings_withdraws()
@@ -1849,41 +1717,6 @@ asset database::get_pow_reward()const
    asset percent( calc_percent_reward_per_round< BMCHAIN_POW_APR_PERCENT >( props.virtual_supply.amount ), BMT_SYMBOL);
    return std::max( percent, BMCHAIN_MIN_POW_REWARD );
 }
-
-
-void database::pay_liquidity_reward()
-{
-#ifdef IS_TEST_NET
-   if( !liquidity_rewards_enabled )
-      return;
-#endif
-
-   if( (head_block_num() % BMCHAIN_LIQUIDITY_REWARD_BLOCKS) == 0 )
-   {
-      auto reward = get_liquidity_reward();
-
-      if( reward.amount == 0 )
-         return;
-
-      const auto& ridx = get_index< liquidity_reward_balance_index >().indices().get< by_volume_weight >();
-      auto itr = ridx.begin();
-      if( itr != ridx.end() && itr->volume_weight() > 0 )
-      {
-         adjust_supply( reward, true );
-         adjust_balance( get(itr->owner), reward );
-         modify( *itr, [&]( liquidity_reward_balance_object& obj )
-         {
-            obj.steem_volume = 0;
-            obj.sbd_volume   = 0;
-            obj.last_update  = head_block_time();
-            obj.weight = 0;
-         } );
-
-         push_virtual_operation( liquidity_reward_operation( get(itr->owner).name, reward ) );
-      }
-   }
-}
-
 uint16_t database::get_curation_rewards_percent( const comment_object& c ) const
 {
    return get_reward_fund( c ).percent_curation_rewards;
@@ -1911,60 +1744,6 @@ share_type database::pay_reward_funds( share_type reward )
    }
 
    return used_rewards;
-}
-
-/**
- *  Iterates over all conversion requests with a conversion date before
- *  the head block time and then converts them to/from steem/sbd at the
- *  current median price feed history price times the premium
- */
-void database::process_conversions()
-{
-   auto now = head_block_time();
-   const auto& request_by_date = get_index< convert_request_index >().indices().get< by_conversion_date >();
-   auto itr = request_by_date.begin();
-
-   const auto& fhistory = get_feed_history();
-   if( fhistory.current_median_history.is_null() )
-      return;
-
-   asset net_sbd( 0, SBD_SYMBOL );
-   asset net_steem( 0, BMT_SYMBOL );
-
-   while( itr != request_by_date.end() && itr->conversion_date <= now )
-   {
-      const auto& user = get_account( itr->owner );
-      auto amount_to_issue = itr->amount * fhistory.current_median_history;
-
-      adjust_balance( user, amount_to_issue );
-
-      net_sbd   += itr->amount;
-      net_steem += amount_to_issue;
-
-      push_virtual_operation( fill_convert_request_operation ( user.name, itr->requestid, itr->amount, amount_to_issue ) );
-
-      remove( *itr );
-      itr = request_by_date.begin();
-   }
-
-   const auto& props = get_dynamic_global_properties();
-   modify( props, [&]( dynamic_global_property_object& p )
-   {
-       p.current_supply += net_steem;
-       p.current_sbd_supply -= net_sbd;
-       p.virtual_supply += net_steem;
-       p.virtual_supply -= net_sbd * get_feed_history().current_median_history;
-   } );
-}
-
-asset database::to_sbd( const asset& steem )const
-{
-   return util::to_sbd( get_feed_history().current_median_history, steem );
-}
-
-asset database::to_steem( const asset& sbd )const
-{
-   return util::to_steem( get_feed_history().current_median_history, sbd );
 }
 
 void database::account_recovery_processing()
@@ -2017,7 +1796,6 @@ void database::expire_escrow_ratification()
 
       const auto& from_account = get_account( old_escrow.from );
       adjust_balance( from_account, old_escrow.steem_balance );
-      adjust_balance( from_account, old_escrow.sbd_balance );
       adjust_balance( from_account, old_escrow.pending_fee );
 
       remove( old_escrow );
@@ -2157,7 +1935,6 @@ void database::initialize_indexes()
    add_core_index< limit_order_index                       >(*this);
    add_core_index< feed_history_index                      >(*this);
    add_core_index< convert_request_index                   >(*this);
-   add_core_index< liquidity_reward_balance_index          >(*this);
    add_core_index< operation_index                         >(*this);
    add_core_index< account_history_index                   >(*this);
    add_core_index< hardfork_property_index                 >(*this);
@@ -2357,7 +2134,6 @@ void database::init_genesis( uint64_t init_supply )
        retally_witness_vote_counts();      // HARDFORK_0_6
        retally_comment_children();         // HARDFORK_0_6
        retally_witness_vote_counts(true);  // HARDFORK_0_8
-       retally_liquidity_weight();         // HARDFORK_0_10
 
 #ifdef IS_TEST_NET
        {
@@ -2761,14 +2537,9 @@ void database::_apply_block( const signed_block& next_block )
    update_virtual_supply();
 
    clear_null_account_balance();
-   if (!BMCHAIN_ENABLE) {
-       process_funds();
-   }
-   process_conversions();
    process_comment_cashout();
    process_vesting_withdrawals();
    process_savings_withdraws();
-   pay_liquidity_reward();
    update_virtual_supply();
 
    account_recovery_processing();
@@ -2841,57 +2612,10 @@ try {
    if( (head_block_num() % BMCHAIN_FEED_INTERVAL_BLOCKS) != 0 )
       return;
 
-   auto now = head_block_time();
-   const witness_schedule_object& wso = get_witness_schedule_object();
-   vector<price> feeds; feeds.reserve( wso.num_scheduled_witnesses );
-   for( int i = 0; i < wso.num_scheduled_witnesses; i++ )
-   {
-      const auto& wit = get_witness( wso.current_shuffled_witnesses[i] );
-      if (now < wit.last_sbd_exchange_update + BMCHAIN_MAX_FEED_AGE_SECONDS
-          && !wit.sbd_exchange_rate.is_null()) {
-          feeds.push_back(wit.sbd_exchange_rate);
-      }
-   }
+    modify( get_feed_history(), [&]( feed_history_object& fho ){
+        fho.current_median_history = price(asset(1000, SBD_SYMBOL), asset(1000, BMT_SYMBOL));
+    });
 
-   if( feeds.size() >= BMCHAIN_MIN_FEEDS )
-   {
-      std::sort( feeds.begin(), feeds.end() );
-      auto median_feed = feeds[feeds.size()/2];
-
-      modify( get_feed_history(), [&]( feed_history_object& fho )
-      {
-         fho.price_history.push_back( median_feed );
-         size_t steemit_feed_history_window = BMCHAIN_FEED_HISTORY_WINDOW_PRE_HF_16;
-         steemit_feed_history_window = BMCHAIN_FEED_HISTORY_WINDOW;
-
-         if( fho.price_history.size() > steemit_feed_history_window )
-            fho.price_history.pop_front();
-
-         if( fho.price_history.size() )
-         {
-            std::deque< price > copy;
-            for( auto i : fho.price_history )
-            {
-               copy.push_back( i );
-            }
-
-            std::sort( copy.begin(), copy.end() ); /// TODO: use nth_item
-            fho.current_median_history = copy[copy.size()/2];
-
-#ifdef IS_TEST_NET
-            if( skip_price_feed_limit_check )
-               return;
-#endif
-            const auto &gpo = get_dynamic_global_properties();
-            price min_price(asset(9 * gpo.current_sbd_supply.amount, SBD_SYMBOL),
-                            gpo.current_supply); // This price limits SBD to 10% market cap
-
-            if (min_price > fho.current_median_history) {
-                fho.current_median_history = min_price;
-            }
-         }
-      });
-   }
 } FC_CAPTURE_AND_RETHROW() }
 
 void database::apply_transaction(const signed_transaction& trx, uint32_t skip)
@@ -3077,8 +2801,7 @@ void database::update_virtual_supply()
 { try {
    modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& dgp )
    {
-      dgp.virtual_supply = dgp.current_supply
-         + ( get_feed_history().current_median_history.is_null() ? asset( 0, BMT_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
+      dgp.virtual_supply = dgp.current_supply;
    });
 } FC_CAPTURE_AND_RETHROW() }
 
@@ -3238,48 +2961,6 @@ int database::match( const limit_order_object& new_order, const limit_order_obje
    return result;
 }
 
-
-void database::adjust_liquidity_reward( const account_object& owner, const asset& volume, bool is_sdb )
-{
-   const auto& ridx = get_index< liquidity_reward_balance_index >().indices().get< by_owner >();
-   auto itr = ridx.find( owner.id );
-   if( itr != ridx.end() )
-   {
-      modify<liquidity_reward_balance_object>( *itr, [&]( liquidity_reward_balance_object& r )
-      {
-         if( head_block_time() - r.last_update >= BMCHAIN_LIQUIDITY_TIMEOUT_SEC )
-         {
-            r.sbd_volume = 0;
-            r.steem_volume = 0;
-            r.weight = 0;
-         }
-
-         if( is_sdb )
-            r.sbd_volume += volume.amount.value;
-         else
-            r.steem_volume += volume.amount.value;
-
-         r.update_weight( true );
-         r.last_update = head_block_time();
-      } );
-   }
-   else
-   {
-      create<liquidity_reward_balance_object>( [&](liquidity_reward_balance_object& r )
-      {
-         r.owner = owner.id;
-         if( is_sdb )
-            r.sbd_volume = volume.amount.value;
-         else
-            r.steem_volume = volume.amount.value;
-
-         r.update_weight( true );
-         r.last_update = head_block_time();
-      } );
-   }
-}
-
-
 bool database::fill_order( const limit_order_object& order, const asset& pays, const asset& receives )
 {
    try
@@ -3376,35 +3057,6 @@ void database::adjust_balance( const account_object& a, const asset& delta )
          case BMT_SYMBOL:
             acnt.balance += delta;
             break;
-         case SBD_SYMBOL:
-            if( a.sbd_seconds_last_update != head_block_time() )
-            {
-               acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) * (head_block_time() - a.sbd_seconds_last_update).to_seconds();
-               acnt.sbd_seconds_last_update = head_block_time();
-
-               if( acnt.sbd_seconds > 0 &&
-                   (acnt.sbd_seconds_last_update - acnt.sbd_last_interest_payment).to_seconds() > BMCHAIN_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
-               {
-                  auto interest = acnt.sbd_seconds / BMCHAIN_SECONDS_PER_YEAR;
-                  interest *= get_dynamic_global_properties().sbd_interest_rate;
-                  interest /= BMCHAIN_100_PERCENT;
-                  asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                  acnt.sbd_balance += interest_paid;
-                  acnt.sbd_seconds = 0;
-                  acnt.sbd_last_interest_payment = head_block_time();
-
-                  if(interest > 0)
-                     push_virtual_operation( interest_operation( a.name, interest_paid ) );
-
-                  modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& props)
-                  {
-                     props.current_sbd_supply += interest_paid;
-                     props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-                  } );
-               }
-            }
-            acnt.sbd_balance += delta;
-            break;
          default:
             FC_ASSERT( false, "invalid symbol" );
       }
@@ -3421,35 +3073,6 @@ void database::adjust_savings_balance( const account_object& a, const asset& del
          case BMT_SYMBOL:
             acnt.savings_balance += delta;
             break;
-         case SBD_SYMBOL:
-            if( a.savings_sbd_seconds_last_update != head_block_time() )
-            {
-               acnt.savings_sbd_seconds += fc::uint128_t(a.savings_sbd_balance.amount.value) * (head_block_time() - a.savings_sbd_seconds_last_update).to_seconds();
-               acnt.savings_sbd_seconds_last_update = head_block_time();
-
-               if( acnt.savings_sbd_seconds > 0 &&
-                   (acnt.savings_sbd_seconds_last_update - acnt.savings_sbd_last_interest_payment).to_seconds() > BMCHAIN_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
-               {
-                  auto interest = acnt.savings_sbd_seconds / BMCHAIN_SECONDS_PER_YEAR;
-                  interest *= get_dynamic_global_properties().sbd_interest_rate;
-                  interest /= BMCHAIN_100_PERCENT;
-                  asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                  acnt.savings_sbd_balance += interest_paid;
-                  acnt.savings_sbd_seconds = 0;
-                  acnt.savings_sbd_last_interest_payment = head_block_time();
-
-                  if(interest > 0)
-                     push_virtual_operation( interest_operation( a.name, interest_paid ) );
-
-                  modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& props)
-                  {
-                     props.current_sbd_supply += interest_paid;
-                     props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-                  } );
-               }
-            }
-            acnt.savings_sbd_balance += delta;
-            break;
          default:
             FC_ASSERT( !"invalid symbol" );
       }
@@ -3465,9 +3088,6 @@ void database::adjust_reward_balance( const account_object& a, const asset& delt
       {
          case BMT_SYMBOL:
             acnt.reward_steem_balance += delta;
-            break;
-         case SBD_SYMBOL:
-            acnt.reward_sbd_balance += delta;
             break;
          default:
             FC_ASSERT( false, "invalid symbol" );
@@ -3496,11 +3116,6 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
             assert( props.current_supply.amount.value >= 0 );
             break;
          }
-         case SBD_SYMBOL:
-            props.current_sbd_supply += delta;
-            props.virtual_supply = props.current_sbd_supply * get_feed_history().current_median_history + props.current_supply;
-            assert( props.current_sbd_supply.amount.value >= 0 );
-            break;
          default:
             FC_ASSERT( false, "invalid symbol" );
       }
@@ -3514,8 +3129,6 @@ asset database::get_balance( const account_object& a, asset_symbol_type symbol )
    {
       case BMT_SYMBOL:
          return a.balance;
-      case SBD_SYMBOL:
-         return a.sbd_balance;
       default:
          FC_ASSERT( false, "invalid symbol" );
    }
@@ -3527,8 +3140,6 @@ asset database::get_savings_balance( const account_object& a, asset_symbol_type 
    {
       case BMT_SYMBOL:
          return a.savings_balance;
-      case SBD_SYMBOL:
-         return a.savings_sbd_balance;
       default:
          FC_ASSERT( !"invalid symbol" );
    }
@@ -3538,65 +3149,6 @@ void database::init_hardforks()
 {
    _hardfork_times[ 0 ] = fc::time_point_sec( BMCHAIN_GENESIS_TIME );
    _hardfork_versions[ 0 ] = hardfork_version( 0, 0 );
-    /*FC_ASSERT( STEEMIT_HARDFORK_0_1 == 1, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_1 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_1_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_1 ] = STEEMIT_HARDFORK_0_1_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_2 == 2, "Invlaid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_2 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_2_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_2 ] = STEEMIT_HARDFORK_0_2_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_3 == 3, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_3 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_3_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_3 ] = STEEMIT_HARDFORK_0_3_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_4 == 4, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_4 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_4_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_4 ] = STEEMIT_HARDFORK_0_4_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_5 == 5, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_5 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_5_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_5 ] = STEEMIT_HARDFORK_0_5_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_6 == 6, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_6 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_6_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_6 ] = STEEMIT_HARDFORK_0_6_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_7 == 7, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_7 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_7_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_7 ] = STEEMIT_HARDFORK_0_7_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_8 == 8, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_8 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_8_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_8 ] = STEEMIT_HARDFORK_0_8_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_9 == 9, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_9 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_9_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_9 ] = STEEMIT_HARDFORK_0_9_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_10 == 10, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_10 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_10_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_10 ] = STEEMIT_HARDFORK_0_10_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_11 == 11, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_11 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_11_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_11 ] = STEEMIT_HARDFORK_0_11_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_12 == 12, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_12 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_12_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_12 ] = STEEMIT_HARDFORK_0_12_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_13 == 13, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_13 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_13_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_13 ] = STEEMIT_HARDFORK_0_13_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_14 == 14, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_14 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_14_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_14 ] = STEEMIT_HARDFORK_0_14_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_15 == 15, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_15 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_15_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_15 ] = STEEMIT_HARDFORK_0_15_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_16 == 16, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_16 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_16_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_16 ] = STEEMIT_HARDFORK_0_16_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_17 == 17, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_17 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_17_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_17 ] = STEEMIT_HARDFORK_0_17_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_18 == 18, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_18 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_18_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_18 ] = STEEMIT_HARDFORK_0_18_VERSION;
-    FC_ASSERT( STEEMIT_HARDFORK_0_19 == 19, "Invalid hardfork configuration" );
-    _hardfork_times[ STEEMIT_HARDFORK_0_19 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_19_TIME );
-    _hardfork_versions[ STEEMIT_HARDFORK_0_19 ] = STEEMIT_HARDFORK_0_19_VERSION;*/
-
-
    const auto& hardforks = get_hardfork_property_object();
    FC_ASSERT( hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("STEEMIT_NUM_HARDFORKS",STEEMIT_NUM_HARDFORKS) );
    FC_ASSERT( _hardfork_versions[ hardforks.last_hardfork ] <= BMCHAIN_BLOCKCHAIN_VERSION, "Blockchain version is older than last applied hardfork" );
@@ -3661,14 +3213,6 @@ void database::apply_hardfork( uint32_t hardfork )
    push_virtual_operation( hardfork_operation( hardfork ), true );
 }
 
-void database::retally_liquidity_weight() {
-   const auto& ridx = get_index< liquidity_reward_balance_index >().indices().get< by_owner >();
-   for( const auto& i : ridx ) {
-      modify( i, []( liquidity_reward_balance_object& o ){
-         o.update_weight(true/*HAS HARDFORK10 if this method is called*/);
-      });
-   }
-}
 
 /**
  * Verifies all supply invariantes check out
@@ -3679,7 +3223,6 @@ void database::validate_invariants()const
    {
       const auto& account_idx = get_index<account_index>().indices().get<by_name>();
       asset total_supply = asset( 0, BMT_SYMBOL );
-      asset total_sbd = asset( 0, SBD_SYMBOL );
       asset total_vesting = asset( 0, REP_SYMBOL );
       asset pending_vesting_steem = asset( 0, BMT_SYMBOL );
       share_type total_vsf_votes = share_type( 0 );
@@ -3696,9 +3239,6 @@ void database::validate_invariants()const
          total_supply += itr->balance;
          total_supply += itr->savings_balance;
          total_supply += itr->reward_steem_balance;
-         total_sbd += itr->sbd_balance;
-         total_sbd += itr->savings_sbd_balance;
-         total_sbd += itr->reward_sbd_balance;
          total_vesting += itr->vesting_shares;
          total_vesting += itr->reward_vesting_balance;
          pending_vesting_steem += itr->reward_vesting_steem;
@@ -3715,8 +3255,6 @@ void database::validate_invariants()const
       {
          if( itr->amount.symbol == BMT_SYMBOL )
             total_supply += itr->amount;
-         else if( itr->amount.symbol == SBD_SYMBOL )
-            total_sbd += itr->amount;
          else
             FC_ASSERT( false, "Encountered illegal symbol in convert_request_object" );
       }
@@ -3729,10 +3267,6 @@ void database::validate_invariants()const
          {
             total_supply += asset( itr->for_sale, BMT_SYMBOL );
          }
-         else if ( itr->sell_price.base.symbol == SBD_SYMBOL )
-         {
-            total_sbd += asset( itr->for_sale, SBD_SYMBOL );
-         }
       }
 
       const auto& escrow_idx = get_index< escrow_index >().indices().get< by_id >();
@@ -3740,14 +3274,11 @@ void database::validate_invariants()const
       for( auto itr = escrow_idx.begin(); itr != escrow_idx.end(); ++itr )
       {
          total_supply += itr->steem_balance;
-         total_sbd += itr->sbd_balance;
 
          if( itr->pending_fee.symbol == BMT_SYMBOL )
             total_supply += itr->pending_fee;
-         else if( itr->pending_fee.symbol == SBD_SYMBOL )
-            total_sbd += itr->pending_fee;
          else
-            FC_ASSERT( false, "found escrow pending fee that is not SBD or STEEM" );
+            FC_ASSERT( false, "found escrow pending fee that is not BMT" );
       }
 
       const auto& savings_withdraw_idx = get_index< savings_withdraw_index >().indices().get< by_id >();
@@ -3756,10 +3287,8 @@ void database::validate_invariants()const
       {
          if( itr->amount.symbol == BMT_SYMBOL )
             total_supply += itr->amount;
-         else if( itr->amount.symbol == SBD_SYMBOL )
-            total_sbd += itr->amount;
          else
-            FC_ASSERT( false, "found savings withdraw that is not SBD or STEEM" );
+            FC_ASSERT( false, "found savings withdraw that is not BMT" );
       }
       fc::uint128_t total_rshares2;
 
@@ -3793,7 +3322,6 @@ void database::validate_invariants()const
       total_supply += gpo.total_vesting_fund_steem + gpo.total_reward_fund_steem + gpo.pending_rewarded_vesting_steem;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
-      FC_ASSERT( gpo.current_sbd_supply == total_sbd, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("total_sbd",total_sbd) );
       FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_vesting, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_vesting",total_vesting) );
       FC_ASSERT( gpo.total_vesting_shares.amount == total_vsf_votes, "", ("total_vesting_shares",gpo.total_vesting_shares)("total_vsf_votes",total_vsf_votes) );
       FC_ASSERT( gpo.pending_rewarded_vesting_steem == pending_vesting_steem, "", ("pending_rewarded_vesting_steem",gpo.pending_rewarded_vesting_steem)("pending_vesting_steem", pending_vesting_steem));
@@ -3801,8 +3329,7 @@ void database::validate_invariants()const
       FC_ASSERT( gpo.virtual_supply >= gpo.current_supply );
       if ( !get_feed_history().current_median_history.is_null() )
       {
-         FC_ASSERT( gpo.current_sbd_supply * get_feed_history().current_median_history + gpo.current_supply
-            == gpo.virtual_supply, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("get_feed_history().current_median_history",get_feed_history().current_median_history)("gpo.current_supply",gpo.current_supply)("gpo.virtual_supply",gpo.virtual_supply) );
+         FC_ASSERT( gpo.current_supply == gpo.virtual_supply, "", ("get_feed_history().current_median_history",get_feed_history().current_median_history)("gpo.current_supply",gpo.current_supply)("gpo.virtual_supply",gpo.virtual_supply) );
       }
    }
    FC_CAPTURE_LOG_AND_RETHROW( (head_block_num()) );

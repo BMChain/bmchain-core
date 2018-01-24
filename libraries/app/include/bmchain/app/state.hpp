@@ -69,8 +69,8 @@ namespace bmchain { namespace app {
 
       string                      url; /// /category/@rootauthor/root_permlink#author/permlink
       string                      root_title;
-      asset                       pending_payout_value; ///< sbd
-      asset                       total_pending_payout_value; ///< sbd including replies
+      asset                       pending_payout_value;
+      asset                       total_pending_payout_value;
       vector<vote_state>          active_votes;
       vector<string>              replies; ///< author/slug mapping
       share_type                  author_reputation = 0;
@@ -126,7 +126,6 @@ namespace bmchain { namespace app {
    struct order_history_item {
       time_point_sec time;
       string         type; // buy or sell
-      asset          sbd_quantity;
       asset          steem_quantity;
       double         real_price = 0;
    };
@@ -194,6 +193,6 @@ FC_REFLECT_DERIVED( bmchain::app::discussion, (bmchain::app::comment_api_obj), (
 FC_REFLECT( bmchain::app::state, (current_route)(props)(tag_idx)(tags)(content)(accounts)(pow_queue)(witnesses)(discussion_idx)(witness_schedule)(feed_price)(error)(market_data) )
 
 FC_REFLECT_DERIVED( bmchain::app::extended_limit_order, (bmchain::app::limit_order_api_obj), (real_price)(rewarded) )
-FC_REFLECT( bmchain::app::order_history_item, (time)(type)(sbd_quantity)(steem_quantity)(real_price) );
+FC_REFLECT( bmchain::app::order_history_item, (time)(type)(steem_quantity)(real_price) );
 FC_REFLECT( bmchain::app::market, (bids)(asks)(history)(price_history)(available_candlesticks)(available_zoom)(current_candlestick)(current_zoom) )
 FC_REFLECT( bmchain::app::candle_stick, (open_time)(period)(high)(low)(open)(close)(steem_volume)(dollar_volume) );

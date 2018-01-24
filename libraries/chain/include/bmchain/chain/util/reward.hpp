@@ -23,7 +23,6 @@ struct comment_reward_context
 {
    share_type rshares;
    uint16_t   reward_weight = 0;
-   asset      max_sbd;
    uint128_t  total_reward_shares2;
    asset      total_reward_fund_steem;
    price      current_steem_price;
@@ -42,7 +41,7 @@ uint128_t evaluate_reward_curve( const uint128_t& rshares, const curve_id& curve
 
 inline bool is_comment_payout_dust( const price& p, uint64_t steem_payout )
 {
-   return to_sbd( p, asset( steem_payout, BMT_SYMBOL ) ) < BMCHAIN_MIN_PAYOUT_SBD;
+   return asset( steem_payout, BMT_SYMBOL ) < BMCHAIN_MIN_PAYOUT;
 }
 
 } } } // bmchain::chain::util
@@ -50,7 +49,6 @@ inline bool is_comment_payout_dust( const price& p, uint64_t steem_payout )
 FC_REFLECT( bmchain::chain::util::comment_reward_context,
    (rshares)
    (reward_weight)
-   (max_sbd)
    (total_reward_shares2)
    (total_reward_fund_steem)
    (current_steem_price)

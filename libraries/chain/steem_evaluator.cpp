@@ -411,7 +411,6 @@ void comment_options_evaluator::do_apply( const comment_options_operation& o )
    FC_ASSERT( comment.allow_curation_rewards >= o.allow_curation_rewards, "Curation rewards cannot be re-enabled." );
    FC_ASSERT( comment.allow_votes >= o.allow_votes, "Voting cannot be re-enabled." );
    FC_ASSERT( comment.max_accepted_payout >= o.max_accepted_payout, "A comment cannot accept a greater payout." );
-   FC_ASSERT( comment.percent_steem_dollars >= o.percent_steem_dollars, "A comment cannot accept a greater percent SBD." );
 
    _db.modify( comment, [&]( comment_object& c ) {
        c.max_accepted_payout   = o.max_accepted_payout;
@@ -824,17 +823,12 @@ void escrow_transfer_evaluator::do_apply( const escrow_transfer_operation& o )
       FC_ASSERT( o.escrow_expiration > _db.head_block_time(), "The escrow expiration must be after head block time." );
 
       asset steem_spent = o.steem_amount;
-      asset sbd_spent = o.sbd_amount;
       if( o.fee.symbol == BMT_SYMBOL )
          steem_spent += o.fee;
-      else
-         sbd_spent += o.fee;
 
       FC_ASSERT( from_account.balance >= steem_spent, "Account cannot cover STEEM costs of escrow. Required: ${r} Available: ${a}", ("r",steem_spent)("a",from_account.balance) );
-      FC_ASSERT( from_account.sbd_balance >= sbd_spent, "Account cannot cover SBD costs of escrow. Required: ${r} Available: ${a}", ("r",sbd_spent)("a",from_account.sbd_balance) );
 
       _db.adjust_balance( from_account, -steem_spent );
-      _db.adjust_balance( from_account, -sbd_spent );
 
       _db.create<escrow_object>([&]( escrow_object& esc )
       {
@@ -844,7 +838,6 @@ void escrow_transfer_evaluator::do_apply( const escrow_transfer_operation& o )
          esc.agent                  = o.agent;
          esc.ratification_deadline  = o.ratification_deadline;
          esc.escrow_expiration      = o.escrow_expiration;
-         esc.sbd_balance            = o.sbd_amount;
          esc.steem_balance          = o.steem_amount;
          esc.pending_fee            = o.fee;
       });
@@ -894,7 +887,6 @@ void escrow_approve_evaluator::do_apply( const escrow_approve_operation& o )
       {
          const auto& from_account = _db.get_account( o.from );
          _db.adjust_balance( from_account, escrow.steem_balance );
-         _db.adjust_balance( from_account, escrow.sbd_balance );
          _db.adjust_balance( from_account, escrow.pending_fee );
 
          _db.remove( escrow );
@@ -943,7 +935,6 @@ void escrow_release_evaluator::do_apply( const escrow_release_operation& o )
 
       const auto& e = _db.get_escrow( o.from, o.escrow_id );
       FC_ASSERT( e.steem_balance >= o.steem_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.steem_amount)("b", e.steem_balance) );
-      FC_ASSERT( e.sbd_balance >= o.sbd_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.sbd_amount)("b", e.sbd_balance) );
       FC_ASSERT( e.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).", ("o", o.to)("e", e.to) );
       FC_ASSERT( e.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).", ("o", o.agent)("e", e.agent) );
       FC_ASSERT( o.receiver == e.from || o.receiver == e.to, "Funds must be released to 'from' (${f}) or 'to' (${t})", ("f", e.from)("t", e.to) );
@@ -974,15 +965,13 @@ void escrow_release_evaluator::do_apply( const escrow_release_operation& o )
       // If escrow expires and there is no dispute, either party can release funds to either party.
 
       _db.adjust_balance( receiver_account, o.steem_amount );
-      _db.adjust_balance( receiver_account, o.sbd_amount );
 
       _db.modify( e, [&]( escrow_object& esc )
       {
          esc.steem_balance -= o.steem_amount;
-         esc.sbd_balance -= o.sbd_amount;
       });
 
-      if( e.steem_balance.amount == 0 && e.sbd_balance.amount == 0 )
+      if( e.steem_balance.amount == 0 )
       {
          _db.remove( e );
       }
@@ -1726,34 +1715,10 @@ void pow2_evaluator::do_apply( const pow2_operation& o )
 
 void feed_publish_evaluator::do_apply( const feed_publish_operation& o )
 {
-  const auto& witness = _db.get_witness( o.publisher );
-  _db.modify( witness, [&]( witness_object& w ){
-      w.sbd_exchange_rate = o.exchange_rate;
-      w.last_sbd_exchange_update = _db.head_block_time();
-  });
 }
 
 void convert_evaluator::do_apply( const convert_operation& o )
 {
-  const auto& owner = _db.get_account( o.owner );
-  FC_ASSERT( _db.get_balance( owner, o.amount.symbol ) >= o.amount, "Account does not have sufficient balance for conversion." );
-
-  _db.adjust_balance( owner, -o.amount );
-
-  const auto& fhistory = _db.get_feed_history();
-  FC_ASSERT( !fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feed." );
-
-  auto steemit_conversion_delay = BMCHAIN_CONVERSION_DELAY_PRE_HF_16;
-  steemit_conversion_delay = BMCHAIN_CONVERSION_DELAY;
-
-  _db.create<convert_request_object>( [&]( convert_request_object& obj )
-  {
-      obj.owner           = o.owner;
-      obj.requestid       = o.requestid;
-      obj.amount          = o.amount;
-      obj.conversion_date = _db.head_block_time() + steemit_conversion_delay;
-  });
-
 }
 
 void limit_order_create_evaluator::do_apply( const limit_order_create_operation& o )
@@ -2093,8 +2058,6 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
 
    FC_ASSERT( op.reward_steem <= acnt.reward_steem_balance, "Cannot claim that much STEEM. Claim: ${c} Actual: ${a}",
       ("c", op.reward_steem)("a", acnt.reward_steem_balance) );
-   FC_ASSERT( op.reward_sbd <= acnt.reward_sbd_balance, "Cannot claim that much SBD. Claim: ${c} Actual: ${a}",
-      ("c", op.reward_sbd)("a", acnt.reward_sbd_balance) );
    FC_ASSERT( op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
       ("c", op.reward_vests)("a", acnt.reward_vesting_balance) );
 
@@ -2106,9 +2069,7 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
          / uint128_t( acnt.reward_vesting_balance.amount.value ) ).to_uint64(), BMT_SYMBOL );
 
    _db.adjust_reward_balance( acnt, -op.reward_steem );
-   _db.adjust_reward_balance( acnt, -op.reward_sbd );
    _db.adjust_balance( acnt, op.reward_steem );
-   _db.adjust_balance( acnt, op.reward_sbd );
 
    _db.modify( acnt, [&]( account_object& a )
    {

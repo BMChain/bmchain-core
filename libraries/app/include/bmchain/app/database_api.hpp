@@ -36,14 +36,7 @@ struct order
    price                order_price;
    double               real_price; // dollars per steem
    share_type           steem;
-   share_type           sbd;
    fc::time_point_sec   created;
-};
-
-struct order_book
-{
-   vector< order >      asks;
-   vector< order >      bids;
 };
 
 struct api_context;
@@ -52,12 +45,6 @@ struct scheduled_hardfork
 {
    hardfork_version     hf_version;
    fc::time_point_sec   live_time;
-};
-
-struct liquidity_balance
-{
-   string               account;
-   fc::uint128_t        weight;
 };
 
 struct withdraw_route
@@ -321,24 +308,6 @@ class database_api
        */
       uint64_t get_witness_count()const;
 
-      ////////////
-      // Market //
-      ////////////
-
-      /**
-       * @breif Gets the current order book for STEEM:SBD market
-       * @param limit Maximum number of orders for each side of the spread to return -- Must not exceed 1000
-       */
-      order_book get_order_book( uint32_t limit = 1000 )const;
-      vector<extended_limit_order> get_open_orders( string owner )const;
-
-      /**
-       * @breif Gets the current liquidity reward queue.
-       * @param start_account The account to start the list from, or "" to get the head of the queue
-       * @param limit Maxmimum number of accounts to return -- Must not exceed 1000
-       */
-      vector< liquidity_balance > get_liquidity_queue( string start_account, uint32_t limit = 1000 )const;
-
       ////////////////////////////
       // Authority / validation //
       ////////////////////////////
@@ -501,10 +470,8 @@ class database_api
 
 } }
 
-FC_REFLECT( bmchain::app::order, (order_price)(real_price)(steem)(sbd)(created) );
-FC_REFLECT( bmchain::app::order_book, (asks)(bids) );
+FC_REFLECT( bmchain::app::order, (order_price)(real_price)(steem)(created) );
 FC_REFLECT( bmchain::app::scheduled_hardfork, (hf_version)(live_time) );
-FC_REFLECT( bmchain::app::liquidity_balance, (account)(weight) );
 FC_REFLECT( bmchain::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) );
 
 FC_REFLECT( bmchain::app::discussion_query, (tag)(filter_tags)(select_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(owner) );
@@ -576,11 +543,6 @@ FC_API(bmchain::app::database_api,
    (get_vesting_delegations)
    (get_expiring_vesting_delegations)
    (get_best_authors)
-
-   // Market
-   (get_order_book)
-   (get_open_orders)
-   (get_liquidity_queue)
 
    // Authority / validation
    (get_transaction_hex)
