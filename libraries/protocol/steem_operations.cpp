@@ -121,7 +121,7 @@ namespace bmchain { namespace protocol {
    {
       validate_account_name( author );
       FC_ASSERT( percent_steem_dollars <= BMCHAIN_100_PERCENT, "Percent cannot exceed 100%" );
-      FC_ASSERT( max_accepted_payout.symbol == SBD_SYMBOL, "Max accepted payout must be in SBD" );
+      FC_ASSERT( max_accepted_payout.symbol == BMT_SYMBOL, "Max accepted payout must be in SBD" );
       FC_ASSERT( max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout" );
       validate_permlink( permlink );
       for( auto& e : extensions )
@@ -352,8 +352,8 @@ namespace bmchain { namespace protocol {
    void feed_publish_operation::validate()const
    {
       validate_account_name( publisher );
-      FC_ASSERT( ( is_asset_type( exchange_rate.base, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, SBD_SYMBOL ) )
-         || ( is_asset_type( exchange_rate.base, SBD_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ),
+      FC_ASSERT( ( is_asset_type( exchange_rate.base, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) )
+         || ( is_asset_type( exchange_rate.base, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ),
          "Price feed must be a STEEM/SBD price" );
       exchange_rate.validate();
    }
@@ -361,8 +361,8 @@ namespace bmchain { namespace protocol {
    void limit_order_create_operation::validate()const
    {
       validate_account_name( owner );
-      FC_ASSERT( ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( min_to_receive, SBD_SYMBOL ) )
-         || ( is_asset_type( amount_to_sell, SBD_SYMBOL ) && is_asset_type( min_to_receive, BMT_SYMBOL ) ),
+      FC_ASSERT( ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( min_to_receive, BMT_SYMBOL ) )
+         || ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( min_to_receive, BMT_SYMBOL ) ),
          "Limit order must be for the STEEM:SBD market" );
       (amount_to_sell / min_to_receive).validate();
    }
@@ -372,8 +372,8 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( amount_to_sell.symbol == exchange_rate.base.symbol, "Sell asset must be the base of the price" );
       exchange_rate.validate();
 
-      FC_ASSERT( ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, SBD_SYMBOL ) ) ||
-                 ( is_asset_type( amount_to_sell, SBD_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ),
+      FC_ASSERT( ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ) ||
+                 ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ),
                  "Limit order must be for the STEEM:SBD market" );
 
       FC_ASSERT( (amount_to_sell * exchange_rate).amount > 0, "Amount to sell cannot round to 0 when traded" );
@@ -389,7 +389,7 @@ namespace bmchain { namespace protocol {
       validate_account_name( owner );
       /// only allow conversion from SBD to STEEM, allowing the opposite can enable traders to abuse
       /// market fluxuations through converting large quantities without moving the price.
-      FC_ASSERT( is_asset_type( amount, SBD_SYMBOL ), "Can only convert SBD to STEEM" );
+      FC_ASSERT( is_asset_type( amount, BMT_SYMBOL ), "Can only convert SBD to STEEM" );
       FC_ASSERT( amount.amount > 0, "Must convert some SBD" );
    }
 
@@ -411,7 +411,7 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( fee.amount >= 0, "fee cannot be negative" );
       FC_ASSERT( steem_amount.amount >= 0, "steem amount cannot be negative" );
       FC_ASSERT( from != agent && to != agent, "agent must be a third party" );
-      FC_ASSERT( (fee.symbol == BMT_SYMBOL) || (fee.symbol == SBD_SYMBOL), "fee must be BMT" );
+      FC_ASSERT( (fee.symbol == BMT_SYMBOL) || (fee.symbol == BMT_SYMBOL), "fee must be BMT" );
       FC_ASSERT( steem_amount.symbol == BMT_SYMBOL, "steem amount must contain BMT" );
       FC_ASSERT( ratification_deadline < escrow_expiration, "ratification deadline must be before escrow expiration" );
       if ( json_meta.size() > 0 )
@@ -480,7 +480,7 @@ namespace bmchain { namespace protocol {
       validate_account_name( from );
       validate_account_name( to );
       FC_ASSERT( amount.amount > 0 );
-      FC_ASSERT( amount.symbol == BMT_SYMBOL || amount.symbol == SBD_SYMBOL );
+      FC_ASSERT( amount.symbol == BMT_SYMBOL || amount.symbol == BMT_SYMBOL );
       FC_ASSERT( memo.size() < BMCHAIN_MAX_MEMO_SIZE, "Memo is too large" );
       FC_ASSERT( fc::is_utf8( memo ), "Memo is not UTF8" );
    }
@@ -488,7 +488,7 @@ namespace bmchain { namespace protocol {
       validate_account_name( from );
       validate_account_name( to );
       FC_ASSERT( amount.amount > 0 );
-      FC_ASSERT( amount.symbol == BMT_SYMBOL || amount.symbol == SBD_SYMBOL );
+      FC_ASSERT( amount.symbol == BMT_SYMBOL || amount.symbol == BMT_SYMBOL );
       FC_ASSERT( memo.size() < BMCHAIN_MAX_MEMO_SIZE, "Memo is too large" );
       FC_ASSERT( fc::is_utf8( memo ), "Memo is not UTF8" );
    }

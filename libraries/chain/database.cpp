@@ -1482,8 +1482,8 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             adjust_total_payout( comment, steem + asset( vesting_steem, BMT_SYMBOL ), asset( curation_tokens, BMT_SYMBOL ), asset( total_beneficiary, BMT_SYMBOL ) );
 
-            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, SBD_SYMBOL ), steem, vest_created ) );
-            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, SBD_SYMBOL ) ) );
+            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, BMT_SYMBOL ), steem, vest_created ) );
+            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, BMT_SYMBOL ) ) );
 
 #ifndef IS_LOW_MEM
             modify( comment, [&]( comment_object& c )
@@ -2613,7 +2613,7 @@ try {
       return;
 
     modify( get_feed_history(), [&]( feed_history_object& fho ){
-        fho.current_median_history = price(asset(1000, SBD_SYMBOL), asset(1000, BMT_SYMBOL));
+        fho.current_median_history = price(asset(1000, BMT_SYMBOL), asset(1000, BMT_SYMBOL));
     });
 
 } FC_CAPTURE_AND_RETHROW() }

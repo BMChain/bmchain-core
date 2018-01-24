@@ -16,7 +16,7 @@ fc::variant_object get_config()
    result[ "IS_TEST_NET" ] = false;
 #endif
 
-   result["SBD_SYMBOL"] = SBD_SYMBOL;
+   result["BMT_SYMBOL"] = BMT_SYMBOL;
    result["BMCHAIN_100_PERCENT"] = BMCHAIN_100_PERCENT;
    result["BMCHAIN_1_PERCENT"] = BMCHAIN_1_PERCENT;
    result["BMCHAIN_1_TENTH_PERCENT"] = BMCHAIN_1_TENTH_PERCENT;
