@@ -158,7 +158,7 @@ namespace bmchain { namespace protocol {
    { try {
       validate_account_name( from );
       validate_account_name( to );
-      FC_ASSERT( amount.symbol != REP_SYMBOL, "transferring of Steem Power (STMP) is not allowed." );
+      FC_ASSERT( amount.symbol != REP_SYMBOL, "transferring of BMT (STMP) is not allowed." );
       FC_ASSERT( amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)" );
       FC_ASSERT( memo.size() < BMCHAIN_MAX_MEMO_SIZE, "Memo is too large" );
       FC_ASSERT( fc::is_utf8( memo ), "Memo is not UTF8" );

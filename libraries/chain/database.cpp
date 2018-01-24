@@ -973,7 +973,7 @@ asset database::create_vesting( const account_object& to_account, asset steem, b
       const auto& cprops = get_dynamic_global_properties();
 
       /**
-       *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
+       *  The ratio of total_vesting_shares / total_vesting_fund_bmt should not
        *  change as the result of the user adding funds
        *
        *  V / C  = (V+Vn) / (C+Cn)
@@ -1003,11 +1003,11 @@ asset database::create_vesting( const account_object& to_account, asset steem, b
          if( to_reward_balance )
          {
             props.pending_rewarded_vesting_shares += new_vesting;
-            props.pending_rewarded_vesting_steem += steem;
+            props.pending_rewarded_vesting_bmt += steem;
          }
          else
          {
-            props.total_vesting_fund_steem += steem;
+            props.total_vesting_fund_bmt += steem;
             props.total_vesting_shares += new_vesting;
          }
       } );
@@ -1170,7 +1170,7 @@ void database::clear_null_account_balance()
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
          g.total_vesting_shares -= null_account.vesting_shares;
-         g.total_vesting_fund_steem -= converted_steem;
+         g.total_vesting_fund_bmt -= converted_steem;
       });
 
       modify( null_account, [&]( account_object& a )
@@ -1196,7 +1196,7 @@ void database::clear_null_account_balance()
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
          g.pending_rewarded_vesting_shares -= null_account.reward_vesting_balance;
-         g.pending_rewarded_vesting_steem -= null_account.reward_vesting_bmt;
+         g.pending_rewarded_vesting_bmt -= null_account.reward_vesting_bmt;
       });
 
       modify( null_account, [&]( account_object& a )
@@ -1322,7 +1322,7 @@ void database::process_vesting_withdrawals()
 
                modify( cprops, [&]( dynamic_global_property_object& o )
                {
-                  o.total_vesting_fund_steem -= converted_steem;
+                  o.total_vesting_fund_bmt -= converted_steem;
                   o.total_vesting_shares.amount -= to_deposit;
                });
 
@@ -1355,7 +1355,7 @@ void database::process_vesting_withdrawals()
 
       modify( cprops, [&]( dynamic_global_property_object& o )
       {
-         o.total_vesting_fund_steem -= converted_steem;
+         o.total_vesting_fund_bmt -= converted_steem;
          o.total_vesting_shares.amount -= to_convert;
       });
 
@@ -3112,7 +3112,7 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
             asset new_vesting( (adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, BMT_SYMBOL );
             props.current_supply += delta + new_vesting;
             props.virtual_supply += delta + new_vesting;
-            props.total_vesting_fund_steem += new_vesting;
+            props.total_vesting_fund_bmt += new_vesting;
             assert( props.current_supply.amount.value >= 0 );
             break;
          }
@@ -3319,12 +3319,12 @@ void database::validate_invariants()const
            }
        }
 
-      total_supply += gpo.total_vesting_fund_steem + gpo.total_reward_fund_steem + gpo.pending_rewarded_vesting_steem;
+      total_supply += gpo.total_vesting_fund_bmt + gpo.total_reward_fund_steem + gpo.pending_rewarded_vesting_bmt;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
       FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_vesting, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_vesting",total_vesting) );
       FC_ASSERT( gpo.total_vesting_shares.amount == total_vsf_votes, "", ("total_vesting_shares",gpo.total_vesting_shares)("total_vsf_votes",total_vsf_votes) );
-      FC_ASSERT( gpo.pending_rewarded_vesting_steem == pending_vesting_steem, "", ("pending_rewarded_vesting_steem",gpo.pending_rewarded_vesting_steem)("pending_vesting_steem", pending_vesting_steem));
+      FC_ASSERT( gpo.pending_rewarded_vesting_bmt == pending_vesting_steem, "", ("pending_rewarded_vesting_bmt",gpo.pending_rewarded_vesting_bmt)("pending_vesting_steem", pending_vesting_steem));
 
       FC_ASSERT( gpo.virtual_supply >= gpo.current_supply );
       if ( !get_feed_history().current_median_history.is_null() )

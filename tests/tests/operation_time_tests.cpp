@@ -1379,12 +1379,12 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
       if ( db.get_account( witness_name ).vesting_shares.amount.value == 0 )
       {
          new_vesting_steem += witness_pay;
-         new_vesting_shares += witness_pay * ( gpo.total_vesting_shares / gpo.total_vesting_fund_steem );
+         new_vesting_shares += witness_pay * ( gpo.total_vesting_shares / gpo.total_vesting_fund_bmt );
       }
 
       auto new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_steem;
       new_rewards += gpo.total_reward_fund_steem;
-      new_vesting_steem += gpo.total_vesting_fund_steem;
+      new_vesting_steem += gpo.total_vesting_fund_bmt;
 
       generate_block();
 
@@ -1393,7 +1393,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
       BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
       BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
       BOOST_REQUIRE( gpo.total_reward_fund_steem.amount.value == new_rewards.amount.value );
-      BOOST_REQUIRE( gpo.total_vesting_fund_steem.amount.value == new_vesting_steem.amount.value );
+      BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_steem.amount.value );
       BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == new_vesting_shares.amount.value );
       BOOST_REQUIRE( db.get_account( witness_name ).balance.amount.value == ( old_witness_balance + witness_pay ).amount.value );
 
@@ -1424,7 +1424,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
          new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_steem;
          new_rewards += gpo.total_reward_fund_steem;
-         new_vesting_steem += gpo.total_vesting_fund_steem;
+         new_vesting_steem += gpo.total_vesting_fund_bmt;
 
          generate_block();
 
@@ -1433,7 +1433,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
          BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.total_reward_fund_steem.amount.value == new_rewards.amount.value );
-         BOOST_REQUIRE( gpo.total_vesting_fund_steem.amount.value == new_vesting_steem.amount.value );
+         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_steem.amount.value );
          BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == new_vesting_shares.amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).balance.amount.value == ( old_witness_balance + witness_pay ).amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).vesting_shares.amount.value == ( old_witness_shares + witness_pay_shares ).amount.value );
@@ -1467,7 +1467,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
          new_supply = gpo.current_supply + new_rewards + witness_pay + new_vesting_steem;
          new_rewards += gpo.total_reward_fund_steem;
-         new_vesting_steem += gpo.total_vesting_fund_steem;
+         new_vesting_steem += gpo.total_vesting_fund_bmt;
 
          generate_block();
 
@@ -1476,7 +1476,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
          BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.total_reward_fund_steem.amount.value == new_rewards.amount.value );
-         BOOST_REQUIRE( gpo.total_vesting_fund_steem.amount.value == new_vesting_steem.amount.value );
+         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_steem.amount.value );
          BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == new_vesting_shares.amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).balance.amount.value == ( old_witness_balance + witness_pay ).amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).vesting_shares.amount.value == ( old_witness_shares + witness_pay_shares ).amount.value );
@@ -1498,7 +1498,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
          new_vesting_shares = gpo.total_vesting_shares + witness_pay_shares;
          new_supply = gpo.current_supply + new_rewards + new_vesting_steem;
          new_rewards += gpo.total_reward_fund_steem;
-         new_vesting_steem += gpo.total_vesting_fund_steem;
+         new_vesting_steem += gpo.total_vesting_fund_bmt;
 
          generate_block();
 
@@ -1507,7 +1507,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
          BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
          BOOST_REQUIRE( gpo.total_reward_fund_steem.amount.value == new_rewards.amount.value );
-         BOOST_REQUIRE( gpo.total_vesting_fund_steem.amount.value == new_vesting_steem.amount.value );
+         BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == new_vesting_steem.amount.value );
          BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == new_vesting_shares.amount.value );
          BOOST_REQUIRE( db.get_account( witness_name ).vesting_shares.amount.value == ( old_witness_shares + witness_pay_shares ).amount.value );
 
@@ -1516,7 +1516,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
       virtual_supply = gpo.virtual_supply;
       vesting_shares = gpo.total_vesting_shares;
-      vesting_steem = gpo.total_vesting_fund_steem;
+      vesting_steem = gpo.total_vesting_fund_bmt;
       reward_bmt = gpo.total_reward_fund_steem;
 
       witness_name = db.get_scheduled_witness(1);
@@ -1526,7 +1526,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
 
       gpo = db.get_dynamic_global_properties();
 
-      BOOST_REQUIRE_EQUAL( gpo.total_vesting_fund_steem.amount.value,
+      BOOST_REQUIRE_EQUAL( gpo.total_vesting_fund_bmt.amount.value,
          ( vesting_steem.amount.value
             + ( ( ( uint128_t( virtual_supply.amount.value ) / 10 ) / BMCHAIN_BLOCKS_PER_YEAR ) * 9 )
             + ( uint128_t( virtual_supply.amount.value ) / 100 / BMCHAIN_BLOCKS_PER_YEAR ) ).to_uint64() );
@@ -1805,7 +1805,7 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
             gpo.current_supply += ASSET( "2.000 TESTS" );
             gpo.virtual_supply += ASSET( "3.000 TESTS" );
             gpo.pending_rewarded_vesting_shares += ASSET( "1.000000 VESTS" );
-            gpo.pending_rewarded_vesting_steem += ASSET( "1.000 TESTS" );
+            gpo.pending_rewarded_vesting_bmt += ASSET( "1.000 TESTS" );
          });
       });
 

@@ -1012,8 +1012,8 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 {
    const auto& account = _db.get_account( o.account );
 
-   FC_ASSERT( account.vesting_shares >= asset( 0, REP_SYMBOL ), "Account does not have sufficient Steem Power for withdraw." );
-   FC_ASSERT( account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares, "Account does not have sufficient Steem Power for withdraw." );
+   FC_ASSERT( account.vesting_shares >= asset( 0, REP_SYMBOL ), "Account does not have sufficient BMT for withdraw." );
+   FC_ASSERT( account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares, "Account does not have sufficient BMT for withdraw." );
 
    if( !account.mined )
    {
@@ -1024,7 +1024,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
       min_vests.amount.value *= 10;
 
       FC_ASSERT( account.vesting_shares > min_vests && o.vesting_shares.amount == 0,
-                 "Account registered by another account requires 10x account creation fee worth of Steem Power before it can be powered down." );
+                 "Account registered by another account requires 10x account creation fee worth of BMT before it can be powered down." );
    }
 
    if( o.vesting_shares.amount == 0 )
@@ -1270,7 +1270,7 @@ try {
    int64_t abs_rshares    = ((effective_vesting_shares * used_power) / (BMCHAIN_100_PERCENT)).to_uint64();
 
    FC_ASSERT(abs_rshares > BMCHAIN_VOTE_DUST_THRESHOLD || o.weight == 0,
-             "Voting weight is too small, please accumulate more voting power or steem power.");
+             "Voting weight is too small, please accumulate more voting power or BMT.");
 
    // Lazily delete vote
    if( itr != comment_vote_idx.end() && itr->num_changes == -1 )
@@ -1366,7 +1366,7 @@ try {
 
          if( curation_reward_eligible )
          {
-            if( comment.created < fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME) ) {
+            if( comment.created < fc::time_point_sec(BMCHAIN_HARDFORK_0_6_REVERSE_AUCTION_TIME) ) {
                u512 rshares3(rshares);
                u256 total2( comment.abs_rshares.value );
 
@@ -1384,7 +1384,7 @@ try {
 
             max_vote_weight = cv.weight;
 
-            if( _db.head_block_time() > fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME) )  /// start enforcing this prior to the hardfork
+            if( _db.head_block_time() > fc::time_point_sec(BMCHAIN_HARDFORK_0_6_REVERSE_AUCTION_TIME) )  /// start enforcing this prior to the hardfork
             {
                /// discount weight by time
                uint128_t w(max_vote_weight);
@@ -2081,10 +2081,10 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
    _db.modify( _db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
    {
       gpo.total_vesting_shares += op.reward_vests;
-      gpo.total_vesting_fund_steem += reward_vesting_bmt_to_move;
+      gpo.total_vesting_fund_bmt += reward_vesting_bmt_to_move;
 
       gpo.pending_rewarded_vesting_shares -= op.reward_vests;
-      gpo.pending_rewarded_vesting_steem -= reward_vesting_bmt_to_move;
+      gpo.pending_rewarded_vesting_bmt -= reward_vesting_bmt_to_move;
    });
 
    _db.adjust_proxied_witness_votes( acnt, op.reward_vests.amount );
@@ -2132,7 +2132,7 @@ void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_
    {
       auto delta = op.vesting_shares - delegation->vesting_shares;
 
-      FC_ASSERT( delta >= min_update, "Steem Power increase is not enough of a difference. min_update: ${min}", ("min", min_update) );
+      FC_ASSERT( delta >= min_update, "BMT increase is not enough of a difference. min_update: ${min}", ("min", min_update) );
       FC_ASSERT( available_shares >= op.vesting_shares - delegation->vesting_shares, "Account does not have enough vesting shares to delegate." );
 
       _db.modify( delegator, [&]( account_object& a )
@@ -2157,7 +2157,7 @@ void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_
 
       if( op.vesting_shares.amount > 0 )
       {
-         FC_ASSERT( delta >= min_update, "Steem Power decrease is not enough of a difference. min_update: ${min}", ("min", min_update) );
+         FC_ASSERT( delta >= min_update, "BMT decrease is not enough of a difference. min_update: ${min}", ("min", min_update) );
          FC_ASSERT( op.vesting_shares >= min_delegation, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation) );
       }
       else
