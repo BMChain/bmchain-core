@@ -209,7 +209,7 @@ struct account_api_obj
       balance( a.balance ),
       savings_balance( a.savings_balance ),
       savings_withdraw_requests( a.savings_withdraw_requests ),
-      reward_steem_balance( a.reward_steem_balance ),
+      reward_bmt_balance( a.reward_bmt_balance ),
       reward_vesting_balance( a.reward_vesting_balance ),
       reward_vesting_steem( a.reward_vesting_steem ),
       curation_rewards( a.curation_rewards ),
@@ -297,7 +297,7 @@ struct account_api_obj
 
    uint8_t           savings_withdraw_requests = 0;
 
-   asset             reward_steem_balance;
+   asset             reward_bmt_balance;
    asset             reward_vesting_balance;
    asset             reward_vesting_steem;
 
@@ -547,7 +547,7 @@ FC_REFLECT( bmchain::app::account_api_obj,
              (balance)
              (savings_balance)
              (savings_withdraw_requests)
-             (reward_steem_balance)(reward_vesting_balance)(reward_vesting_steem)
+             (reward_bmt_balance)(reward_vesting_balance)(reward_vesting_steem)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)

@@ -60,7 +60,7 @@ namespace bmchain { namespace chain {
          uint8_t           savings_withdraw_requests = 0;
          ///@}
 
-         asset             reward_steem_balance = asset( 0, BMT_SYMBOL );
+         asset             reward_bmt_balance = asset( 0, BMT_SYMBOL );
          asset             reward_vesting_balance = asset( 0, REP_SYMBOL );
          asset             reward_vesting_steem = asset( 0, BMT_SYMBOL );
 
@@ -216,7 +216,7 @@ namespace bmchain { namespace chain {
    struct by_proxy;
    struct by_last_post;
    struct by_next_vesting_withdrawal;
-   struct by_steem_balance;
+   struct by_bmt_balance;
    struct by_smp_balance;
    struct by_smd_balance;
    struct by_post_count;
@@ -252,7 +252,7 @@ namespace bmchain { namespace chain {
             >,
             composite_key_compare< std::greater< time_point_sec >, std::less< account_id_type > >
          >,
-         ordered_unique< tag< by_steem_balance >,
+         ordered_unique< tag< by_bmt_balance >,
             composite_key< account_object,
                member< account_object, asset, &account_object::balance >,
                member< account_object, account_id_type, &account_object::id >
@@ -446,7 +446,7 @@ FC_REFLECT( bmchain::chain::account_object,
              (balance)
              (savings_balance)
              (savings_withdraw_requests)
-             (reward_steem_balance)(reward_vesting_balance)(reward_vesting_steem)
+             (reward_bmt_balance)(reward_vesting_balance)(reward_vesting_steem)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
              (vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)

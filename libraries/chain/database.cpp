@@ -1181,10 +1181,10 @@ void database::clear_null_account_balance()
       total_steem += converted_steem;
    }
 
-   if( null_account.reward_steem_balance.amount > 0 )
+   if( null_account.reward_bmt_balance.amount > 0 )
    {
-      total_steem += null_account.reward_steem_balance;
-      adjust_reward_balance( null_account, -null_account.reward_steem_balance );
+      total_steem += null_account.reward_bmt_balance;
+      adjust_reward_balance( null_account, -null_account.reward_bmt_balance );
    }
 
    if( null_account.reward_vesting_balance.amount > 0 )
@@ -1795,7 +1795,7 @@ void database::expire_escrow_ratification()
       ++escrow_itr;
 
       const auto& from_account = get_account( old_escrow.from );
-      adjust_balance( from_account, old_escrow.steem_balance );
+      adjust_balance( from_account, old_escrow.bmt_balance );
       adjust_balance( from_account, old_escrow.pending_fee );
 
       remove( old_escrow );
@@ -3087,7 +3087,7 @@ void database::adjust_reward_balance( const account_object& a, const asset& delt
       switch( delta.symbol )
       {
          case BMT_SYMBOL:
-            acnt.reward_steem_balance += delta;
+            acnt.reward_bmt_balance += delta;
             break;
          default:
             FC_ASSERT( false, "invalid symbol" );
@@ -3238,7 +3238,7 @@ void database::validate_invariants()const
       {
          total_supply += itr->balance;
          total_supply += itr->savings_balance;
-         total_supply += itr->reward_steem_balance;
+         total_supply += itr->reward_bmt_balance;
          total_vesting += itr->vesting_shares;
          total_vesting += itr->reward_vesting_balance;
          pending_vesting_steem += itr->reward_vesting_steem;
@@ -3273,7 +3273,7 @@ void database::validate_invariants()const
 
       for( auto itr = escrow_idx.begin(); itr != escrow_idx.end(); ++itr )
       {
-         total_supply += itr->steem_balance;
+         total_supply += itr->bmt_balance;
 
          if( itr->pending_fee.symbol == BMT_SYMBOL )
             total_supply += itr->pending_fee;

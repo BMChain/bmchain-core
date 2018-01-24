@@ -252,7 +252,7 @@ namespace bmchain { namespace protocol {
       account_name_type agent;
       uint32_t          escrow_id = 30;
 
-      asset             steem_amount = asset( 0, BMT_SYMBOL );
+      asset             bmt_amount = asset( 0, BMT_SYMBOL );
       asset             fee;
 
       time_point_sec    ratification_deadline;
@@ -323,7 +323,7 @@ namespace bmchain { namespace protocol {
       account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
 
       uint32_t          escrow_id = 30;
-      asset             steem_amount = asset( 0, BMT_SYMBOL ); ///< the amount of steem to release
+      asset             bmt_amount = asset( 0, BMT_SYMBOL ); ///< the amount of steem to release
 
       void validate()const;
       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(who); }
@@ -930,7 +930,7 @@ namespace bmchain { namespace protocol {
    struct claim_reward_balance_operation : public base_operation
    {
       account_name_type account;
-      asset             reward_steem;
+      asset             reward_bmt;
       asset             reward_vests;
 
       void get_required_posting_authorities( flat_set< account_name_type >& a )const{ a.insert( account ); }
@@ -1056,17 +1056,17 @@ FC_REFLECT( bmchain::protocol::comment_payout_beneficiaries, (beneficiaries) )
 FC_REFLECT_TYPENAME( bmchain::protocol::comment_options_extension )
 FC_REFLECT( bmchain::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_bmt_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
 
-FC_REFLECT( bmchain::protocol::escrow_transfer_operation, (from)(to)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) );
+FC_REFLECT( bmchain::protocol::escrow_transfer_operation, (from)(to)(bmt_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) );
 FC_REFLECT( bmchain::protocol::escrow_approve_operation, (from)(to)(agent)(who)(escrow_id)(approve) );
 FC_REFLECT( bmchain::protocol::escrow_dispute_operation, (from)(to)(agent)(who)(escrow_id) );
-FC_REFLECT( bmchain::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(steem_amount) );
+FC_REFLECT( bmchain::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(bmt_amount) );
 FC_REFLECT( bmchain::protocol::challenge_authority_operation, (challenger)(challenged)(require_owner) );
 FC_REFLECT( bmchain::protocol::prove_authority_operation, (challenged)(require_owner) );
 FC_REFLECT( bmchain::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions) );
 FC_REFLECT( bmchain::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) );
 FC_REFLECT( bmchain::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) );
 FC_REFLECT( bmchain::protocol::decline_voting_rights_operation, (account)(decline) );
-FC_REFLECT( bmchain::protocol::claim_reward_balance_operation, (account)(reward_steem)(reward_vests) )
+FC_REFLECT( bmchain::protocol::claim_reward_balance_operation, (account)(reward_bmt)(reward_vests) )
 FC_REFLECT( bmchain::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) );
 
 FC_REFLECT( bmchain::protocol::content_order_create_operation, (author)(permlink)(owner)(price) )

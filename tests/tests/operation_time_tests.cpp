@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
          db.push_transaction( tx, 0 );
       }
 
-      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem;
+      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_steem;
 
       // generate a few blocks to seed the reward fund
       generate_blocks(10);
@@ -132,12 +132,12 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
       for( const auto& author : authors )
       {
          const account_object& a = db.get_account(author.name);
-         ilog( "${n} : ${steem}", ("n", author.name)("steem", a.reward_steem_balance) );
+         ilog( "${n} : ${steem}", ("n", author.name)("steem", a.reward_bmt_balance) );
       }
       for( const auto& voter : voters )
       {
          const account_object& a = db.get_account(voter.name);
-         ilog( "${n} : ${steem}", ("n", voter.name)("steem", a.reward_steem_balance) );
+         ilog( "${n} : ${steem}", ("n", voter.name)("steem", a.reward_bmt_balance) );
       }
       */
 
@@ -449,12 +449,12 @@ BOOST_AUTO_TEST_CASE( recent_claims_decay )
 
       //generate_blocks( db.get_comment( "bob", string( "test" ) ).cashout_time - BMCHAIN_BLOCK_INTERVAL, true );
 
-      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "1.667 TESTS" );
+      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "1.667 TESTS" );
       auto total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto bob_comment_rshares = db.get_comment( "bob", string( "test" ) ).net_rshares;
       auto bob_vest_shares = db.get_account( "bob" ).vesting_shares;
 
-      auto bob_comment_payout = asset( ( ( uint128_t( bob_comment_rshares.value ) * bob_comment_rshares.value * reward_steem.amount.value ) / total_rshares2 ).to_uint64(), BMT_SYMBOL );
+      auto bob_comment_payout = asset( ( ( uint128_t( bob_comment_rshares.value ) * bob_comment_rshares.value * reward_bmt.amount.value ) / total_rshares2 ).to_uint64(), BMT_SYMBOL );
       auto bob_comment_discussion_rewards = asset( bob_comment_payout.amount / 4, BMT_SYMBOL );
       bob_comment_payout -= bob_comment_discussion_rewards;
       auto bob_comment_vesting_reward = ( bob_comment_payout - asset( bob_comment_payout.amount / 2, BMT_SYMBOL) ) * db.get_dynamic_global_properties().get_vesting_share_price();
@@ -463,7 +463,7 @@ BOOST_AUTO_TEST_CASE( recent_claims_decay )
 
       generate_block();
 
-      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem == reward_steem - bob_comment_payout );
+      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem == reward_bmt - bob_comment_payout );
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value == bob_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price());
       BOOST_REQUIRE( db.get_account( "bob" ).vesting_shares == bob_vest_shares + bob_comment_vesting_reward );
 
@@ -651,7 +651,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).net_rshares.value > 0 );
       validate_database();
 
-      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "2.000 TESTS" );
+      auto reward_bmt = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "2.000 TESTS" );
       auto total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto bob_comment_vote_total = db.get_comment( "bob", string( "test" ) ).total_vote_weight;
       auto bob_comment_rshares = db.get_comment( "bob", string( "test" ) ).net_rshares;
@@ -660,7 +660,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       auto sam_vest_shares = db.get_account( "sam" ).vesting_shares;
       auto dave_vest_shares = db.get_account( "dave" ).vesting_shares;
 
-      auto bob_comment_payout = asset( ( ( uint128_t( bob_comment_rshares.value ) * bob_comment_rshares.value * reward_steem.amount.value ) / total_rshares2 ).to_uint64(), BMT_SYMBOL );
+      auto bob_comment_payout = asset( ( ( uint128_t( bob_comment_rshares.value ) * bob_comment_rshares.value * reward_bmt.amount.value ) / total_rshares2 ).to_uint64(), BMT_SYMBOL );
       auto bob_comment_vote_rewards = asset( bob_comment_payout.amount / 2, BMT_SYMBOL );
       bob_comment_payout -= bob_comment_vote_rewards;
       auto bob_comment_vesting_reward = ( bob_comment_payout - asset( bob_comment_payout.amount / 2, BMT_SYMBOL ) ) * db.get_dynamic_global_properties().get_vesting_share_price();
@@ -679,7 +679,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
 
       auto bob_comment_reward = get_last_operations( 1 )[0].get< comment_reward_operation >();
 
-      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem.amount.value == reward_steem.amount.value - ( bob_comment_payout + bob_comment_vote_rewards - unclaimed_payments ).amount.value );
+      BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_steem.amount.value == reward_bmt.amount.value - ( bob_comment_payout + bob_comment_vote_rewards - unclaimed_payments ).amount.value );
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).total_payout_value.amount.value == ( ( bob_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price() )).amount.value );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value > 0 );
       BOOST_REQUIRE( db.get_comment( "bob", string( "test" ) ).net_rshares.value == 0 );
@@ -716,7 +716,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
 
       BOOST_TEST_MESSAGE( "Generate block to cause payout" );
 
-      reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "2.000 TESTS" );
+      reward_bmt = db.get_dynamic_global_properties().total_reward_fund_steem + ASSET( "2.000 TESTS" );
       total_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto alice_comment_vote_total = db.get_comment( "alice", string( "test" ) ).total_vote_weight;
       auto alice_comment_rshares = db.get_comment( "alice", string( "test" ) ).net_rshares;
@@ -726,7 +726,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       dave_vest_shares = db.get_account( "dave" ).vesting_shares;
 
       u256 rs( alice_comment_rshares.value );
-      u256 rf( reward_steem.amount.value );
+      u256 rf( reward_bmt.amount.value );
       u256 trs2 = total_rshares2.hi;
       trs2 = ( trs2 << 64 ) + total_rshares2.lo;
       auto rs2 = rs*rs;
@@ -749,7 +749,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       generate_block();
       auto alice_comment_reward = get_last_operations( 1 )[0].get< comment_reward_operation >();
 
-      BOOST_REQUIRE( ( db.get_dynamic_global_properties().total_reward_fund_steem + alice_comment_payout + alice_comment_vote_rewards - unclaimed_payments ).amount.value == reward_steem.amount.value );
+      BOOST_REQUIRE( ( db.get_dynamic_global_properties().total_reward_fund_steem + alice_comment_payout + alice_comment_vote_rewards - unclaimed_payments ).amount.value == reward_bmt.amount.value );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).total_payout_value.amount.value == ( ( alice_comment_vesting_reward * db.get_dynamic_global_properties().get_vesting_share_price() )).amount.value );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value == 0 );
       BOOST_REQUIRE( db.get_comment( "alice", string( "test" ) ).net_rshares.value == 0 );
@@ -922,7 +922,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       generate_blocks( db.get_comment( "alice", string( "test" ) ).cashout_time - fc::seconds( BMCHAIN_BLOCK_INTERVAL ), true );
 
       auto gpo = db.get_dynamic_global_properties();
-      uint128_t reward_steem = gpo.total_reward_fund_steem.amount.value + ASSET( "2.000 TESTS" ).amount.value;
+      uint128_t reward_bmt = gpo.total_reward_fund_steem.amount.value + ASSET( "2.000 TESTS" ).amount.value;
       uint128_t total_rshares2 = gpo.total_reward_shares2;
 
       auto alice_comment = db.get_comment( "alice", string( "test" ) );
@@ -933,35 +933,35 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       const auto& vote_idx = db.get_index< comment_vote_index >().indices().get< by_comment_voter >();
 
       // Calculate total comment rewards and voting rewards.
-      auto alice_comment_reward = ( ( reward_steem * alice_comment.net_rshares.value * alice_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
+      auto alice_comment_reward = ( ( reward_bmt * alice_comment.net_rshares.value * alice_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
       total_rshares2 -= uint128_t( alice_comment.net_rshares.value ) * ( alice_comment.net_rshares.value );
-      reward_steem -= alice_comment_reward;
+      reward_bmt -= alice_comment_reward;
       auto alice_comment_vote_rewards = alice_comment_reward / 2;
       alice_comment_reward -= alice_comment_vote_rewards;
 
       auto alice_vote_alice_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), BMT_SYMBOL );
       auto bob_vote_alice_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "alice", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * alice_comment_vote_rewards ) / alice_comment.total_vote_weight ), BMT_SYMBOL );
-      reward_steem += alice_comment_vote_rewards - ( alice_vote_alice_reward + bob_vote_alice_reward ).amount.value;
+      reward_bmt += alice_comment_vote_rewards - ( alice_vote_alice_reward + bob_vote_alice_reward ).amount.value;
 
-      auto bob_comment_reward = ( ( reward_steem * bob_comment.net_rshares.value * bob_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
+      auto bob_comment_reward = ( ( reward_bmt * bob_comment.net_rshares.value * bob_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
       total_rshares2 -= uint128_t( bob_comment.net_rshares.value ) * bob_comment.net_rshares.value;
-      reward_steem -= bob_comment_reward;
+      reward_bmt -= bob_comment_reward;
       auto bob_comment_vote_rewards = bob_comment_reward / 2;
       bob_comment_reward -= bob_comment_vote_rewards;
 
       auto alice_vote_bob_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "alice" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), BMT_SYMBOL );
       auto bob_vote_bob_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), BMT_SYMBOL );
       auto sam_vote_bob_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "bob", string( "test" ).id, db.get_account( "sam" ) ).id ) )->weight ) * bob_comment_vote_rewards ) / bob_comment.total_vote_weight ), BMT_SYMBOL );
-      reward_steem += bob_comment_vote_rewards - ( alice_vote_bob_reward + bob_vote_bob_reward + sam_vote_bob_reward ).amount.value;
+      reward_bmt += bob_comment_vote_rewards - ( alice_vote_bob_reward + bob_vote_bob_reward + sam_vote_bob_reward ).amount.value;
 
-      auto dave_comment_reward = ( ( reward_steem * dave_comment.net_rshares.value * dave_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
+      auto dave_comment_reward = ( ( reward_bmt * dave_comment.net_rshares.value * dave_comment.net_rshares.value ) / total_rshares2 ).to_uint64();
       total_rshares2 -= uint128_t( dave_comment.net_rshares.value ) * dave_comment.net_rshares.value;
-      reward_steem -= dave_comment_reward;
+      reward_bmt -= dave_comment_reward;
       auto dave_comment_vote_rewards = dave_comment_reward / 2;
       dave_comment_reward -= dave_comment_vote_rewards;
 
       auto bob_vote_dave_reward = asset( static_cast< uint64_t >( ( u256( vote_idx.find( std::make_tuple( db.get_comment( "dave", string( "test" ).id, db.get_account( "bob" ) ).id ) )->weight ) * dave_comment_vote_rewards ) / dave_comment.total_vote_weight ), BMT_SYMBOL );
-      reward_steem += dave_comment_vote_rewards - bob_vote_dave_reward.amount.value;
+      reward_bmt += dave_comment_vote_rewards - bob_vote_dave_reward.amount.value;
 
       // Calculate rewards paid to parent posts
       auto alice_pays_alice_vest = alice_comment_reward;
@@ -1517,7 +1517,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
       virtual_supply = gpo.virtual_supply;
       vesting_shares = gpo.total_vesting_shares;
       vesting_steem = gpo.total_vesting_fund_steem;
-      reward_steem = gpo.total_reward_fund_steem;
+      reward_bmt = gpo.total_reward_fund_steem;
 
       witness_name = db.get_scheduled_witness(1);
       old_witness_shares = db.get_account( witness_name ).vesting_shares;
@@ -1531,7 +1531,7 @@ BOOST_AUTO_TEST_CASE( steem_inflation )
             + ( ( ( uint128_t( virtual_supply.amount.value ) / 10 ) / BMCHAIN_BLOCKS_PER_YEAR ) * 9 )
             + ( uint128_t( virtual_supply.amount.value ) / 100 / BMCHAIN_BLOCKS_PER_YEAR ) ).to_uint64() );
       BOOST_REQUIRE_EQUAL( gpo.total_reward_fund_steem.amount.value,
-         reward_steem.amount.value + virtual_supply.amount.value / 10 / BMCHAIN_BLOCKS_PER_YEAR + virtual_supply.amount.value / 10 / BMCHAIN_BLOCKS_PER_DAY );
+         reward_bmt.amount.value + virtual_supply.amount.value / 10 / BMCHAIN_BLOCKS_PER_YEAR + virtual_supply.amount.value / 10 / BMCHAIN_BLOCKS_PER_DAY );
       BOOST_REQUIRE_EQUAL( db.get_account( witness_name ).vesting_shares.amount.value,
          old_witness_shares.amount.value + ( asset( ( ( virtual_supply.amount.value / BMCHAIN_BLOCKS_PER_YEAR ) * BMCHAIN_1_PERCENT ) / BMCHAIN_100_PERCENT, BMT_SYMBOL ) * ( vesting_shares / vesting_steem ) ).amount.value );
       validate_database();
@@ -1795,7 +1795,7 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
       {
          db.modify( db.get_account( BMCHAIN_NULL_ACCOUNT ), [&]( account_object& a )
          {
-            a.reward_steem_balance = ASSET( "1.000 TESTS" );
+            a.reward_bmt_balance = ASSET( "1.000 TESTS" );
             a.reward_vesting_balance = ASSET( "1.000000 VESTS" );
             a.reward_vesting_steem = ASSET( "1.000 TESTS" );
          });
@@ -1814,7 +1814,7 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).balance == ASSET( "1.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).vesting_shares > ASSET( "0.000000 VESTS" ) );
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).savings_balance == ASSET( "4.000 TESTS" ) );
-      BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).reward_steem_balance == ASSET( "1.000 TESTS" ) );
+      BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).reward_bmt_balance == ASSET( "1.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).reward_vesting_balance == ASSET( "1.000000 VESTS" ) );
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).reward_vesting_steem == ASSET( "1.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "alice" ).balance == ASSET( "2.000 TESTS" ) );
@@ -1826,7 +1826,7 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).vesting_shares == ASSET( "0.000000 VESTS" ) );
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).savings_balance == ASSET( "0.000 TESTS" ) );
-      BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).reward_steem_balance == ASSET( "0.000 TESTS" ) );
+      BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).reward_bmt_balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).reward_vesting_balance == ASSET( "0.000000 VESTS" ) );
       BOOST_REQUIRE( db.get_account( BMCHAIN_NULL_ACCOUNT ).reward_vesting_steem == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "alice" ).balance == ASSET( "2.000 TESTS" ) );

@@ -409,10 +409,10 @@ namespace bmchain { namespace protocol {
       validate_account_name( to );
       validate_account_name( agent );
       FC_ASSERT( fee.amount >= 0, "fee cannot be negative" );
-      FC_ASSERT( steem_amount.amount >= 0, "steem amount cannot be negative" );
+      FC_ASSERT( bmt_amount.amount >= 0, "steem amount cannot be negative" );
       FC_ASSERT( from != agent && to != agent, "agent must be a third party" );
       FC_ASSERT( (fee.symbol == BMT_SYMBOL) || (fee.symbol == BMT_SYMBOL), "fee must be BMT" );
-      FC_ASSERT( steem_amount.symbol == BMT_SYMBOL, "steem amount must contain BMT" );
+      FC_ASSERT( bmt_amount.symbol == BMT_SYMBOL, "steem amount must contain BMT" );
       FC_ASSERT( ratification_deadline < escrow_expiration, "ratification deadline must be before escrow expiration" );
       if ( json_meta.size() > 0 )
       {
@@ -448,8 +448,8 @@ namespace bmchain { namespace protocol {
       validate_account_name( receiver );
       FC_ASSERT( who == from || who == to || who == agent, "who must be from or to or agent" );
       FC_ASSERT( receiver == from || receiver == to, "receiver must be from or to" );
-      FC_ASSERT( steem_amount.amount >= 0, "steem amount cannot be negative" );
-      FC_ASSERT( steem_amount.symbol == BMT_SYMBOL, "steem amount must contain BMT" );
+      FC_ASSERT( bmt_amount.amount >= 0, "steem amount cannot be negative" );
+      FC_ASSERT( bmt_amount.symbol == BMT_SYMBOL, "steem amount must contain BMT" );
    }
 
    void request_account_recovery_operation::validate()const
@@ -522,11 +522,11 @@ namespace bmchain { namespace protocol {
    void claim_reward_balance_operation::validate()const
    {
       validate_account_name( account );
-      FC_ASSERT( is_asset_type( reward_steem, BMT_SYMBOL ), "Reward Steem must be BMT" );
+      FC_ASSERT( is_asset_type( reward_bmt, BMT_SYMBOL ), "Reward Steem must be BMT" );
       FC_ASSERT( is_asset_type( reward_vests, REP_SYMBOL ), "Reward Steem must be REP" );
-      FC_ASSERT( reward_steem.amount >= 0, "Cannot claim a negative amount" );
+      FC_ASSERT( reward_bmt.amount >= 0, "Cannot claim a negative amount" );
       FC_ASSERT( reward_vests.amount >= 0, "Cannot claim a negative amount" );
-      FC_ASSERT( reward_steem.amount > 0 || reward_vests.amount > 0, "Must claim something." );
+      FC_ASSERT( reward_bmt.amount > 0 || reward_vests.amount > 0, "Must claim something." );
    }
 
    void delegate_vesting_shares_operation::validate()const

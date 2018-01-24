@@ -822,7 +822,7 @@ void escrow_transfer_evaluator::do_apply( const escrow_transfer_operation& o )
       FC_ASSERT( o.ratification_deadline > _db.head_block_time(), "The escorw ratification deadline must be after head block time." );
       FC_ASSERT( o.escrow_expiration > _db.head_block_time(), "The escrow expiration must be after head block time." );
 
-      asset bmt_spent = o.steem_amount;
+      asset bmt_spent = o.bmt_amount;
       if( o.fee.symbol == BMT_SYMBOL )
          bmt_spent += o.fee;
 
@@ -838,7 +838,7 @@ void escrow_transfer_evaluator::do_apply( const escrow_transfer_operation& o )
          esc.agent                  = o.agent;
          esc.ratification_deadline  = o.ratification_deadline;
          esc.escrow_expiration      = o.escrow_expiration;
-         esc.steem_balance          = o.steem_amount;
+         esc.bmt_balance          = o.bmt_amount;
          esc.pending_fee            = o.fee;
       });
    }
@@ -886,7 +886,7 @@ void escrow_approve_evaluator::do_apply( const escrow_approve_operation& o )
       if( reject_escrow )
       {
          const auto& from_account = _db.get_account( o.from );
-         _db.adjust_balance( from_account, escrow.steem_balance );
+         _db.adjust_balance( from_account, escrow.bmt_balance );
          _db.adjust_balance( from_account, escrow.pending_fee );
 
          _db.remove( escrow );
@@ -934,7 +934,7 @@ void escrow_release_evaluator::do_apply( const escrow_release_operation& o )
       const auto& receiver_account = _db.get_account(o.receiver);
 
       const auto& e = _db.get_escrow( o.from, o.escrow_id );
-      FC_ASSERT( e.steem_balance >= o.steem_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.steem_amount)("b", e.steem_balance) );
+      FC_ASSERT( e.bmt_balance >= o.bmt_amount, "Release amount exceeds escrow balance. Amount: ${a}, Balance: ${b}", ("a", o.bmt_amount)("b", e.bmt_balance) );
       FC_ASSERT( e.to == o.to, "Operation 'to' (${o}) does not match escrow 'to' (${e}).", ("o", o.to)("e", e.to) );
       FC_ASSERT( e.agent == o.agent, "Operation 'agent' (${a}) does not match escrow 'agent' (${e}).", ("o", o.agent)("e", e.agent) );
       FC_ASSERT( o.receiver == e.from || o.receiver == e.to, "Funds must be released to 'from' (${f}) or 'to' (${t})", ("f", e.from)("t", e.to) );
@@ -964,14 +964,14 @@ void escrow_release_evaluator::do_apply( const escrow_release_operation& o )
       }
       // If escrow expires and there is no dispute, either party can release funds to either party.
 
-      _db.adjust_balance( receiver_account, o.steem_amount );
+      _db.adjust_balance( receiver_account, o.bmt_amount );
 
       _db.modify( e, [&]( escrow_object& esc )
       {
-         esc.steem_balance -= o.steem_amount;
+         esc.bmt_balance -= o.bmt_amount;
       });
 
-      if( e.steem_balance.amount == 0 )
+      if( e.bmt_balance.amount == 0 )
       {
          _db.remove( e );
       }
@@ -2056,35 +2056,35 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
 {
    const auto& acnt = _db.get_account( op.account );
 
-   FC_ASSERT( op.reward_steem <= acnt.reward_steem_balance, "Cannot claim that much BMT. Claim: ${c} Actual: ${a}",
-      ("c", op.reward_steem)("a", acnt.reward_steem_balance) );
+   FC_ASSERT( op.reward_bmt <= acnt.reward_bmt_balance, "Cannot claim that much BMT. Claim: ${c} Actual: ${a}",
+      ("c", op.reward_bmt)("a", acnt.reward_bmt_balance) );
    FC_ASSERT( op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
       ("c", op.reward_vests)("a", acnt.reward_vesting_balance) );
 
-   asset reward_vesting_steem_to_move = asset( 0, BMT_SYMBOL );
+   asset reward_vesting_bmt_to_move = asset( 0, BMT_SYMBOL );
    if( op.reward_vests == acnt.reward_vesting_balance )
-      reward_vesting_steem_to_move = acnt.reward_vesting_steem;
+      reward_vesting_bmt_to_move = acnt.reward_vesting_steem;
    else
-      reward_vesting_steem_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_vesting_steem.amount.value ) )
+      reward_vesting_bmt_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_vesting_steem.amount.value ) )
          / uint128_t( acnt.reward_vesting_balance.amount.value ) ).to_uint64(), BMT_SYMBOL );
 
-   _db.adjust_reward_balance( acnt, -op.reward_steem );
-   _db.adjust_balance( acnt, op.reward_steem );
+   _db.adjust_reward_balance( acnt, -op.reward_bmt );
+   _db.adjust_balance( acnt, op.reward_bmt );
 
    _db.modify( acnt, [&]( account_object& a )
    {
       a.vesting_shares += op.reward_vests;
       a.reward_vesting_balance -= op.reward_vests;
-      a.reward_vesting_steem -= reward_vesting_steem_to_move;
+      a.reward_vesting_steem -= reward_vesting_bmt_to_move;
    });
 
    _db.modify( _db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
    {
       gpo.total_vesting_shares += op.reward_vests;
-      gpo.total_vesting_fund_steem += reward_vesting_steem_to_move;
+      gpo.total_vesting_fund_steem += reward_vesting_bmt_to_move;
 
       gpo.pending_rewarded_vesting_shares -= op.reward_vests;
-      gpo.pending_rewarded_vesting_steem -= reward_vesting_steem_to_move;
+      gpo.pending_rewarded_vesting_steem -= reward_vesting_bmt_to_move;
    });
 
    _db.adjust_proxied_witness_votes( acnt, op.reward_vests.amount );

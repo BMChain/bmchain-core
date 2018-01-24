@@ -40,12 +40,12 @@ namespace bmchain { namespace sidechain {
         string   sidechain; ///< name of the sidechain account
         string   name; /// sub account within the side chain
 
-        asset    steem_balance;
+        asset    bmt_balance;
         asset    dollar_balance;
   };
 
   FC_REFLECT_DERIVED( bmchain::sidechain::side_account, (graphene::db::object),
-                      (sidechain)(name)(steem_balance)(dollar_balance)
+                      (sidechain)(name)(bmt_balance)(dollar_balance)
                      );
 
 

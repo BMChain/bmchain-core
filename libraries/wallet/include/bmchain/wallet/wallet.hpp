@@ -614,7 +614,7 @@ class wallet_api
        * @param to The account the funds are going to
        * @param agent The account acting as the agent in case of dispute
        * @param escrow_id A unique id for the escrow transfer. (from, escrow_id) must be a unique pair
-       * @param steem_amount The amount of BMT to transfer
+       * @param bmt_amount The amount of BMT to transfer
        * @param fee The fee paid to the agent
        * @param ratification_deadline The deadline for 'to' and 'agent' to approve the escrow transfer
        * @param escrow_expiration The expiration of the escrow transfer, after which either party can claim the funds
@@ -622,7 +622,7 @@ class wallet_api
        * @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction
-      escrow_transfer(string from, string to, string agent, uint32_t escrow_id, asset steem_amount, asset fee,
+      escrow_transfer(string from, string to, string agent, uint32_t escrow_id, asset bmt_amount, asset fee,
                             time_point_sec ratification_deadline, time_point_sec escrow_expiration, string json_meta,
                             bool broadcast);
 
@@ -676,12 +676,12 @@ class wallet_api
        * @param who The account authorizing the release
        * @param receiver The account that will receive funds being released
        * @param escrow_id A unique id for the escrow transfer
-       * @param steem_amount The amount of BMT that will be released
+       * @param bmt_amount The amount of BMT that will be released
        * @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction
       escrow_release(string from, string to, string agent, string who, string receiver, uint32_t escrow_id,
-                           asset steem_amount, bool broadcast);
+                           asset bmt_amount, bool broadcast);
 
       /**
        * Transfer BMT into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
@@ -912,7 +912,7 @@ class wallet_api
       annotated_signed_transaction decline_voting_rights( string account, bool decline, bool broadcast );
 
       annotated_signed_transaction
-      claim_reward_balance(string account, asset reward_steem, asset reward_vests, bool broadcast);
+      claim_reward_balance(string account, asset reward_bmt, asset reward_vests, bool broadcast);
 
       discussion get_post(string author, string permlink) const;
 

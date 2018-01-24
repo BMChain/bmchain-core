@@ -1799,7 +1799,7 @@ annotated_signed_transaction wallet_api::transfer(string from, string to, asset 
 } FC_CAPTURE_AND_RETHROW( (from)(to)(amount)(memo)(broadcast) ) }
 
 annotated_signed_transaction
-wallet_api::escrow_transfer(string from, string to, string agent, uint32_t escrow_id, asset steem_amount, asset fee,
+wallet_api::escrow_transfer(string from, string to, string agent, uint32_t escrow_id, asset bmt_amount, asset fee,
                             time_point_sec ratification_deadline, time_point_sec escrow_expiration, string json_meta,
                             bool broadcast)
 {
@@ -1809,7 +1809,7 @@ wallet_api::escrow_transfer(string from, string to, string agent, uint32_t escro
    op.to = to;
    op.agent = agent;
    op.escrow_id = escrow_id;
-   op.steem_amount = steem_amount;
+   op.bmt_amount = bmt_amount;
    op.fee = fee;
    op.ratification_deadline = ratification_deadline;
    op.escrow_expiration = escrow_expiration;
@@ -1873,7 +1873,7 @@ annotated_signed_transaction wallet_api::escrow_dispute(
 
 annotated_signed_transaction
 wallet_api::escrow_release(string from, string to, string agent, string who, string receiver, uint32_t escrow_id,
-                           asset steem_amount, bool broadcast)
+                           asset bmt_amount, bool broadcast)
 {
    FC_ASSERT( !is_locked() );
    escrow_release_operation op;
@@ -1883,7 +1883,7 @@ wallet_api::escrow_release(string from, string to, string agent, string who, str
    op.who = who;
    op.receiver = receiver;
    op.escrow_id = escrow_id;
-   op.steem_amount = steem_amount;
+   op.bmt_amount = bmt_amount;
 
    signed_transaction tx;
    tx.operations.push_back( op );
@@ -2060,12 +2060,12 @@ annotated_signed_transaction wallet_api::decline_voting_rights( string account, 
 }
 
 annotated_signed_transaction
-wallet_api::claim_reward_balance(string account, asset reward_steem, asset reward_vests, bool broadcast)
+wallet_api::claim_reward_balance(string account, asset reward_bmt, asset reward_vests, bool broadcast)
 {
    FC_ASSERT( !is_locked() );
    claim_reward_balance_operation op;
    op.account = account;
-   op.reward_steem = reward_steem;
+   op.reward_bmt = reward_bmt;
    op.reward_vests = reward_vests;
 
    signed_transaction tx;
