@@ -49,14 +49,14 @@ namespace bmchain { namespace chain {
           */
          uint32_t num_pow_witnesses = 0;
 
-         asset       virtual_supply             = asset( 0, BMT_SYMBOL );
-         asset       current_supply             = asset( 0, BMT_SYMBOL );
-         asset       total_rep_fund_bmt   = asset( 0, BMT_SYMBOL );
-         asset       total_rep_shares       = asset( 0, REP_SYMBOL );
-         asset       total_reward_fund_bmt    = asset( 0, BMT_SYMBOL );
-         fc::uint128 total_reward_shares2; ///< the running total of REWARD^2
+         asset       virtual_supply              = asset( 0, BMT_SYMBOL );
+         asset       current_supply              = asset( 0, BMT_SYMBOL );
+         asset       total_rep_fund_bmt          = asset( 0, BMT_SYMBOL );
+         asset       total_rep_shares            = asset( 0, REP_SYMBOL );
+         asset       total_reward_fund_bmt       = asset( 0, BMT_SYMBOL );
+         fc::uint128 total_reward_shares2        = 0; ///< the running total of REWARD^2
          asset       pending_rewarded_rep_shares = asset( 0, REP_SYMBOL );
-         asset       pending_rewarded_rep_bmt = asset( 0, BMT_SYMBOL );
+         asset       pending_rewarded_rep_bmt    = asset( 0, BMT_SYMBOL );
 
          price       get_rep_share_price() const
          {
@@ -102,7 +102,7 @@ namespace bmchain { namespace chain {
           * "wasting" voting power through spillover; any user voting faster than this rate will have
           * their votes reduced.
           */
-         uint32_t vote_power_reserve_rate = 40;
+         uint32_t vote_power_reserve_rate = 10;
    };
 
    typedef multi_index_container<

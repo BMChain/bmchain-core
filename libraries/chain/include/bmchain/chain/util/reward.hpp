@@ -27,17 +27,17 @@ struct comment_reward_context
    asset      total_reward_fund_bmt;
    price      current_bmt_price;
    curve_id   reward_curve = quadratic;
-   uint128_t  content_constant = BMCHAIN_CONTENT_CONSTANT_HF0;
+   uint128_t  content_constant = BMCHAIN_CONTENT_CONSTANT;
 };
 
 uint64_t get_rshare_reward( const comment_reward_context& ctx );
 
 inline uint128_t get_content_constant_s()
 {
-   return BMCHAIN_CONTENT_CONSTANT_HF0; // looking good for posters
+   return BMCHAIN_CONTENT_CONSTANT; // looking good for posters
 }
 
-uint128_t evaluate_reward_curve( const uint128_t& rshares, const curve_id& curve = quadratic, const uint128_t& content_constant = BMCHAIN_CONTENT_CONSTANT_HF0 );
+uint128_t evaluate_reward_curve( const uint128_t& rshares, const curve_id& curve = quadratic, const uint128_t& content_constant = BMCHAIN_CONTENT_CONSTANT );
 
 inline bool is_comment_payout_dust( const price& p, uint64_t bmt_payout )
 {

@@ -1028,7 +1028,7 @@ BOOST_AUTO_TEST_CASE( vote_apply )
 
          BOOST_TEST_MESSAGE( "--- Test failure when increasing rshares within lockout period" );
 
-         generate_blocks( fc::time_point_sec( ( new_bob_comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT_HF17 ).sec_since_epoch() + BMCHAIN_BLOCK_INTERVAL ), true );
+         generate_blocks( fc::time_point_sec( ( new_bob_comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT ).sec_since_epoch() + BMCHAIN_BLOCK_INTERVAL ), true );
 
          op.weight = BMCHAIN_100_PERCENT;
          tx.operations.clear();

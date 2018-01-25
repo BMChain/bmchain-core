@@ -496,7 +496,6 @@ void comment_evaluator::do_apply( const comment_operation& o )
             from_string( com.parent_permlink, o.parent_permlink );
             from_string( com.category, o.parent_permlink );
             com.root_comment = com.id;
-            com.cashout_time = _db.head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
          }
          else
          {
@@ -699,7 +698,6 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
                 from_string(com.parent_permlink, o.parent_permlink);
                 from_string(com.category, o.parent_permlink);
                 com.root_comment = com.id;
-                com.cashout_time = _db.head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
             } else {
                 com.parent_author = parent->author;
                 com.parent_permlink = parent->permlink;
@@ -1040,8 +1038,7 @@ void withdraw_rep_evaluator::do_apply( const withdraw_rep_operation& o )
    }
    else
    {
-      int rep_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
-      rep_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
+      int rep_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
       _db.modify( account, [&]( account_object& a )
       {
@@ -1289,7 +1286,7 @@ try {
 
       if( rshares > 0 )
       {
-         FC_ASSERT( _db.head_block_time() < comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT_HF17, "Cannot increase payout within last twelve hours before payout." );
+         FC_ASSERT( _db.head_block_time() < comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT, "Cannot increase payout within last twelve hours before payout." );
       }
 
       _db.modify( voter, [&]( account_object& a ){
@@ -1366,7 +1363,7 @@ try {
 
          if( curation_reward_eligible )
          {
-            if( comment.created < fc::time_point_sec(BMCHAIN_HARDFORK_0_6_REVERSE_AUCTION_TIME) ) {
+            if( comment.created < fc::time_point_sec(BMCHAIN_REVERSE_AUCTION_TIME) ) {
                u512 rshares3(rshares);
                u256 total2( comment.abs_rshares.value );
 
@@ -1384,7 +1381,7 @@ try {
 
             max_vote_weight = cv.weight;
 
-            if( _db.head_block_time() > fc::time_point_sec(BMCHAIN_HARDFORK_0_6_REVERSE_AUCTION_TIME) )  /// start enforcing this prior to the hardfork
+            if( _db.head_block_time() > fc::time_point_sec(BMCHAIN_REVERSE_AUCTION_TIME) )  /// start enforcing this prior to the hardfork
             {
                /// discount weight by time
                uint128_t w(max_vote_weight);
@@ -1419,7 +1416,7 @@ try {
 
       if( itr->rshares < rshares )
       {
-         FC_ASSERT( _db.head_block_time() < comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT_HF17, "Cannot increase payout within last twelve hours before payout." );
+         FC_ASSERT( _db.head_block_time() < comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT, "Cannot increase payout within last twelve hours before payout." );
       }
 
       _db.modify( voter, [&]( account_object& a ){

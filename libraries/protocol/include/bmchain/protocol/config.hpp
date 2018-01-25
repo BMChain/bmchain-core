@@ -21,13 +21,10 @@
 #define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1451606400))
 #define BMCHAIN_MINING_TIME                     (fc::time_point_sec(1451606400))
 #define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*10) /// 1 hr /// bmchain
-#define BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF12 (BMCHAIN_CASHOUT_WINDOW_SECONDS)
-#define BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17 (BMCHAIN_CASHOUT_WINDOW_SECONDS)
 #define BMCHAIN_SECOND_CASHOUT_WINDOW           (60*60*24*3) /// 3 days
 #define BMCHAIN_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24) /// 1 day
 #define BMCHAIN_VOTE_CHANGE_LOCKOUT_PERIOD      (60*10) /// 10 minutes
-#define BMCHAIN_UPVOTE_LOCKOUT_HF7              (fc::minutes(1))
-#define BMCHAIN_UPVOTE_LOCKOUT_HF17             (fc::minutes(5))
+#define BMCHAIN_UPVOTE_LOCKOUT             (fc::minutes(5))
 
 
 #define BMCHAIN_ORIGINAL_MIN_ACCOUNT_CREATION_FEE 0
@@ -49,14 +46,11 @@
 
 #define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1458835200))
 #define BMCHAIN_MINING_TIME                     (fc::time_point_sec(1458838800))
-#define BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF12 (60*60*24)    /// 1 day
-#define BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17 (60*60*12)    /// 12 hours
 #define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*60*24)    /// 24 hours, bmchain /// (60*60*24*7)  /// 7 days
 #define BMCHAIN_SECOND_CASHOUT_WINDOW           (60*60*24*30) /// 30 days
 #define BMCHAIN_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24*14) /// 2 weeks
 #define BMCHAIN_VOTE_CHANGE_LOCKOUT_PERIOD      (60*60*2)     /// 2 hours
-#define BMCHAIN_UPVOTE_LOCKOUT_HF7              (fc::minutes(1))
-#define BMCHAIN_UPVOTE_LOCKOUT_HF17             (fc::hours(1)) /// bmchain /// (fc::hours(12))
+#define BMCHAIN_UPVOTE_LOCKOUT             (fc::hours(1)) /// bmchain /// (fc::hours(12))
 
 #define BMCHAIN_ORIGINAL_MIN_ACCOUNT_CREATION_FEE  100000
 #define BMCHAIN_MIN_ACCOUNT_CREATION_FEE           0 /// 1 /// bmchain
@@ -80,19 +74,14 @@
 
 #define BMCHAIN_MAX_WITNESSES                   21
 
-#define BMCHAIN_MAX_VOTED_WITNESSES_HF0         19
-#define BMCHAIN_MAX_MINER_WITNESSES_HF0         1
-#define BMCHAIN_MAX_RUNNER_WITNESSES_HF0        1
-
-#define BMCHAIN_MAX_VOTED_WITNESSES_HF17        20
-#define BMCHAIN_MAX_MINER_WITNESSES_HF17        0
-#define BMCHAIN_MAX_RUNNER_WITNESSES_HF17       1
+#define BMCHAIN_MAX_VOTED_WITNESSES             20
+#define BMCHAIN_MAX_MINER_WITNESSES             0
+#define BMCHAIN_MAX_RUNNER_WITNESSES            1
 
 #define BMCHAIN_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 #define BMCHAIN_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define BMCHAIN_MAX_MEMO_SIZE                   2048
 #define BMCHAIN_MAX_PROXY_RECURSION_DEPTH       4
-#define BMCHAIN_VESTING_WITHDRAW_INTERVALS_PRE_HF_16 104
 #define BMCHAIN_VESTING_WITHDRAW_INTERVALS      13
 #define BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) /// 1 week per interval
 #define BMCHAIN_MAX_WITHDRAW_ROUTES             10
@@ -129,7 +118,6 @@
 
 #define BMCHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define BMCHAIN_BANDWIDTH_PRECISION             (uint64_t(1000000)) ///< 1 million
-#define BMCHAIN_MAX_COMMENT_DEPTH_PRE_HF17      6
 #define BMCHAIN_MAX_COMMENT_DEPTH               0xffff // 64k
 #define BMCHAIN_SOFT_MAX_COMMENT_DEPTH          0xff // 255
 
@@ -160,9 +148,8 @@
 
 #define BMCHAIN_POST_REWARD_FUND_NAME           ("post")
 #define BMCHAIN_COMMENT_REWARD_FUND_NAME        ("comment")
-#define BMCHAIN_RECENT_RSHARES_DECAY_RATE_HF17  (fc::days(30))
-#define BMCHAIN_RECENT_RSHARES_DECAY_RATE_HF19  (fc::days(15))
-#define BMCHAIN_CONTENT_CONSTANT_HF0            (uint128_t(uint64_t(2000000000000ll)))
+#define BMCHAIN_RECENT_RSHARES_DECAY_RATE       (fc::days(15))
+#define BMCHAIN_CONTENT_CONSTANT                (uint128_t(uint64_t(2000000000000ll)))
 // note, if redefining these constants make sure calculate_claims doesn't overflow
 
 // 5ccc e802 de5f
@@ -222,11 +209,9 @@
 #define BMCHAIN_MIN_BLOCK_SIZE                  115
 #define BMCHAIN_BLOCKS_PER_HOUR                 (60*60/BMCHAIN_BLOCK_INTERVAL)
 #define BMCHAIN_FEED_INTERVAL_BLOCKS            (BMCHAIN_BLOCKS_PER_HOUR / 24) /// bmchain
-#define BMCHAIN_FEED_HISTORY_WINDOW_PRE_HF_16   (24*7) /// 7 days * 24 hours per day
 #define BMCHAIN_FEED_HISTORY_WINDOW             (12*7) // 3.5 days
 #define BMCHAIN_MAX_FEED_AGE_SECONDS            (60*60*24*7) // 7 days
 #define BMCHAIN_MIN_FEEDS                       (BMCHAIN_MAX_WITNESSES/BMCHAIN_MAX_WITNESSES) /// bmchain /// protects the network from conversions before price has been established
-#define BMCHAIN_CONVERSION_DELAY_PRE_HF_16      (fc::days(7))
 #define BMCHAIN_CONVERSION_DELAY                (fc::hours(BMCHAIN_FEED_HISTORY_WINDOW)) //3.5 day conversion
 
 #define BMCHAIN_MIN_UNDO_HISTORY                10
@@ -267,20 +252,13 @@
 #define BMCHAIN_STRESS_TESTING                  false
 #define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*2)) /// 2 days
 
-#define BMCHAIN_INIT_HARDFORK                   0        /// Hardfork to apply when creating a new chain
 #define BMCHAIN_VOTE_EMISSION_RATE              50
 #define BMCHAIN_COMMENT_EMISSION_RATE           200
 #define BMCHAIN_POST_EMISSION_RATE              500
 #define BMCHAIN_USER_EMISSION_RATE              1000
 
-#define BMCHAIN_HF_19_RECENT_CLAIMS (fc::uint128_t(uint64_t(140797515942543623ull)))
-#define BMCHAIN_HF_17_RECENT_CLAIMS (fc::uint128_t(808638359297ull,13744269167557038121ull)) // 14916744862149894120447332012073
-#define BMCHAIN_HF_17_NUM_POSTS     (49357)
-#define BMCHAIN_HF_17_NUM_REPLIES   (242051)
-#define BMCHAIN_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 fc::seconds(60*30) /// 30 min
-
 #ifdef IS_TEST_NET
-#define BMCHAIN_HARDFORK_0_6_REVERSE_AUCTION_TIME (0)
+#define BMCHAIN_REVERSE_AUCTION_TIME (0)
 #else
-#define BMCHAIN_HARDFORK_0_6_REVERSE_AUCTION_TIME (1467295200-(60*60*24*6))
+#define BMCHAIN_REVERSE_AUCTION_TIME (1467295200-(60*60*24*6))
 #endif

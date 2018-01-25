@@ -1949,51 +1949,6 @@ annotated_signed_transaction wallet_api::cancel_transfer_from_savings( string fr
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::transfer_to_rep(string from, string to, asset amount, bool broadcast )
-{
-   FC_ASSERT( !is_locked() );
-    transfer_to_rep_operation op;
-    op.from = from;
-    op.to = (to == from ? "" : to);
-    op.amount = amount;
-
-    signed_transaction tx;
-    tx.operations.push_back( op );
-    tx.validate();
-
-   return my->sign_transaction( tx, broadcast );
-}
-
-annotated_signed_transaction wallet_api::withdraw_rep(string from, asset rep_shares, bool broadcast )
-{
-   FC_ASSERT( !is_locked() );
-    withdraw_rep_operation op;
-    op.account = from;
-    op.rep_shares = rep_shares;
-
-    signed_transaction tx;
-    tx.operations.push_back( op );
-    tx.validate();
-
-   return my->sign_transaction( tx, broadcast );
-}
-
-annotated_signed_transaction wallet_api::set_withdraw_rep_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast )
-{
-   FC_ASSERT( !is_locked() );
-    set_withdraw_rep_route_operation op;
-    op.from_account = from;
-    op.to_account = to;
-    op.percent = percent;
-    op.auto_vest = auto_vest;
-
-    signed_transaction tx;
-    tx.operations.push_back( op );
-    tx.validate();
-
-   return my->sign_transaction( tx, broadcast );
-}
-
 annotated_signed_transaction wallet_api::publish_feed(string witness, price exchange_rate, bool broadcast )
 {
    FC_ASSERT( !is_locked() );

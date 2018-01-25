@@ -1570,7 +1570,7 @@ void database::process_comment_cashout()
       modify( *itr, [&]( reward_fund_object& rfo )
       {
          fc::microseconds decay_rate;
-         decay_rate = BMCHAIN_RECENT_RSHARES_DECAY_RATE_HF19;
+         decay_rate = BMCHAIN_RECENT_RSHARES_DECAY_RATE;
          rfo.last_update = head_block_time();
       });
 
@@ -2046,6 +2046,7 @@ void database::init_genesis( uint64_t init_supply )
          auth.account = BMCHAIN_MINER_ACCOUNT;
          auth.owner.weight_threshold = 1;
          auth.active.weight_threshold = 1;
+         auth.posting.weight_threshold = 1;
       });
 
       create< account_object >( [&]( account_object& a )
@@ -2057,6 +2058,7 @@ void database::init_genesis( uint64_t init_supply )
          auth.account = BMCHAIN_NULL_ACCOUNT;
          auth.owner.weight_threshold = 1;
          auth.active.weight_threshold = 1;
+         auth.posting.weight_threshold = 1;
       });
 
       create< account_object >( [&]( account_object& a )
@@ -2068,6 +2070,7 @@ void database::init_genesis( uint64_t init_supply )
          auth.account = BMCHAIN_TEMP_ACCOUNT;
          auth.owner.weight_threshold = 0;
          auth.active.weight_threshold = 0;
+         auth.posting.weight_threshold = 1;
       });
 
       for( int i = 0; i < BMCHAIN_NUM_INIT_MINERS; ++i )
@@ -2111,6 +2114,7 @@ void database::init_genesis( uint64_t init_supply )
       create< feed_history_object >( [&]( feed_history_object& o ) {});
       for( int i = 0; i < 0x10000; i++ )
          create< block_summary_object >( [&]( block_summary_object& ) {});
+
       create< hardfork_property_object >( [&](hardfork_property_object& hpo )
       {
          hpo.processed_hardforks.push_back( BMCHAIN_GENESIS_TIME );
@@ -2122,195 +2126,20 @@ void database::init_genesis( uint64_t init_supply )
          wso.current_shuffled_witnesses[0] = BMCHAIN_INIT_MINER_NAME;
       } );
 
-#if BMCHAIN_INIT_HARDFORK != 0
-       set_hardfork(BMCHAIN_INIT_HARDFORK, true);
-#endif
-
-
-       perform_rep_share_split(1000000);
-       retally_witness_votes();            // HARDFORK_0_2
-       retally_witness_votes();            // HARDFORK_0_3
-       reset_virtual_schedule_time(*this); // HARDFORK_0_4
-       retally_witness_vote_counts();      // HARDFORK_0_6
-       retally_comment_children();         // HARDFORK_0_6
-       retally_witness_vote_counts(true);  // HARDFORK_0_8
-
-#ifdef IS_TEST_NET
-       {
-        custom_operation test_op;
-        string op_msg = "Testnet: Hardfork applied";
-        test_op.data = vector< char >( op_msg.begin(), op_msg.end() );
-        test_op.required_auths.insert( BMCHAIN_INIT_MINER_NAME );
-        operation op = test_op;   // we need the operation object to live to the end of this scope
-        operation_notification note( op );
-        notify_pre_apply_operation( note );
-        notify_post_apply_operation( note );
-     }
-     break;
-#endif
-       // HARDFORK_0_12:
-
-       const auto &comment_idx = get_index<comment_index>().indices();
-
-       for (auto itr = comment_idx.begin(); itr != comment_idx.end(); ++itr) {
-           // At the hardfork time, all new posts with no votes get their cashout time set to +12 hrs from head block time.
-           // All posts with a payout get their cashout time set to +30 days. This hardfork takes place within 30 days
-           // initial payout so we don't have to handle the case of posts that should be frozen that aren't
-           if (itr->parent_author == BMCHAIN_ROOT_POST_PARENT) {
-               // Post has not been paid out and has no votes (cashout_time == 0 === net_rshares == 0, under current semmantics)
-               if (itr->last_payout == fc::time_point_sec::min() &&
-                   itr->cashout_time == fc::time_point_sec::maximum()) {
-                   modify(*itr, [&](comment_object &c) {
-                       c.cashout_time = head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS_PRE_HF17;
-                   });
-               }
-                   // Has been paid out, needs to be on second cashout window
-               else if (itr->last_payout > fc::time_point_sec()) {
-                   modify(*itr, [&](comment_object &c) {
-                       c.cashout_time = c.last_payout + BMCHAIN_SECOND_CASHOUT_WINDOW;
-                   });
-               }
-           }
-       }
-
-       modify(get<account_authority_object, by_account>(BMCHAIN_MINER_ACCOUNT), [&](account_authority_object &auth) {
-           auth.posting = authority();
-           auth.posting.weight_threshold = 1;
-       });
-
-       modify(get<account_authority_object, by_account>(BMCHAIN_NULL_ACCOUNT), [&](account_authority_object &auth) {
-           auth.posting = authority();
-           auth.posting.weight_threshold = 1;
-       });
-
-       modify(get<account_authority_object, by_account>(BMCHAIN_TEMP_ACCOUNT), [&](account_authority_object &auth) {
-           auth.posting = authority();
-           auth.posting.weight_threshold = 1;
-       });
-
-
-       // BMCHAIN_HARDFORK_0_17:
-
-       static_assert(
-               BMCHAIN_MAX_VOTED_WITNESSES_HF0 + BMCHAIN_MAX_MINER_WITNESSES_HF0 + BMCHAIN_MAX_RUNNER_WITNESSES_HF0 ==
-               BMCHAIN_MAX_WITNESSES,
-               "HF0 witness counts must add up to BMCHAIN_MAX_WITNESSES");
-       static_assert(
-               BMCHAIN_MAX_VOTED_WITNESSES_HF17 + BMCHAIN_MAX_MINER_WITNESSES_HF17 +
-               BMCHAIN_MAX_RUNNER_WITNESSES_HF17 == BMCHAIN_MAX_WITNESSES,
-               "HF17 witness counts must add up to BMCHAIN_MAX_WITNESSES");
-
-       modify(get_witness_schedule_object(), [&](witness_schedule_object &wso) {
-           wso.max_voted_witnesses = BMCHAIN_MAX_VOTED_WITNESSES_HF17;
-           wso.max_miner_witnesses = BMCHAIN_MAX_MINER_WITNESSES_HF17;
-           wso.max_runner_witnesses = BMCHAIN_MAX_RUNNER_WITNESSES_HF17;
-       });
-
+       //perform_rep_share_split(1000000);
        const auto &gpo = get_dynamic_global_properties();
 
        auto post_rf = create<reward_fund_object>([&](reward_fund_object &rfo) {
            rfo.name = BMCHAIN_POST_REWARD_FUND_NAME;
            rfo.last_update = head_block_time();
-           rfo.content_constant = BMCHAIN_CONTENT_CONSTANT_HF0;
+           rfo.content_constant = BMCHAIN_CONTENT_CONSTANT;
            rfo.percent_curation_rewards = BMCHAIN_1_PERCENT * 25;
            rfo.percent_content_rewards = BMCHAIN_100_PERCENT;
            rfo.reward_balance = gpo.total_reward_fund_bmt;
-#ifndef IS_TEST_NET
-           rfo.recent_claims = BMCHAIN_HF_17_RECENT_CLAIMS;
-#endif
            rfo.author_reward_curve = curve_id::quadratic;
-           rfo.curation_reward_curve = curve_id::quadratic_curation;
-       });
-
-       // As a shortcut in payout processing, we use the id as an array index.
-       // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
-       FC_ASSERT(post_rf.id._id == 0);
-
-       modify(gpo, [&](dynamic_global_property_object &g) {
-           g.total_reward_fund_bmt = asset(0, BMT_SYMBOL);
-           g.total_reward_shares2 = 0;
-       });
-
-       /*
-       * For all current comments we will either keep their current cashout time, or extend it to 1 week
-       * after creation.
-       *
-       * We cannot do a simple iteration by cashout time because we are editting cashout time.
-       * More specifically, we will be adding an explicit cashout time to all comments with parents.
-       * To find all discussions that have not been paid out we fir iterate over posts by cashout time.
-       * Before the hardfork these are all root posts. Iterate over all of their children, adding each
-       * to a specific list. Next, update payout times for all discussions on the root post. This defines
-       * the min cashout time for each child in the discussion. Then iterate over the children and set
-       * their cashout time in a similar way, grabbing the root post as their inherent cashout time.
-       */
-       //const auto &comment_idx = get_index<comment_index, by_cashout_time>();
-       const auto &by_root_idx = get_index<comment_index, by_root>();
-       vector<const comment_object *> root_posts;
-       root_posts.reserve(BMCHAIN_HF_17_NUM_POSTS);
-       vector<const comment_object *> replies;
-       replies.reserve(BMCHAIN_HF_17_NUM_REPLIES);
-
-       for (auto itr = comment_idx.begin();
-            itr != comment_idx.end() && itr->cashout_time < fc::time_point_sec::maximum(); ++itr) {
-           root_posts.push_back(&(*itr));
-
-           for (auto reply_itr = by_root_idx.lower_bound(itr->id);
-                reply_itr != by_root_idx.end() && reply_itr->root_comment == itr->id; ++reply_itr) {
-               replies.push_back(&(*reply_itr));
-           }
-       }
-
-       for (auto itr : root_posts) {
-           modify(*itr, [&](comment_object &c) {
-               c.cashout_time = std::max(c.created + BMCHAIN_CASHOUT_WINDOW_SECONDS, c.cashout_time);
-           });
-       }
-
-       for (auto itr : replies) {
-           modify(*itr, [&](comment_object &c) {
-               c.cashout_time = std::max(calculate_discussion_payout_time(c),
-                                         c.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
-           });
-       }
-
-
-       // BMCHAIN_HARDFORK_0_19:
-
-       modify(get_dynamic_global_properties(), [&](dynamic_global_property_object &gpo) {
-           gpo.vote_power_reserve_rate = 10;
-       });
-
-       modify(get<reward_fund_object, by_name>(BMCHAIN_POST_REWARD_FUND_NAME), [&](reward_fund_object &rfo) {
-#ifndef IS_TEST_NET
-           rfo.recent_claims = BMCHAIN_HF_19_RECENT_CLAIMS;
-#endif
-           rfo.recent_claims = 0; /// bmchain
-           //rfo.author_reward_curve = curve_id::linear;
-           rfo.author_reward_curve = curve_id::quadratic; /// bmchain
            rfo.curation_reward_curve = curve_id::square_root;
+           rfo.recent_claims = 0;
        });
-
-       /* Remove all 0 delegation objects */
-       vector<const rep_delegation_object *> to_remove;
-       const auto &delegation_idx = get_index<rep_delegation_index, by_id>();
-       auto delegation_itr = delegation_idx.begin();
-
-       while (delegation_itr != delegation_idx.end()) {
-           if (delegation_itr->rep_shares.amount == 0)
-               to_remove.push_back(&(*delegation_itr));
-
-           ++delegation_itr;
-       }
-
-       for (const rep_delegation_object *delegation_ptr: to_remove) {
-           remove(*delegation_ptr);
-       }
-
-
-
-
-
-
    }
    FC_CAPTURE_AND_RETHROW()
 }
@@ -3353,7 +3182,7 @@ void database::perform_rep_share_split( uint32_t magnitude )
             a.rep_shares.amount *= magnitude;
             a.withdrawn             *= magnitude;
             a.to_withdraw           *= magnitude;
-            a.rep_withdraw_rate  = asset( a.to_withdraw / BMCHAIN_VESTING_WITHDRAW_INTERVALS_PRE_HF_16, REP_SYMBOL );
+            a.rep_withdraw_rate  = asset( a.to_withdraw / BMCHAIN_VESTING_WITHDRAW_INTERVALS, REP_SYMBOL );
             if( a.rep_withdraw_rate.amount == 0 )
                a.rep_withdraw_rate.amount = 1;
 
