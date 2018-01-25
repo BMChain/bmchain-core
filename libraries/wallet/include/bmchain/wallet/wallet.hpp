@@ -505,10 +505,10 @@ class wallet_api
        *
        * @param delegator The name of the account delegating VESTS
        * @param delegatee The name of the account receiving VESTS
-       * @param vesting_shares The amount of VESTS to delegate
+       * @param rep_shares The amount of VESTS to delegate
        * @param broadcast true if you wish to broadcast the transaction
        */
-       annotated_signed_transaction delegate_vesting_shares( string delegator, string delegatee, asset vesting_shares, bool broadcast );
+       annotated_signed_transaction delegate_rep_shares( string delegator, string delegatee, asset rep_shares, bool broadcast );
 
 
       /**
@@ -693,7 +693,7 @@ class wallet_api
        * @param amount The amount of BMT to vest i.e. "100.00 BMT"
        * @param broadcast true if you wish to broadcast the transaction
        */
-      annotated_signed_transaction transfer_to_vesting(string from, string to, asset amount, bool broadcast = false);
+      annotated_signed_transaction transfer_to_rep(string from, string to, asset amount, bool broadcast = false);
 
       /**
        *  Transfers into savings happen immediately, transfers from savings take 72 hours
@@ -717,11 +717,11 @@ class wallet_api
        * Set up a vesting withdraw request. The request is fulfilled once a week over the next two year (104 weeks).
        *
        * @param from The account the VESTS are withdrawn from
-       * @param vesting_shares The amount of VESTS to withdraw over the next two years. Each week (amount/104) shares are
+       * @param rep_shares The amount of VESTS to withdraw over the next two years. Each week (amount/104) shares are
        *    withdrawn and deposited back as BMT. i.e. "10.000000 VESTS"
        * @param broadcast true if you wish to broadcast the transaction
        */
-      annotated_signed_transaction withdraw_vesting( string from, asset vesting_shares, bool broadcast = false );
+      annotated_signed_transaction withdraw_rep( string from, asset rep_shares, bool broadcast = false );
 
       /**
        * Set up a vesting withdraw route. When vesting shares are withdrawn, they will be routed to these accounts
@@ -735,7 +735,7 @@ class wallet_api
        *    them as BMT.
        * @param broadcast true if you wish to broadcast the transaction.
        */
-      annotated_signed_transaction set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
+      annotated_signed_transaction set_withdraw_rep_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
 
       /**
        * A witness can public a price feed for the BMT:SBD market. The median price feed is used
@@ -1038,7 +1038,7 @@ FC_API( bmchain::wallet::wallet_api,
         (update_account_auth_threshold)
         (update_account_meta)
         (update_account_memo_key)
-        (delegate_vesting_shares)
+        (delegate_rep_shares)
         (update_witness)
         (set_voting_proxy)
         (vote_for_witness)
@@ -1048,9 +1048,9 @@ FC_API( bmchain::wallet::wallet_api,
         (escrow_approve)
         (escrow_dispute)
         (escrow_release)
-        (transfer_to_vesting)
-        (withdraw_vesting)
-        (set_withdraw_vesting_route)
+        (transfer_to_rep)
+        (withdraw_rep)
+        (set_withdraw_rep_route)
         (publish_feed)
         (post_comment)
         (vote)

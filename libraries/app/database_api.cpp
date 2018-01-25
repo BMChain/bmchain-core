@@ -490,7 +490,7 @@ namespace bmchain {
                 const auto &acc = my->_db.get_account(account);
 
                 if (type == outgoing || type == all) {
-                    const auto &by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+                    const auto &by_route = my->_db.get_index<withdraw_rep_route_index>().indices().get<by_withdraw_route>();
                     auto route = by_route.lower_bound(acc.id);
 
                     while (route != by_route.end() && route->from_account == acc.id) {
@@ -507,7 +507,7 @@ namespace bmchain {
                 }
 
                 if (type == incoming || type == all) {
-                    const auto &by_dest = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_destination>();
+                    const auto &by_dest = my->_db.get_index<withdraw_rep_route_index>().indices().get<by_destination>();
                     auto route = by_dest.lower_bound(acc.id);
 
                     while (route != by_dest.end() && route->to_account == acc.id) {
@@ -549,13 +549,13 @@ namespace bmchain {
 
         vector<best_author> database_api_impl::get_best_authors(uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
-            const auto &accounts_by_vesting = _db.get_index<account_index>().indices().get<by_vesting_shares>();
+            const auto &accounts_by_rep = _db.get_index<account_index>().indices().get<by_rep_shares>();
             const auto &comments_by_author = _db.get_index<comment_index>().indices().get<by_author_created>();
 
             vector<best_author> result;
 
-            for (auto itr = accounts_by_vesting.begin();
-                 limit-- && itr != accounts_by_vesting.end();
+            for (auto itr = accounts_by_rep.begin();
+                 limit-- && itr != accounts_by_rep.end();
                  ++itr) {
                 auto comment_itr = comments_by_author.find(itr->name);
                 auto pred = [&](const comment_object &com_obj) {
@@ -563,7 +563,7 @@ namespace bmchain {
                 };
                 auto com_itr = std::find_if(comment_itr, comments_by_author.end(), pred);
                 best_author ba = {itr->name,
-                                  itr->vesting_shares.amount.value,
+                                  itr->rep_shares.amount.value,
                                   to_string(itr->json_metadata),
                                   to_string(com_itr->permlink),
                                   to_string(com_itr->title)};
@@ -1630,15 +1630,15 @@ namespace bmchain {
             });
         }
 
-        vector<vesting_delegation_api_obj>
-        database_api::get_vesting_delegations(string account, string from, uint32_t limit) const {
+        vector<rep_delegation_api_obj>
+        database_api::get_rep_delegations(string account, string from, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
 
             return my->_db.with_read_lock([&]() {
-                vector<vesting_delegation_api_obj> result;
+                vector<rep_delegation_api_obj> result;
                 result.reserve(limit);
 
-                const auto &delegation_idx = my->_db.get_index<vesting_delegation_index, by_delegation>();
+                const auto &delegation_idx = my->_db.get_index<rep_delegation_index, by_delegation>();
                 auto itr = delegation_idx.lower_bound(boost::make_tuple(account, from));
                 while (result.size() < limit && itr != delegation_idx.end() && itr->delegator == account) {
                     result.push_back(*itr);
@@ -1649,15 +1649,15 @@ namespace bmchain {
             });
         }
 
-        vector<vesting_delegation_expiration_api_obj>
-        database_api::get_expiring_vesting_delegations(string account, time_point_sec from, uint32_t limit) const {
+        vector<rep_delegation_expiration_api_obj>
+        database_api::get_expiring_rep_delegations(string account, time_point_sec from, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
 
             return my->_db.with_read_lock([&]() {
-                vector<vesting_delegation_expiration_api_obj> result;
+                vector<rep_delegation_expiration_api_obj> result;
                 result.reserve(limit);
 
-                const auto &exp_idx = my->_db.get_index<vesting_delegation_expiration_index, by_account_expiration>();
+                const auto &exp_idx = my->_db.get_index<rep_delegation_expiration_index, by_account_expiration>();
                 auto itr = exp_idx.lower_bound(boost::make_tuple(account, from));
                 while (result.size() < limit && itr != exp_idx.end() && itr->delegator == account) {
                     result.push_back(*itr);
@@ -1712,8 +1712,8 @@ namespace bmchain {
                             auto history = get_account_history(acnt, uint64_t(-1), 10000);
                             for (auto &item : history) {
                                 switch (item.second.op.which()) {
-                                    case operation::tag<transfer_to_vesting_operation>::value:
-                                    case operation::tag<withdraw_vesting_operation>::value:
+                                    case operation::tag<transfer_to_rep_operation>::value:
+                                    case operation::tag<withdraw_rep_operation>::value:
                                     case operation::tag<interest_operation>::value:
                                     case operation::tag<transfer_operation>::value:
                                     case operation::tag<liquidity_reward_operation>::value:
@@ -2150,7 +2150,10 @@ namespace bmchain {
                                       [](const comment_object &com) { return com.depth == 0; });
                 stat.comments = count_if(com_idx.cbegin(), com_idx.cend(),
                                          [](const comment_object &com) { return com.depth > 0; });
-                stat.votes = vote_idx.size();
+                stat.votes = accumulate(com_idx.cbegin(), com_idx.cend(),
+                                        0,
+                                        bind(plus<int32_t>(), placeholders::_1,
+                                             bind(&comment_object::net_votes, placeholders::_2)));
                 stat.end = fc::time_point_sec::min();
             } else {
                 stat.users = count_if(acc_idx.cbegin(), acc_idx.cend(),
@@ -2166,10 +2169,10 @@ namespace bmchain {
                                              return com.depth > 0 && com.created >= time_begin && com.created <=
                                                                                                   time_end;
                                          });
-                stat.votes = count_if(vote_idx.cbegin(), vote_idx.cend(),
-                                      [time_begin, time_end](const comment_vote_object &vote) {
-                                          return vote.last_update >= time_begin && vote.last_update <= time_end;
-                                      });
+                stat.votes = accumulate(com_idx.cbegin(), com_idx.cend(),
+                                         0,
+                                         bind(plus<int32_t>(), placeholders::_1,
+                                              bind(&comment_object::net_votes, placeholders::_2)));
             }
 
             return stat;
@@ -2246,7 +2249,7 @@ namespace bmchain {
                                                                                          placeholders::_2)));
             if (distr_base != 0) {
                 for (auto rep : result) {
-                    rep.second = rep.second / distr_base * author.vesting_shares.amount.value;
+                    rep.second = rep.second / distr_base * author.rep_shares.amount.value;
                 }
             }
             return result;

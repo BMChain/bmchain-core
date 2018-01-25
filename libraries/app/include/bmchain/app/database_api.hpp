@@ -261,8 +261,8 @@ class database_api
       vector< savings_withdraw_api_obj > get_savings_withdraw_from( string account )const;
       vector< savings_withdraw_api_obj > get_savings_withdraw_to( string account )const;
 
-      vector< vesting_delegation_api_obj > get_vesting_delegations( string account, string from, uint32_t limit = 100 )const;
-      vector< vesting_delegation_expiration_api_obj > get_expiring_vesting_delegations( string account, time_point_sec from, uint32_t limit = 100 )const;
+      vector< rep_delegation_api_obj > get_rep_delegations( string account, string from, uint32_t limit = 100 )const;
+      vector< rep_delegation_expiration_api_obj > get_expiring_rep_delegations( string account, time_point_sec from, uint32_t limit = 100 )const;
 
       vector<best_author> get_best_authors(uint32_t limit)const;
 
@@ -540,8 +540,8 @@ FC_API(bmchain::app::database_api,
    (get_account_bandwidth)
    (get_savings_withdraw_from)
    (get_savings_withdraw_to)
-   (get_vesting_delegations)
-   (get_expiring_vesting_delegations)
+   (get_rep_delegations)
+   (get_expiring_rep_delegations)
    (get_best_authors)
 
    // Authority / validation

@@ -82,19 +82,19 @@ int main( int argc, char** argv, char** envp )
 
    auto block_inflation_model = [&]( uint32_t block_num, share_type& current_supply )
    {
-      uint32_t vesting_factor = (block_num < BMCHAIN_START_VESTING_BLOCK) ? 0 : 9;
+      uint32_t rep_factor = (block_num < BMCHAIN_START_VESTING_BLOCK) ? 0 : 9;
 
       share_type curate_reward   = calc_percent_reward_per_block< BMCHAIN_CURATE_APR_PERCENT >( current_supply );
       reward_delta[ CURATE_OFF ] = std::max( curate_reward, BMCHAIN_MIN_CURATE_REWARD.amount );
-      reward_delta[ VCURATE_OFF ] = reward_delta[ CURATE_OFF ] * vesting_factor;
+      reward_delta[ VCURATE_OFF ] = reward_delta[ CURATE_OFF ] * rep_factor;
 
       share_type content_reward  = calc_percent_reward_per_block< BMCHAIN_CONTENT_APR_PERCENT >( current_supply );
       reward_delta[ CONTENT_OFF ] = std::max( content_reward, BMCHAIN_MIN_CONTENT_REWARD.amount );
-      reward_delta[ VCONTENT_OFF ] = reward_delta[ CONTENT_OFF ] * vesting_factor;
+      reward_delta[ VCONTENT_OFF ] = reward_delta[ CONTENT_OFF ] * rep_factor;
 
       share_type producer_reward = calc_percent_reward_per_block< BMCHAIN_PRODUCER_APR_PERCENT >( current_supply );
       reward_delta[ PRODUCER_OFF ] = std::max( producer_reward, BMCHAIN_MIN_PRODUCER_REWARD.amount );
-      reward_delta[ VPRODUCER_OFF ] = reward_delta[ PRODUCER_OFF ] * vesting_factor;
+      reward_delta[ VPRODUCER_OFF ] = reward_delta[ PRODUCER_OFF ] * rep_factor;
 
       current_supply += reward_delta[CURATE_OFF] + reward_delta[VCURATE_OFF] + reward_delta[CONTENT_OFF] + reward_delta[VCONTENT_OFF] + reward_delta[PRODUCER_OFF] + reward_delta[VPRODUCER_OFF];
       // supply for above is computed by using pre-updated supply for computing all 3 amounts.
@@ -115,7 +115,7 @@ int main( int argc, char** argv, char** envp )
          --pow_deficit;
       }
       reward_delta[ POW_OFF ] = pow_reward;
-      reward_delta[ VPOW_OFF ] = reward_delta[ POW_OFF ] * vesting_factor;
+      reward_delta[ VPOW_OFF ] = reward_delta[ POW_OFF ] * rep_factor;
 
       current_supply += reward_delta[ POW_OFF ] + reward_delta[ VPOW_OFF ];
 
@@ -125,7 +125,7 @@ int main( int argc, char** argv, char** envp )
          liquidity_reward = std::max( liquidity_reward, BMCHAIN_MIN_LIQUIDITY_REWARD.amount );
       }
       reward_delta[ LIQUIDITY_OFF ] = liquidity_reward;
-      reward_delta[ VLIQUIDITY_OFF ] = reward_delta[ LIQUIDITY_OFF ] * vesting_factor;
+      reward_delta[ VLIQUIDITY_OFF ] = reward_delta[ LIQUIDITY_OFF ] * rep_factor;
       current_supply += reward_delta[ LIQUIDITY_OFF ] + reward_delta[ VLIQUIDITY_OFF ];
 
       for( int i=0; i<REWARD_TYPES; i++ )

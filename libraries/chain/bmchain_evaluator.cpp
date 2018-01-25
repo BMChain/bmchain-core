@@ -154,11 +154,11 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
    });
 
    if( o.fee.amount > 0 )
-      _db.create_vesting( new_account, o.fee );
+      _db.create_rep( new_account, o.fee );
 
    if( BMCHAIN_ENABLE ){
       auto new_bmt = asset(BMCHAIN_USER_EMISSION_RATE, BMT_SYMBOL);
-      _db.create_vesting(new_account, new_bmt);
+      _db.create_rep(new_account, new_bmt);
       _db.modify( props, [&]( dynamic_global_property_object& props )
       {
           props.virtual_supply += new_bmt;
@@ -178,13 +178,13 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
                ( "creator.balance", creator.balance )
                ( "required", o.fee ) );
 
-   FC_ASSERT( creator.vesting_shares - creator.delegated_vesting_shares - asset( creator.to_withdraw - creator.withdrawn, REP_SYMBOL ) >= o.delegation, "Insufficient vesting shares to delegate to new account.",
-               ( "creator.vesting_shares", creator.vesting_shares )
-               ( "creator.delegated_vesting_shares", creator.delegated_vesting_shares )( "required", o.delegation ) );
+   FC_ASSERT( creator.rep_shares - creator.delegated_rep_shares - asset( creator.to_withdraw - creator.withdrawn, REP_SYMBOL ) >= o.delegation, "Insufficient vesting shares to delegate to new account.",
+               ( "creator.rep_shares", creator.rep_shares )
+               ( "creator.delegated_rep_shares", creator.delegated_rep_shares )( "required", o.delegation ) );
 
-   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_vesting_share_price();
+   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_rep_share_price();
 
-   auto current_delegation = asset( o.fee.amount * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_vesting_share_price() + o.delegation;
+   auto current_delegation = asset( o.fee.amount * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_rep_share_price() + o.delegation;
 
    FC_ASSERT( current_delegation >= target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
                ("f", target_delegation )
@@ -215,7 +215,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
    _db.modify( creator, [&]( account_object& c )
    {
       c.balance -= o.fee;
-      c.delegated_vesting_shares += o.delegation;
+      c.delegated_rep_shares += o.delegation;
    });
 
    const auto& new_account = _db.create< account_object >( [&]( account_object& acc )
@@ -228,7 +228,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
 
       acc.recovery_account = o.creator;
 
-      acc.received_vesting_shares = o.delegation;
+      acc.received_rep_shares = o.delegation;
 
       #ifndef IS_LOW_MEM
          from_string( acc.json_metadata, o.json_metadata );
@@ -246,17 +246,17 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
 
    if( o.delegation.amount > 0 )
    {
-      _db.create< vesting_delegation_object >( [&]( vesting_delegation_object& vdo )
+      _db.create< rep_delegation_object >( [&]( rep_delegation_object& vdo )
       {
          vdo.delegator = o.creator;
          vdo.delegatee = o.new_account_name;
-         vdo.vesting_shares = o.delegation;
+         vdo.rep_shares = o.delegation;
          vdo.min_delegation_time = _db.head_block_time() + BMCHAIN_CREATE_ACCOUNT_DELEGATION_TIME;
       });
    }
 
    if( o.fee.amount > 0 )
-      _db.create_vesting( new_account, o.fee );
+      _db.create_rep( new_account, o.fee );
 }
 
 
@@ -998,75 +998,75 @@ void transfer_evaluator::do_apply( const transfer_operation& o )
    _db.adjust_balance( to_account, o.amount );
 }
 
-void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operation& o )
+void transfer_to_rep_evaluator::do_apply( const transfer_to_rep_operation& o )
 {
    const auto& from_account = _db.get_account(o.from);
    const auto& to_account = o.to.size() ? _db.get_account(o.to) : from_account;
 
    FC_ASSERT( _db.get_balance( from_account, BMT_SYMBOL) >= o.amount, "Account does not have sufficient BMT for transfer." );
    _db.adjust_balance( from_account, -o.amount );
-   _db.create_vesting( to_account, o.amount );
+   _db.create_rep( to_account, o.amount );
 }
 
-void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
+void withdraw_rep_evaluator::do_apply( const withdraw_rep_operation& o )
 {
    const auto& account = _db.get_account( o.account );
 
-   FC_ASSERT( account.vesting_shares >= asset( 0, REP_SYMBOL ), "Account does not have sufficient BMT for withdraw." );
-   FC_ASSERT( account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares, "Account does not have sufficient BMT for withdraw." );
+   FC_ASSERT( account.rep_shares >= asset( 0, REP_SYMBOL ), "Account does not have sufficient BMT for withdraw." );
+   FC_ASSERT( account.rep_shares - account.delegated_rep_shares >= o.rep_shares, "Account does not have sufficient BMT for withdraw." );
 
    if( !account.mined )
    {
       const auto& props = _db.get_dynamic_global_properties();
       const witness_schedule_object& wso = _db.get_witness_schedule_object();
 
-      asset min_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
+      asset min_vests = wso.median_props.account_creation_fee * props.get_rep_share_price();
       min_vests.amount.value *= 10;
 
-      FC_ASSERT( account.vesting_shares > min_vests && o.vesting_shares.amount == 0,
+      FC_ASSERT( account.rep_shares > min_vests && o.rep_shares.amount == 0,
                  "Account registered by another account requires 10x account creation fee worth of BMT before it can be powered down." );
    }
 
-   if( o.vesting_shares.amount == 0 )
+   if( o.rep_shares.amount == 0 )
    {
-      FC_ASSERT( account.vesting_withdraw_rate.amount  != 0, "This operation would not change the vesting withdraw rate." );
+      FC_ASSERT( account.rep_withdraw_rate.amount  != 0, "This operation would not change the vesting withdraw rate." );
 
       _db.modify( account, [&]( account_object& a ) {
-         a.vesting_withdraw_rate = asset( 0, REP_SYMBOL );
-         a.next_vesting_withdrawal = time_point_sec::maximum();
+         a.rep_withdraw_rate = asset( 0, REP_SYMBOL );
+         a.next_rep_withdrawal = time_point_sec::maximum();
          a.to_withdraw = 0;
          a.withdrawn = 0;
       });
    }
    else
    {
-      int vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
-      vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
+      int rep_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
+      rep_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
       _db.modify( account, [&]( account_object& a )
       {
-         auto new_vesting_withdraw_rate = asset( o.vesting_shares.amount / vesting_withdraw_intervals, REP_SYMBOL );
+         auto new_rep_withdraw_rate = asset( o.rep_shares.amount / rep_withdraw_intervals, REP_SYMBOL );
 
-         if( new_vesting_withdraw_rate.amount == 0 )
-            new_vesting_withdraw_rate.amount = 1;
+         if( new_rep_withdraw_rate.amount == 0 )
+            new_rep_withdraw_rate.amount = 1;
 
-         FC_ASSERT( account.vesting_withdraw_rate  != new_vesting_withdraw_rate, "This operation would not change the vesting withdraw rate." );
+         FC_ASSERT( account.rep_withdraw_rate  != new_rep_withdraw_rate, "This operation would not change the vesting withdraw rate." );
 
-         a.vesting_withdraw_rate = new_vesting_withdraw_rate;
-         a.next_vesting_withdrawal = _db.head_block_time() + fc::seconds(BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS);
-         a.to_withdraw = o.vesting_shares.amount;
+         a.rep_withdraw_rate = new_rep_withdraw_rate;
+         a.next_rep_withdrawal = _db.head_block_time() + fc::seconds(BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS);
+         a.to_withdraw = o.rep_shares.amount;
          a.withdrawn = 0;
       });
    }
 }
 
-void set_withdraw_vesting_route_evaluator::do_apply( const set_withdraw_vesting_route_operation& o )
+void set_withdraw_rep_route_evaluator::do_apply( const set_withdraw_rep_route_operation& o )
 {
    try
    {
    const auto& from_account = _db.get_account( o.from_account );
    const auto& to_account = _db.get_account( o.to_account );
-   const auto& wd_idx = _db.get_index< withdraw_vesting_route_index >().indices().get< by_withdraw_route >();
+   const auto& wd_idx = _db.get_index< withdraw_rep_route_index >().indices().get< by_withdraw_route >();
    auto itr = wd_idx.find( boost::make_tuple( from_account.id, to_account.id ) );
 
    if( itr == wd_idx.end() )
@@ -1074,7 +1074,7 @@ void set_withdraw_vesting_route_evaluator::do_apply( const set_withdraw_vesting_
       FC_ASSERT( o.percent != 0, "Cannot create a 0% destination." );
       FC_ASSERT( from_account.withdraw_routes < BMCHAIN_MAX_WITHDRAW_ROUTES, "Account already has the maximum number of routes." );
 
-      _db.create< withdraw_vesting_route_object >( [&]( withdraw_vesting_route_object& wvdo )
+      _db.create< withdraw_rep_route_object >( [&]( withdraw_rep_route_object& wvdo )
       {
          wvdo.from_account = from_account.id;
          wvdo.to_account = to_account.id;
@@ -1098,7 +1098,7 @@ void set_withdraw_vesting_route_evaluator::do_apply( const set_withdraw_vesting_
    }
    else
    {
-      _db.modify( *itr, [&]( withdraw_vesting_route_object& wvdo )
+      _db.modify( *itr, [&]( withdraw_rep_route_object& wvdo )
       {
          wvdo.from_account = from_account.id;
          wvdo.to_account = to_account.id;
@@ -1130,7 +1130,7 @@ void account_witness_proxy_evaluator::do_apply( const account_witness_proxy_oper
 
    /// remove all current votes
    std::array<share_type, BMCHAIN_MAX_PROXY_RECURSION_DEPTH+1> delta;
-   delta[0] = -account.vesting_shares.amount;
+   delta[0] = -account.rep_shares.amount;
    for( int i = 0; i < BMCHAIN_MAX_PROXY_RECURSION_DEPTH; ++i )
       delta[i+1] = -account.proxied_vsf_votes[i];
    _db.adjust_proxied_witness_votes( account, delta );
@@ -1266,8 +1266,8 @@ try {
 
    FC_ASSERT( used_power <= current_power, "Account does not have enough power to vote." );
 
-   auto effective_vesting_shares = uint128_t(voter.effective_vesting_shares().amount.value);
-   int64_t abs_rshares    = ((effective_vesting_shares * used_power) / (BMCHAIN_100_PERCENT)).to_uint64();
+   auto effective_rep_shares = uint128_t(voter.effective_rep_shares().amount.value);
+   int64_t abs_rshares    = ((effective_rep_shares * used_power) / (BMCHAIN_100_PERCENT)).to_uint64();
 
    FC_ASSERT(abs_rshares > BMCHAIN_VOTE_DUST_THRESHOLD || o.weight == 0,
              "Voting weight is too small, please accumulate more voting power or BMT.");
@@ -1639,7 +1639,7 @@ void pow_apply( database& db, Operation o )
    if( db.head_block_num() < BMCHAIN_START_MINER_VOTING_BLOCK )
       db.adjust_balance( inc_witness, pow_reward );
    else
-      db.create_vesting( inc_witness, pow_reward );
+      db.create_rep( inc_witness, pow_reward );
 }
 
 void pow_evaluator::do_apply( const pow_operation& o ) {
@@ -1795,7 +1795,7 @@ void challenge_authority_evaluator::do_apply( const challenge_authority_operatio
       FC_ASSERT( _db.head_block_time() - challenged.last_owner_proved > BMCHAIN_OWNER_CHALLENGE_COOLDOWN );
 
       _db.adjust_balance( challenger, - BMCHAIN_OWNER_CHALLENGE_FEE );
-      _db.create_vesting( _db.get_account( o.challenged ), BMCHAIN_OWNER_CHALLENGE_FEE );
+      _db.create_rep( _db.get_account( o.challenged ), BMCHAIN_OWNER_CHALLENGE_FEE );
 
       _db.modify( challenged, [&]( account_object& a )
       {
@@ -1809,7 +1809,7 @@ void challenge_authority_evaluator::do_apply( const challenge_authority_operatio
       FC_ASSERT( _db.head_block_time() - challenged.last_active_proved > BMCHAIN_ACTIVE_CHALLENGE_COOLDOWN, "Account cannot be challenged because it was recently challenged." );
 
       _db.adjust_balance( challenger, - BMCHAIN_ACTIVE_CHALLENGE_FEE );
-      _db.create_vesting( _db.get_account( o.challenged ), BMCHAIN_ACTIVE_CHALLENGE_FEE );
+      _db.create_rep( _db.get_account( o.challenged ), BMCHAIN_ACTIVE_CHALLENGE_FEE );
 
       _db.modify( challenged, [&]( account_object& a )
       {
@@ -2058,130 +2058,130 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
 
    FC_ASSERT( op.reward_bmt <= acnt.reward_bmt_balance, "Cannot claim that much BMT. Claim: ${c} Actual: ${a}",
       ("c", op.reward_bmt)("a", acnt.reward_bmt_balance) );
-   FC_ASSERT( op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
-      ("c", op.reward_vests)("a", acnt.reward_vesting_balance) );
+   FC_ASSERT( op.reward_vests <= acnt.reward_rep_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
+      ("c", op.reward_vests)("a", acnt.reward_rep_balance) );
 
-   asset reward_vesting_bmt_to_move = asset( 0, BMT_SYMBOL );
-   if( op.reward_vests == acnt.reward_vesting_balance )
-      reward_vesting_bmt_to_move = acnt.reward_vesting_bmt;
+   asset reward_rep_bmt_to_move = asset( 0, BMT_SYMBOL );
+   if( op.reward_vests == acnt.reward_rep_balance )
+      reward_rep_bmt_to_move = acnt.reward_rep_bmt;
    else
-      reward_vesting_bmt_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_vesting_bmt.amount.value ) )
-         / uint128_t( acnt.reward_vesting_balance.amount.value ) ).to_uint64(), BMT_SYMBOL );
+      reward_rep_bmt_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_rep_bmt.amount.value ) )
+         / uint128_t( acnt.reward_rep_balance.amount.value ) ).to_uint64(), BMT_SYMBOL );
 
    _db.adjust_reward_balance( acnt, -op.reward_bmt );
    _db.adjust_balance( acnt, op.reward_bmt );
 
    _db.modify( acnt, [&]( account_object& a )
    {
-      a.vesting_shares += op.reward_vests;
-      a.reward_vesting_balance -= op.reward_vests;
-      a.reward_vesting_bmt -= reward_vesting_bmt_to_move;
+      a.rep_shares += op.reward_vests;
+      a.reward_rep_balance -= op.reward_vests;
+      a.reward_rep_bmt -= reward_rep_bmt_to_move;
    });
 
    _db.modify( _db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
    {
-      gpo.total_vesting_shares += op.reward_vests;
-      gpo.total_vesting_fund_bmt += reward_vesting_bmt_to_move;
+      gpo.total_rep_shares += op.reward_vests;
+      gpo.total_rep_fund_bmt += reward_rep_bmt_to_move;
 
-      gpo.pending_rewarded_vesting_shares -= op.reward_vests;
-      gpo.pending_rewarded_vesting_bmt -= reward_vesting_bmt_to_move;
+      gpo.pending_rewarded_rep_shares -= op.reward_vests;
+      gpo.pending_rewarded_rep_bmt -= reward_rep_bmt_to_move;
    });
 
    _db.adjust_proxied_witness_votes( acnt, op.reward_vests.amount );
 }
 
-void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_operation& op )
+void delegate_rep_shares_evaluator::do_apply( const delegate_rep_shares_operation& op )
 {
    const auto& delegator = _db.get_account( op.delegator );
    const auto& delegatee = _db.get_account( op.delegatee );
-   auto delegation = _db.find< vesting_delegation_object, by_delegation >( boost::make_tuple( op.delegator, op.delegatee ) );
+   auto delegation = _db.find< rep_delegation_object, by_delegation >( boost::make_tuple( op.delegator, op.delegatee ) );
 
-   auto available_shares = delegator.vesting_shares - delegator.delegated_vesting_shares - asset( delegator.to_withdraw - delegator.withdrawn, REP_SYMBOL );
+   auto available_shares = delegator.rep_shares - delegator.delegated_rep_shares - asset( delegator.to_withdraw - delegator.withdrawn, REP_SYMBOL );
 
    const auto& wso = _db.get_witness_schedule_object();
    const auto& gpo = _db.get_dynamic_global_properties();
-   auto min_delegation = asset( wso.median_props.account_creation_fee.amount * 10, BMT_SYMBOL ) * gpo.get_vesting_share_price();
-   auto min_update = wso.median_props.account_creation_fee * gpo.get_vesting_share_price();
+   auto min_delegation = asset( wso.median_props.account_creation_fee.amount * 10, BMT_SYMBOL ) * gpo.get_rep_share_price();
+   auto min_update = wso.median_props.account_creation_fee * gpo.get_rep_share_price();
 
    // If delegation doesn't exist, create it
    if( delegation == nullptr )
    {
-      FC_ASSERT( available_shares >= op.vesting_shares, "Account does not have enough vesting shares to delegate." );
-      FC_ASSERT( op.vesting_shares >= min_delegation, "Account must delegate a minimum of ${v}", ("v", min_delegation) );
+      FC_ASSERT( available_shares >= op.rep_shares, "Account does not have enough vesting shares to delegate." );
+      FC_ASSERT( op.rep_shares >= min_delegation, "Account must delegate a minimum of ${v}", ("v", min_delegation) );
 
-      _db.create< vesting_delegation_object >( [&]( vesting_delegation_object& obj )
+      _db.create< rep_delegation_object >( [&]( rep_delegation_object& obj )
       {
          obj.delegator = op.delegator;
          obj.delegatee = op.delegatee;
-         obj.vesting_shares = op.vesting_shares;
+         obj.rep_shares = op.rep_shares;
          obj.min_delegation_time = _db.head_block_time();
       });
 
       _db.modify( delegator, [&]( account_object& a )
       {
-         a.delegated_vesting_shares += op.vesting_shares;
+         a.delegated_rep_shares += op.rep_shares;
       });
 
       _db.modify( delegatee, [&]( account_object& a )
       {
-         a.received_vesting_shares += op.vesting_shares;
+         a.received_rep_shares += op.rep_shares;
       });
    }
    // Else if the delegation is increasing
-   else if( op.vesting_shares >= delegation->vesting_shares )
+   else if( op.rep_shares >= delegation->rep_shares )
    {
-      auto delta = op.vesting_shares - delegation->vesting_shares;
+      auto delta = op.rep_shares - delegation->rep_shares;
 
       FC_ASSERT( delta >= min_update, "BMT increase is not enough of a difference. min_update: ${min}", ("min", min_update) );
-      FC_ASSERT( available_shares >= op.vesting_shares - delegation->vesting_shares, "Account does not have enough vesting shares to delegate." );
+      FC_ASSERT( available_shares >= op.rep_shares - delegation->rep_shares, "Account does not have enough vesting shares to delegate." );
 
       _db.modify( delegator, [&]( account_object& a )
       {
-         a.delegated_vesting_shares += delta;
+         a.delegated_rep_shares += delta;
       });
 
       _db.modify( delegatee, [&]( account_object& a )
       {
-         a.received_vesting_shares += delta;
+         a.received_rep_shares += delta;
       });
 
-      _db.modify( *delegation, [&]( vesting_delegation_object& obj )
+      _db.modify( *delegation, [&]( rep_delegation_object& obj )
       {
-         obj.vesting_shares = op.vesting_shares;
+         obj.rep_shares = op.rep_shares;
       });
    }
    // Else the delegation is decreasing
-   else /* delegation->vesting_shares > op.vesting_shares */
+   else /* delegation->rep_shares > op.rep_shares */
    {
-      auto delta = delegation->vesting_shares - op.vesting_shares;
+      auto delta = delegation->rep_shares - op.rep_shares;
 
-      if( op.vesting_shares.amount > 0 )
+      if( op.rep_shares.amount > 0 )
       {
          FC_ASSERT( delta >= min_update, "BMT decrease is not enough of a difference. min_update: ${min}", ("min", min_update) );
-         FC_ASSERT( op.vesting_shares >= min_delegation, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation) );
+         FC_ASSERT( op.rep_shares >= min_delegation, "Delegation must be removed or leave minimum delegation amount of ${v}", ("v", min_delegation) );
       }
       else
       {
-         FC_ASSERT( delegation->vesting_shares.amount > 0, "Delegation would set vesting_shares to zero, but it is already zero");
+         FC_ASSERT( delegation->rep_shares.amount > 0, "Delegation would set rep_shares to zero, but it is already zero");
       }
 
-      _db.create< vesting_delegation_expiration_object >( [&]( vesting_delegation_expiration_object& obj )
+      _db.create< rep_delegation_expiration_object >( [&]( rep_delegation_expiration_object& obj )
       {
          obj.delegator = op.delegator;
-         obj.vesting_shares = delta;
+         obj.rep_shares = delta;
          obj.expiration = std::max( _db.head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS, delegation->min_delegation_time );
       });
 
       _db.modify( delegatee, [&]( account_object& a )
       {
-         a.received_vesting_shares -= delta;
+         a.received_rep_shares -= delta;
       });
 
-      if( op.vesting_shares.amount > 0 )
+      if( op.rep_shares.amount > 0 )
       {
-         _db.modify( *delegation, [&]( vesting_delegation_object& obj )
+         _db.modify( *delegation, [&]( rep_delegation_object& obj )
          {
-            obj.vesting_shares = op.vesting_shares;
+            obj.rep_shares = op.rep_shares;
          });
       }
       else

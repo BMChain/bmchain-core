@@ -156,16 +156,16 @@ namespace bmchain { namespace chain {
    /**
     * @breif a route to send withdrawn vesting shares.
     */
-   class withdraw_vesting_route_object : public object< withdraw_vesting_route_object_type, withdraw_vesting_route_object >
+   class withdraw_rep_route_object : public object< withdraw_rep_route_object_type, withdraw_rep_route_object >
    {
       public:
          template< typename Constructor, typename Allocator >
-         withdraw_vesting_route_object( Constructor&& c, allocator< Allocator > a )
+         withdraw_rep_route_object( Constructor&& c, allocator< Allocator > a )
          {
             c( *this );
          }
 
-         withdraw_vesting_route_object(){}
+         withdraw_rep_route_object(){}
 
          id_type  id;
 
@@ -309,25 +309,25 @@ namespace bmchain { namespace chain {
    struct by_withdraw_route;
    struct by_destination;
    typedef multi_index_container<
-      withdraw_vesting_route_object,
+      withdraw_rep_route_object,
       indexed_by<
-         ordered_unique< tag< by_id >, member< withdraw_vesting_route_object, withdraw_vesting_route_id_type, &withdraw_vesting_route_object::id > >,
+         ordered_unique< tag< by_id >, member< withdraw_rep_route_object, withdraw_rep_route_id_type, &withdraw_rep_route_object::id > >,
          ordered_unique< tag< by_withdraw_route >,
-            composite_key< withdraw_vesting_route_object,
-               member< withdraw_vesting_route_object, account_id_type, &withdraw_vesting_route_object::from_account >,
-               member< withdraw_vesting_route_object, account_id_type, &withdraw_vesting_route_object::to_account >
+            composite_key< withdraw_rep_route_object,
+               member< withdraw_rep_route_object, account_id_type, &withdraw_rep_route_object::from_account >,
+               member< withdraw_rep_route_object, account_id_type, &withdraw_rep_route_object::to_account >
             >,
             composite_key_compare< std::less< account_id_type >, std::less< account_id_type > >
          >,
          ordered_unique< tag< by_destination >,
-            composite_key< withdraw_vesting_route_object,
-               member< withdraw_vesting_route_object, account_id_type, &withdraw_vesting_route_object::to_account >,
-               member< withdraw_vesting_route_object, withdraw_vesting_route_id_type, &withdraw_vesting_route_object::id >
+            composite_key< withdraw_rep_route_object,
+               member< withdraw_rep_route_object, account_id_type, &withdraw_rep_route_object::to_account >,
+               member< withdraw_rep_route_object, withdraw_rep_route_id_type, &withdraw_rep_route_object::id >
             >
          >
       >,
-      allocator< withdraw_vesting_route_object >
-   > withdraw_vesting_route_index;
+      allocator< withdraw_rep_route_object >
+   > withdraw_rep_route_index;
 
    struct by_from_id;
    struct by_to;
@@ -472,9 +472,9 @@ FC_REFLECT( bmchain::chain::convert_request_object,
              (id)(owner)(requestid)(amount)(conversion_date) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::convert_request_object, bmchain::chain::convert_request_index )
 
-FC_REFLECT( bmchain::chain::withdraw_vesting_route_object,
+FC_REFLECT( bmchain::chain::withdraw_rep_route_object,
              (id)(from_account)(to_account)(percent)(auto_vest) )
-CHAINBASE_SET_INDEX_TYPE( bmchain::chain::withdraw_vesting_route_object, bmchain::chain::withdraw_vesting_route_index )
+CHAINBASE_SET_INDEX_TYPE( bmchain::chain::withdraw_rep_route_object, bmchain::chain::withdraw_rep_route_index )
 
 FC_REFLECT( bmchain::chain::savings_withdraw_object,
              (id)(from)(to)(memo)(request_id)(amount)(complete) )

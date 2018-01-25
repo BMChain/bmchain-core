@@ -91,7 +91,7 @@ namespace bmchain { namespace app {
       extended_account(){}
       extended_account( const account_object& a, const database& db ):account_api_obj( a, db ){}
 
-      asset                                   vesting_balance; /// convert vesting_shares to vesting steem
+      asset                                   rep_balance; /// convert rep_shares to vesting steem
       share_type                              reputation = 0;
       map<uint64_t,applied_operation>         transfer_history; /// transfer to/from vesting
       map<uint64_t,applied_operation>         market_history; /// limit order / cancel / fill
@@ -179,7 +179,7 @@ namespace bmchain { namespace app {
 
 FC_REFLECT_DERIVED( bmchain::app::extended_account,
                    (bmchain::app::account_api_obj),
-                   (vesting_balance)(reputation)
+                   (rep_balance)(reputation)
                    (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(recommended) )
 
 

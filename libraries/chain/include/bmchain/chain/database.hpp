@@ -281,14 +281,14 @@ namespace bmchain { namespace chain {
           */
          uint32_t get_slot_at_time(fc::time_point_sec when)const;
 
-         asset create_vesting( const account_object& to_account, asset steem, bool to_reward_balance=false );
+         asset create_rep( const account_object& to_account, asset steem, bool to_reward_balance=false );
          void adjust_total_payout(const comment_object &a, const asset &bmt, const asset &curator_bmt_value,
                                   const asset &beneficiary_value);
 
          void        adjust_balance( const account_object& a, const asset& delta );
          void        adjust_savings_balance( const account_object& a, const asset& delta );
          void        adjust_reward_balance( const account_object& a, const asset& delta );
-         void        adjust_supply( const asset& delta, bool adjust_vesting = false );
+         void        adjust_supply( const asset& delta, bool adjust_rep = false );
          void        adjust_rshares2( const comment_object& comment, fc::uint128_t old_rshares2, fc::uint128_t new_rshares2 );
          void        update_owner_authority( const account_object& account, const authority& owner_authority );
 
@@ -315,7 +315,7 @@ namespace bmchain { namespace chain {
           * adjust_proxied_witness_votes( a, -a.witness_vote_weight() )
           */
          void clear_witness_votes( const account_object& a );
-         void process_vesting_withdrawals();
+         void process_rep_withdrawals();
          share_type pay_curators( const comment_object& c, share_type& max_rewards );
          share_type cashout_comment_helper( util::comment_reward_context& ctx, const comment_object& comment );
          void process_comment_cashout();
@@ -370,7 +370,7 @@ namespace bmchain { namespace chain {
          void cancel_order( const limit_order_object& obj );
          int  match( const limit_order_object& bid, const limit_order_object& ask, const price& trade_price );
 
-         void perform_vesting_share_split( uint32_t magnitude );
+         void perform_rep_share_split( uint32_t magnitude );
          void retally_comment_children();
          void retally_witness_votes();
          void retally_witness_vote_counts( bool force = false );

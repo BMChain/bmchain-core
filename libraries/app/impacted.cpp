@@ -114,7 +114,7 @@ struct get_impacted_account_visitor
       _impacted.insert( op.agent );
    }
 
-   void operator()( const transfer_to_vesting_operation& op )
+   void operator()( const transfer_to_rep_operation& op )
    {
       _impacted.insert( op.from );
 
@@ -124,7 +124,7 @@ struct get_impacted_account_visitor
       }
    }
 
-   void operator()( const set_withdraw_vesting_route_operation& op )
+   void operator()( const set_withdraw_rep_route_operation& op )
    {
       _impacted.insert( op.from_account );
       _impacted.insert( op.to_account );
@@ -198,7 +198,7 @@ struct get_impacted_account_visitor
       _impacted.insert( op.to );
    }
 
-   void operator()( const delegate_vesting_shares_operation& op )
+   void operator()( const delegate_rep_shares_operation& op )
    {
       _impacted.insert( op.delegator );
       _impacted.insert( op.delegatee );
@@ -232,7 +232,7 @@ struct get_impacted_account_visitor
       _impacted.insert( op.owner );
    }
 
-   void operator()( const fill_vesting_withdraw_operation& op )
+   void operator()( const fill_rep_withdraw_operation& op )
    {
       _impacted.insert( op.from_account );
       _impacted.insert( op.to_account );
@@ -255,7 +255,7 @@ struct get_impacted_account_visitor
       _impacted.insert( op.to );
    }
 
-   void operator()( const return_vesting_delegation_operation& op )
+   void operator()( const return_rep_delegation_operation& op )
    {
       _impacted.insert( op.account );
    }

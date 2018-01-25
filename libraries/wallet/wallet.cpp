@@ -735,10 +735,10 @@ public:
          asset total_vest(0, REP_SYMBOL );
          for( const auto& a : accounts ) {
              total_bmt += a.balance;
-            total_vest  += a.vesting_shares;
+            total_vest  += a.rep_shares;
             out << std::left << std::setw( 17 ) << std::string(a.name)
                 << std::right << std::setw(18) << fc::variant(a.balance).as_string() <<" "
-                << std::right << std::setw(26) << fc::variant(a.vesting_shares).as_string() <<"\n";
+                << std::right << std::setw(26) << fc::variant(a.rep_shares).as_string() <<"\n";
          }
          out << "-------------------------------------------------------------------------\n";
             out << std::left << std::setw( 17 ) << "TOTAL"
@@ -1579,7 +1579,7 @@ annotated_signed_transaction wallet_api::update_account_memo_key( string account
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::delegate_vesting_shares( string delegator, string delegatee, asset vesting_shares, bool broadcast )
+annotated_signed_transaction wallet_api::delegate_rep_shares( string delegator, string delegatee, asset rep_shares, bool broadcast )
 {
    FC_ASSERT( !is_locked() );
 
@@ -1588,10 +1588,10 @@ annotated_signed_transaction wallet_api::delegate_vesting_shares( string delegat
    FC_ASSERT( delegator == accounts[0].name, "Delegator account is not right?" );
    FC_ASSERT( delegatee == accounts[1].name, "Delegator account is not right?" );
 
-   delegate_vesting_shares_operation op;
+   delegate_rep_shares_operation op;
    op.delegator = delegator;
    op.delegatee = delegatee;
-   op.vesting_shares = vesting_shares;
+   op.rep_shares = rep_shares;
 
    signed_transaction tx;
    tx.operations.push_back( op );
@@ -1949,10 +1949,10 @@ annotated_signed_transaction wallet_api::cancel_transfer_from_savings( string fr
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::transfer_to_vesting(string from, string to, asset amount, bool broadcast )
+annotated_signed_transaction wallet_api::transfer_to_rep(string from, string to, asset amount, bool broadcast )
 {
    FC_ASSERT( !is_locked() );
-    transfer_to_vesting_operation op;
+    transfer_to_rep_operation op;
     op.from = from;
     op.to = (to == from ? "" : to);
     op.amount = amount;
@@ -1964,12 +1964,12 @@ annotated_signed_transaction wallet_api::transfer_to_vesting(string from, string
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset vesting_shares, bool broadcast )
+annotated_signed_transaction wallet_api::withdraw_rep(string from, asset rep_shares, bool broadcast )
 {
    FC_ASSERT( !is_locked() );
-    withdraw_vesting_operation op;
+    withdraw_rep_operation op;
     op.account = from;
-    op.vesting_shares = vesting_shares;
+    op.rep_shares = rep_shares;
 
     signed_transaction tx;
     tx.operations.push_back( op );
@@ -1978,10 +1978,10 @@ annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset ves
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast )
+annotated_signed_transaction wallet_api::set_withdraw_rep_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast )
 {
    FC_ASSERT( !is_locked() );
-    set_withdraw_vesting_route_operation op;
+    set_withdraw_rep_route_operation op;
     op.from_account = from;
     op.to_account = to;
     op.percent = percent;

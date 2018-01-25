@@ -148,7 +148,7 @@ struct operation_process
       _db.modify( _bucket, [&]( bucket_object& b )
       {
          b.payouts++;
-         b.vests_paid_to_authors += op.vesting_payout.amount;
+         b.vests_paid_to_authors += op.rep_payout.amount;
       });
    }
 
@@ -168,29 +168,29 @@ struct operation_process
       });
    }
 
-   void operator()( const transfer_to_vesting_operation& op )const
+   void operator()( const transfer_to_rep_operation& op )const
    {
       _db.modify( _bucket, [&]( bucket_object& b )
       {
-         b.transfers_to_vesting++;
+         b.transfers_to_rep++;
          b.bmt_vested += op.amount.amount;
       });
    }
 
-   void operator()( const fill_vesting_withdraw_operation& op )const
+   void operator()( const fill_rep_withdraw_operation& op )const
    {
       auto& account = _db.get_account( op.from_account );
 
       _db.modify( _bucket, [&]( bucket_object& b )
       {
-         b.vesting_withdrawals_processed++;
+         b.rep_withdrawals_processed++;
          if( op.deposited.symbol == BMT_SYMBOL )
             b.vests_withdrawn += op.withdrawn.amount;
          else
             b.vests_transferred += op.withdrawn.amount;
 
-         if( account.vesting_withdraw_rate.amount == 0 )
-            b.finished_vesting_withdrawals++;
+         if( account.rep_withdraw_rate.amount == 0 )
+            b.finished_rep_withdrawals++;
       });
    }
 
@@ -338,25 +338,25 @@ void blockchain_statistics_plugin_impl::pre_operation( const operation_notificat
                b.root_comments_deleted++;
          });
       }
-      else if( o.op.which() == operation::tag< withdraw_vesting_operation >::value )
+      else if( o.op.which() == operation::tag< withdraw_rep_operation >::value )
       {
-         withdraw_vesting_operation op = o.op.get< withdraw_vesting_operation >();
+         withdraw_rep_operation op = o.op.get< withdraw_rep_operation >();
          auto& account = db.get_account( op.account );
          const auto& bucket = db.get(bucket_id);
 
-         auto new_vesting_withdrawal_rate = op.vesting_shares.amount / BMCHAIN_VESTING_WITHDRAW_INTERVALS;
-         if( op.vesting_shares.amount > 0 && new_vesting_withdrawal_rate == 0 )
-            new_vesting_withdrawal_rate = 1;
+         auto new_rep_withdrawal_rate = op.rep_shares.amount / BMCHAIN_VESTING_WITHDRAW_INTERVALS;
+         if( op.rep_shares.amount > 0 && new_rep_withdrawal_rate == 0 )
+            new_rep_withdrawal_rate = 1;
 
          db.modify( bucket, [&]( bucket_object& b )
          {
-            if( account.vesting_withdraw_rate.amount > 0 )
-               b.modified_vesting_withdrawal_requests++;
+            if( account.rep_withdraw_rate.amount > 0 )
+               b.modified_rep_withdrawal_requests++;
             else
-               b.new_vesting_withdrawal_requests++;
+               b.new_rep_withdrawal_requests++;
 
             // TODO: Figure out how to change delta when a vesting withdraw finishes. Have until March 24th 2018 to figure that out...
-            b.vesting_withdraw_rate_delta += new_vesting_withdrawal_rate - account.vesting_withdraw_rate.amount;
+            b.rep_withdraw_rate_delta += new_rep_withdrawal_rate - account.rep_withdraw_rate.amount;
          });
       }
    }

@@ -10,12 +10,12 @@ namespace bmchain { namespace protocol {
    struct author_reward_operation : public virtual_operation {
       author_reward_operation(){}
       author_reward_operation( const account_name_type& a, const string& p, const asset& s, const asset& st, const asset& v )
-         :author(a), permlink(p), bmt_payout(st), vesting_payout(v){}
+         :author(a), permlink(p), bmt_payout(st), rep_payout(v){}
 
       account_name_type author;
       string            permlink;
       asset             bmt_payout;
-      asset             vesting_payout;
+      asset             rep_payout;
    };
 
 
@@ -77,10 +77,10 @@ namespace bmchain { namespace protocol {
    };
 
 
-   struct fill_vesting_withdraw_operation : public virtual_operation
+   struct fill_rep_withdraw_operation : public virtual_operation
    {
-      fill_vesting_withdraw_operation(){}
-      fill_vesting_withdraw_operation( const string& f, const string& t, const asset& w, const asset& d )
+      fill_rep_withdraw_operation(){}
+      fill_rep_withdraw_operation( const string& f, const string& t, const asset& w, const asset& d )
          :from_account(f), to_account(t), withdrawn(w), deposited(d) {}
 
       account_name_type from_account;
@@ -144,13 +144,13 @@ namespace bmchain { namespace protocol {
       string            permlink;
    };
 
-   struct return_vesting_delegation_operation : public virtual_operation
+   struct return_rep_delegation_operation : public virtual_operation
    {
-      return_vesting_delegation_operation() {}
-      return_vesting_delegation_operation( const account_name_type& a, const asset& v ) : account( a ), vesting_shares( v ) {}
+      return_rep_delegation_operation() {}
+      return_rep_delegation_operation( const account_name_type& a, const asset& v ) : account( a ), rep_shares( v ) {}
 
       account_name_type account;
-      asset             vesting_shares;
+      asset             rep_shares;
    };
 
    struct comment_benefactor_reward_operation : public virtual_operation
@@ -168,27 +168,27 @@ namespace bmchain { namespace protocol {
    struct producer_reward_operation : public virtual_operation
    {
       producer_reward_operation(){}
-      producer_reward_operation( const string& p, const asset& v ) : producer( p ), vesting_shares( v ) {}
+      producer_reward_operation( const string& p, const asset& v ) : producer( p ), rep_shares( v ) {}
 
       account_name_type producer;
-      asset             vesting_shares;
+      asset             rep_shares;
 
    };
 
 } } //bmchain::protocol
 
-FC_REFLECT( bmchain::protocol::author_reward_operation, (author)(permlink)(bmt_payout)(vesting_payout) )
+FC_REFLECT( bmchain::protocol::author_reward_operation, (author)(permlink)(bmt_payout)(rep_payout) )
 FC_REFLECT( bmchain::protocol::curation_reward_operation, (curator)(reward)(comment_author)(comment_permlink) )
 FC_REFLECT( bmchain::protocol::comment_reward_operation, (author)(permlink)(payout) )
 FC_REFLECT( bmchain::protocol::fill_convert_request_operation, (owner)(requestid)(amount_in)(amount_out) )
 FC_REFLECT( bmchain::protocol::liquidity_reward_operation, (owner)(payout) )
 FC_REFLECT( bmchain::protocol::interest_operation, (owner)(interest) )
-FC_REFLECT( bmchain::protocol::fill_vesting_withdraw_operation, (from_account)(to_account)(withdrawn)(deposited) )
+FC_REFLECT( bmchain::protocol::fill_rep_withdraw_operation, (from_account)(to_account)(withdrawn)(deposited) )
 FC_REFLECT( bmchain::protocol::shutdown_witness_operation, (owner) )
 FC_REFLECT( bmchain::protocol::fill_order_operation, (current_owner)(current_orderid)(current_pays)(open_owner)(open_orderid)(open_pays) )
 FC_REFLECT( bmchain::protocol::fill_transfer_from_savings_operation, (from)(to)(amount)(request_id)(memo) )
 FC_REFLECT( bmchain::protocol::hardfork_operation, (hardfork_id) )
 FC_REFLECT( bmchain::protocol::comment_payout_update_operation, (author)(permlink) )
-FC_REFLECT( bmchain::protocol::return_vesting_delegation_operation, (account)(vesting_shares) )
+FC_REFLECT( bmchain::protocol::return_rep_delegation_operation, (account)(rep_shares) )
 FC_REFLECT( bmchain::protocol::comment_benefactor_reward_operation, (benefactor)(author)(permlink)(reward) )
-FC_REFLECT( bmchain::protocol::producer_reward_operation, (producer)(vesting_shares) )
+FC_REFLECT( bmchain::protocol::producer_reward_operation, (producer)(rep_shares) )

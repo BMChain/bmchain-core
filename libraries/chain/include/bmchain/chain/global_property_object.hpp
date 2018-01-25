@@ -51,25 +51,25 @@ namespace bmchain { namespace chain {
 
          asset       virtual_supply             = asset( 0, BMT_SYMBOL );
          asset       current_supply             = asset( 0, BMT_SYMBOL );
-         asset       total_vesting_fund_bmt   = asset( 0, BMT_SYMBOL );
-         asset       total_vesting_shares       = asset( 0, REP_SYMBOL );
+         asset       total_rep_fund_bmt   = asset( 0, BMT_SYMBOL );
+         asset       total_rep_shares       = asset( 0, REP_SYMBOL );
          asset       total_reward_fund_bmt    = asset( 0, BMT_SYMBOL );
          fc::uint128 total_reward_shares2; ///< the running total of REWARD^2
-         asset       pending_rewarded_vesting_shares = asset( 0, REP_SYMBOL );
-         asset       pending_rewarded_vesting_bmt = asset( 0, BMT_SYMBOL );
+         asset       pending_rewarded_rep_shares = asset( 0, REP_SYMBOL );
+         asset       pending_rewarded_rep_bmt = asset( 0, BMT_SYMBOL );
 
-         price       get_vesting_share_price() const
+         price       get_rep_share_price() const
          {
-            if ( total_vesting_fund_bmt.amount == 0 || total_vesting_shares.amount == 0 )
+            if ( total_rep_fund_bmt.amount == 0 || total_rep_shares.amount == 0 )
                return price ( asset( 1000, BMT_SYMBOL ), asset( 1000000, REP_SYMBOL ) );
 
-            return price( total_vesting_shares, total_vesting_fund_bmt );
+            return price( total_rep_shares, total_rep_fund_bmt );
          }
 
-         price get_reward_vesting_share_price() const
+         price get_reward_rep_share_price() const
          {
-            return price( total_vesting_shares + pending_rewarded_vesting_shares,
-               total_vesting_fund_bmt + pending_rewarded_vesting_bmt );
+            return price( total_rep_shares + pending_rewarded_rep_shares,
+               total_rep_fund_bmt + pending_rewarded_rep_bmt );
          }
 
          /**
@@ -126,12 +126,12 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (num_pow_witnesses)
              (virtual_supply)
              (current_supply)
-             (total_vesting_fund_bmt)
-             (total_vesting_shares)
+             (total_rep_fund_bmt)
+             (total_rep_shares)
              (total_reward_fund_bmt)
              (total_reward_shares2)
-             (pending_rewarded_vesting_shares)
-             (pending_rewarded_vesting_bmt)
+             (pending_rewarded_rep_shares)
+             (pending_rewarded_rep_bmt)
              (maximum_block_size)
              (current_aslot)
              (recent_slots_filled)

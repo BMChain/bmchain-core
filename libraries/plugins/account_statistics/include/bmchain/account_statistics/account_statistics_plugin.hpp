@@ -74,13 +74,13 @@ struct account_stats_bucket_object : public object< account_stats_bucket_object_
    uint32_t             transfers_from = 0;                       ///< Account to account transfers from this account
    share_type           bmt_sent = 0;                             ///< BMT sent from this account
    share_type           bmt_received = 0;                         ///< BMT received by this account
-   uint32_t             transfers_to_vesting = 0;                 ///< Transfers to vesting by this account. Note: Transfer to vesting from A to B counts as a transfer from A to B followed by a vesting deposit by B.
+   uint32_t             transfers_to_rep = 0;                 ///< Transfers to vesting by this account. Note: Transfer to vesting from A to B counts as a transfer from A to B followed by a vesting deposit by B.
    share_type           bmt_vested = 0;                           ///< BMT vested by the account
    share_type           new_vests = 0;                            ///< New REP by vesting transfers
-   uint32_t             new_vesting_withdrawal_requests = 0;      ///< New vesting withdrawal requests
-   uint32_t             modified_vesting_withdrawal_requests = 0; ///< Changes to vesting withdraw requests
-   uint32_t             vesting_withdrawals_processed = 0;        ///< Vesting withdrawals processed for this account
-   uint32_t             finished_vesting_withdrawals = 0;         ///< Processed vesting withdrawals that are now finished
+   uint32_t             new_rep_withdrawal_requests = 0;      ///< New vesting withdrawal requests
+   uint32_t             modified_rep_withdrawal_requests = 0; ///< Changes to vesting withdraw requests
+   uint32_t             rep_withdrawals_processed = 0;        ///< Vesting withdrawals processed for this account
+   uint32_t             finished_rep_withdrawals = 0;         ///< Processed vesting withdrawals that are now finished
    share_type           vests_withdrawn = 0;                      ///< REP withdrawn from the account
    share_type           bmt_received_from_withdrawls = 0;         ///< BMT received from this account's vesting withdrawals
    share_type           bmt_received_from_routes = 0;             ///< BMT received from another account's vesting withdrawals
@@ -180,13 +180,13 @@ FC_REFLECT( bmchain::account_statistics::account_stats_bucket_object,
    (transfers_from)
    (bmt_sent)
    (bmt_received)
-   (transfers_to_vesting)
+   (transfers_to_rep)
    (bmt_vested)
    (new_vests)
-   (new_vesting_withdrawal_requests)
-   (modified_vesting_withdrawal_requests)
-   (vesting_withdrawals_processed)
-   (finished_vesting_withdrawals)
+   (new_rep_withdrawal_requests)
+   (modified_rep_withdrawal_requests)
+   (rep_withdrawals_processed)
+   (finished_rep_withdrawals)
    (vests_withdrawn)
    (bmt_received_from_withdrawls)
    (bmt_received_from_routes)

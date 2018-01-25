@@ -45,12 +45,12 @@ typedef chain::comment_vote_object                     comment_vote_api_obj;
 typedef chain::convert_request_object                  convert_request_api_obj;
 typedef chain::escrow_object                           escrow_api_obj;
 typedef chain::limit_order_object                      limit_order_api_obj;
-typedef chain::withdraw_vesting_route_object           withdraw_vesting_route_api_obj;
+typedef chain::withdraw_rep_route_object           withdraw_rep_route_api_obj;
 typedef chain::decline_voting_rights_request_object    decline_voting_rights_request_api_obj;
 typedef chain::witness_vote_object                     witness_vote_api_obj;
 typedef chain::witness_schedule_object                 witness_schedule_api_obj;
-typedef chain::vesting_delegation_object               vesting_delegation_api_obj;
-typedef chain::vesting_delegation_expiration_object    vesting_delegation_expiration_api_obj;
+typedef chain::rep_delegation_object               rep_delegation_api_obj;
+typedef chain::rep_delegation_expiration_object    rep_delegation_expiration_api_obj;
 typedef chain::reward_fund_object                      reward_fund_api_obj;
 typedef witness::account_bandwidth_object       account_bandwidth_api_obj;
 
@@ -210,15 +210,15 @@ struct account_api_obj
       savings_balance( a.savings_balance ),
       savings_withdraw_requests( a.savings_withdraw_requests ),
       reward_bmt_balance( a.reward_bmt_balance ),
-      reward_vesting_balance( a.reward_vesting_balance ),
-      reward_vesting_bmt( a.reward_vesting_bmt ),
+      reward_rep_balance( a.reward_rep_balance ),
+      reward_rep_bmt( a.reward_rep_bmt ),
       curation_rewards( a.curation_rewards ),
       posting_rewards( a.posting_rewards ),
-      vesting_shares( a.vesting_shares ),
-      delegated_vesting_shares( a.delegated_vesting_shares ),
-      received_vesting_shares( a.received_vesting_shares ),
-      vesting_withdraw_rate( a.vesting_withdraw_rate ),
-      next_vesting_withdrawal( a.next_vesting_withdrawal ),
+      rep_shares( a.rep_shares ),
+      delegated_rep_shares( a.delegated_rep_shares ),
+      received_rep_shares( a.received_rep_shares ),
+      rep_withdraw_rate( a.rep_withdraw_rate ),
+      next_rep_withdrawal( a.next_rep_withdrawal ),
       withdrawn( a.withdrawn ),
       to_withdraw( a.to_withdraw ),
       withdraw_routes( a.withdraw_routes ),
@@ -298,17 +298,17 @@ struct account_api_obj
    uint8_t           savings_withdraw_requests = 0;
 
    asset             reward_bmt_balance;
-   asset             reward_vesting_balance;
-   asset             reward_vesting_bmt;
+   asset             reward_rep_balance;
+   asset             reward_rep_bmt;
 
    share_type        curation_rewards;
    share_type        posting_rewards;
 
-   asset             vesting_shares;
-   asset             delegated_vesting_shares;
-   asset             received_vesting_shares;
-   asset             vesting_withdraw_rate;
-   time_point_sec    next_vesting_withdrawal;
+   asset             rep_shares;
+   asset             delegated_rep_shares;
+   asset             received_rep_shares;
+   asset             rep_withdraw_rate;
+   time_point_sec    next_rep_withdrawal;
    share_type        withdrawn;
    share_type        to_withdraw;
    uint16_t          withdraw_routes = 0;
@@ -547,8 +547,8 @@ FC_REFLECT( bmchain::app::account_api_obj,
              (balance)
              (savings_balance)
              (savings_withdraw_requests)
-             (reward_bmt_balance)(reward_vesting_balance)(reward_vesting_bmt)
-             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+             (reward_bmt_balance)(reward_rep_balance)(reward_rep_bmt)
+             (rep_shares)(delegated_rep_shares)(received_rep_shares)(rep_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)

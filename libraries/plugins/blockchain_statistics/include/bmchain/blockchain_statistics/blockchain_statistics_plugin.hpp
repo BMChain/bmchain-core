@@ -93,13 +93,13 @@ struct bucket_object : public object< bucket_object_type, bucket_object >
    share_type           vests_paid_to_authors = 0;                   ///< Ammount of VESS paid to authors
    share_type           vests_paid_to_curators = 0;                  ///< Ammount of VESTS paid to curators
    share_type           liquidity_rewards_paid = 0;                  ///< Ammount of BMT paid to market makers
-   uint32_t             transfers_to_vesting = 0;                    ///< Transfers of BMT into VESTS
+   uint32_t             transfers_to_rep = 0;                    ///< Transfers of BMT into VESTS
    share_type           bmt_vested = 0;                              ///< Ammount of BMT vested
-   uint32_t             new_vesting_withdrawal_requests = 0;         ///< New vesting withdrawal requests
-   uint32_t             modified_vesting_withdrawal_requests = 0;    ///< Changes to vesting withdrawal requests
-   share_type           vesting_withdraw_rate_delta = 0;
-   uint32_t             vesting_withdrawals_processed = 0;           ///< Number of vesting withdrawals
-   uint32_t             finished_vesting_withdrawals = 0;            ///< Processed vesting withdrawals that are now finished
+   uint32_t             new_rep_withdrawal_requests = 0;         ///< New vesting withdrawal requests
+   uint32_t             modified_rep_withdrawal_requests = 0;    ///< Changes to vesting withdrawal requests
+   share_type           rep_withdraw_rate_delta = 0;
+   uint32_t             rep_withdrawals_processed = 0;           ///< Number of vesting withdrawals
+   uint32_t             finished_rep_withdrawals = 0;            ///< Processed vesting withdrawals that are now finished
    share_type           vests_withdrawn = 0;                         ///< Ammount of VESTS withdrawn to BMT
    share_type           vests_transferred = 0;                       ///< Ammount of VESTS transferred to another account
    share_type           bmt_converted = 0;                         ///< Amount of BMT that was converted
@@ -156,13 +156,13 @@ FC_REFLECT( bmchain::blockchain_statistics::bucket_object,
    (vests_paid_to_authors)
    (vests_paid_to_curators)
    (liquidity_rewards_paid)
-   (transfers_to_vesting)
+   (transfers_to_rep)
    (bmt_vested)
-   (new_vesting_withdrawal_requests)
-   (modified_vesting_withdrawal_requests)
-   (vesting_withdraw_rate_delta)
-   (vesting_withdrawals_processed)
-   (finished_vesting_withdrawals)
+   (new_rep_withdrawal_requests)
+   (modified_rep_withdrawal_requests)
+   (rep_withdraw_rate_delta)
+   (rep_withdrawals_processed)
+   (finished_rep_withdrawals)
    (vests_withdrawn)
    (vests_transferred)
    (bmt_converted)

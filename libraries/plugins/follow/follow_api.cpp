@@ -253,7 +253,7 @@ vector< account_reputation > follow_api_impl::get_account_reputations( string lo
    {
       account_reputation rep;
       rep.account = acc_itr->name;
-      rep.reputation = acc_itr->vesting_shares.amount.value;
+      rep.reputation = acc_itr->rep_shares.amount.value;
 
       results.push_back( rep );
 
