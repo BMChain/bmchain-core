@@ -2561,7 +2561,7 @@ void wallet_api::test_api() const{
     cout << endl;*/
 
     /// tests of filter by tags
-    auto disc00 = get_discussions_by_created(100, "{\"tags\":[\"tag00\", \"tag01\", \"tag02\", \"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
+    /*auto disc00 = get_discussions_by_created(100, "{\"tags\":[\"tag00\", \"tag01\", \"tag02\", \"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
     auto disc01 = get_discussions_by_created(100, "{\"tags\":[\"tag01\", \"tag02\", \"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
     auto disc02 = get_discussions_by_created(100, "{\"tags\":[\"tag02\", \"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
     auto disc03 = get_discussions_by_created(100, "{\"tags\":[\"tag03\", \"tag04\", \"tag05\", \"tag06\", \"tag07\", \"tag08\", \"tag09\"]}");
@@ -2582,6 +2582,41 @@ void wallet_api::test_api() const{
     cout << "filter by tag07: " << disc07.size() << endl;
     cout << "filter by tag08: " << disc08.size() << endl;
     cout << "filter by tag09: " << disc09.size() << endl;
+    cout << endl;*/
+
+    /// test of api-function for getting comments
+    // by trending
+    discussion_query q_trend;
+    q_trend.limit = 100;
+    q_trend.truncate_body = 1024;
+    auto trend_disc = my->_remote_db->get_discussions_by_trending(q_trend);
+
+    // by hot
+    discussion_query q_hot;
+    q_hot.tag = "";
+    q_hot.limit = 100;
+    q_hot.truncate_body = 1024;
+    auto hot_disc = my->_remote_db->get_discussions_by_hot(q_hot);
+
+    // by blog
+    discussion_query q_blog;
+    q_blog.tag = "sinerkin";
+    q_blog.limit = 100;
+    q_blog.truncate_body = 1024;
+    auto blog_disc = my->_remote_db->get_discussions_by_blog(q_blog);
+
+    // by created
+    discussion_query q_new;
+    q_new.limit = 100;
+    q_new.truncate_body = 1024;
+    auto new_disc = my->_remote_db->get_discussions_by_created(q_new);
+
+
+    cout << "Test for api-functions: " << endl;
+    cout << "get_discussions_by_hot     : " << hot_disc.size() << endl;
+    cout << "get_discussions_by_blog    : " << blog_disc.size() << endl;
+    cout << "get_discussions_by_created : " << new_disc.size() << endl;
+    cout << "get_discussions_by_trending: " << trend_disc.size() << endl;
     cout << endl;
 
 }

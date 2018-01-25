@@ -1243,7 +1243,7 @@ namespace bmchain {
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
                                                    [&query](const comment_api_obj &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
-                                                       return c.net_rshares <= 0 || c.private_post || filter;
+                                                       return c.net_rshares < 0 || c.private_post || filter;
                                                    });
                 set_last_comments(discussions, 3);
 
@@ -1344,7 +1344,7 @@ namespace bmchain {
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
                                                    [&query](const comment_api_obj &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
-                                                       return c.net_rshares <= 0 || c.private_post || filter;
+                                                       return c.net_rshares < 0 || c.private_post || filter;
                                                    });
                 set_last_comments(discussions, 3);
 
@@ -2137,7 +2137,6 @@ namespace bmchain {
             const auto &props = my->_db.get_dynamic_global_properties();
             const auto &acc_idx = my->_db.get_index<account_index>().indices().get<by_id>();
             const auto &com_idx = my->_db.get_index<comment_index>().indices().get<by_id>();
-            const auto &vote_idx = my->_db.get_index<comment_vote_index>().indices().get<by_id>();
 
             statistic stat;
             stat.begin = time_begin;
