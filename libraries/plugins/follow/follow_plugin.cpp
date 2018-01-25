@@ -391,6 +391,6 @@ void follow_plugin::plugin_startup()
 
 } } // bmchain::follow
 
-STEEMIT_DEFINE_PLUGIN( follow, bmchain::follow::follow_plugin )
+BMCHAIN_DEFINE_PLUGIN( follow, bmchain::follow::follow_plugin )
 
 //DEFINE_OPERATION_TYPE( bmchain::follow::follow_plugin_operation )

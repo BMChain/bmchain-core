@@ -14,7 +14,7 @@
 #define INITIAL_TEST_SUPPLY (10000000000ll)
 using namespace graphene::db;
 
-extern uint32_t ( STEEMIT_TESTING_GENESIS_TIMESTAMP );
+extern uint32_t ( BMCHAIN_TESTING_GENESIS_TIMESTAMP );
 
 #define PUSH_TX \
    bmchain::chain::test::_push_transaction
@@ -60,7 +60,7 @@ extern uint32_t ( STEEMIT_TESTING_GENESIS_TIMESTAMP );
 #define BMCHAIN_REQUIRE_THROW( expr, exc_type )          \
    BOOST_REQUIRE_THROW( expr, exc_type );
 
-#define STEEMIT_CHECK_THROW( expr, exc_type )            \
+#define BMCHAIN_CHECK_THROW( expr, exc_type )            \
 {                                                         \
    std::string req_throw_info = fc::json::to_string(      \
       fc::mutable_variant_object()                        \
@@ -70,11 +70,11 @@ extern uint32_t ( STEEMIT_TESTING_GENESIS_TIMESTAMP );
       ("exc_type", #exc_type)                             \
       );                                                  \
    if( fc::enable_record_assert_trip )                    \
-      std::cout << "STEEMIT_CHECK_THROW begin "          \
+      std::cout << "BMCHAIN_CHECK_THROW begin "          \
          << req_throw_info << std::endl;                  \
    BOOST_CHECK_THROW( expr, exc_type );                   \
    if( fc::enable_record_assert_trip )                    \
-      std::cout << "STEEMIT_CHECK_THROW end "            \
+      std::cout << "BMCHAIN_CHECK_THROW end "            \
          << req_throw_info << std::endl;                  \
 }
 

@@ -2218,7 +2218,7 @@ annotated_signed_transaction      wallet_api::send_private_message( string from,
 
    custom_operation op;
    op.required_auths.insert(from);
-   op.id = STEEMIT_PRIVATE_MESSAGE_COP_ID;
+   op.id = BMCHAIN_PRIVATE_MESSAGE_COP_ID;
 
 
    private_message_operation pmo;

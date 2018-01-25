@@ -252,4 +252,4 @@ void account_by_key_plugin::plugin_startup()
 
 } } // bmchain::account_by_key
 
-STEEMIT_DEFINE_PLUGIN( account_by_key, bmchain::account_by_key::account_by_key_plugin )
+BMCHAIN_DEFINE_PLUGIN( account_by_key, bmchain::account_by_key::account_by_key_plugin )

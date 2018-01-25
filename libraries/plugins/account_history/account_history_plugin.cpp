@@ -262,4 +262,4 @@ flat_map< account_name_type, account_name_type > account_history_plugin::tracked
 
 } }
 
-STEEMIT_DEFINE_PLUGIN( account_history, bmchain::account_history::account_history_plugin )
+BMCHAIN_DEFINE_PLUGIN( account_history, bmchain::account_history::account_history_plugin )

@@ -55,4 +55,4 @@ void block_info_plugin::on_applied_block( const chain::signed_block& b )
 
 } } } // bmchain::plugin::block_info
 
-STEEMIT_DEFINE_PLUGIN( block_info, bmchain::plugin::block_info::block_info_plugin )
+BMCHAIN_DEFINE_PLUGIN( block_info, bmchain::plugin::block_info::block_info_plugin )

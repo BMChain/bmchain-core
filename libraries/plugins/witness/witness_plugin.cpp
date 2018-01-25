@@ -695,4 +695,4 @@ block_production_condition::block_production_condition_enum witness_plugin::mayb
 
 } } // bmchain::witness
 
-STEEMIT_DEFINE_PLUGIN( witness, bmchain::witness::witness_plugin )
+BMCHAIN_DEFINE_PLUGIN( witness, bmchain::witness::witness_plugin )

@@ -30,4 +30,4 @@ void auth_util_plugin::plugin_shutdown()
 
 } } } // bmchain::plugin::auth_util
 
-STEEMIT_DEFINE_PLUGIN( auth_util, bmchain::plugin::auth_util::auth_util_plugin )
+BMCHAIN_DEFINE_PLUGIN( auth_util, bmchain::plugin::auth_util::auth_util_plugin )

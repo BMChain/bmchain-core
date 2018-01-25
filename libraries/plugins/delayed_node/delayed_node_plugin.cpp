@@ -165,4 +165,4 @@ void delayed_node_plugin::connection_failed()
 
 } }
 
-STEEMIT_DEFINE_PLUGIN( delayed_node, bmchain::delayed_node::delayed_node_plugin )
+BMCHAIN_DEFINE_PLUGIN( delayed_node, bmchain::delayed_node::delayed_node_plugin )

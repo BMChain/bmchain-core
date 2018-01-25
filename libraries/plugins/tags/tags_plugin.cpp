@@ -540,4 +540,4 @@ void tags_plugin::plugin_startup()
 
 } } /// bmchain::tags
 
-STEEMIT_DEFINE_PLUGIN( tags, bmchain::tags::tags_plugin )
+BMCHAIN_DEFINE_PLUGIN( tags, bmchain::tags::tags_plugin )

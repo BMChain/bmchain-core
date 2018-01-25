@@ -257,7 +257,7 @@ namespace bmchain { namespace chain {
           * Use the get_slot_time() and get_slot_at_time() functions
           * to convert between slot_num and timestamp.
           *
-          * Passing slot_num == 0 returns STEEMIT_NULL_WITNESS
+          * Passing slot_num == 0 returns BMCHAIN_NULL_WITNESS
           */
          account_name_type get_scheduled_witness(uint32_t slot_num)const;
 

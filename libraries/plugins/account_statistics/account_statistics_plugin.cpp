@@ -107,4 +107,4 @@ const flat_set< std::string >& account_statistics_plugin::get_tracked_accounts()
 
 } } // bmchain::account_statistics
 
-STEEMIT_DEFINE_PLUGIN( account_statistics, bmchain::account_statistics::account_statistics_plugin );
+BMCHAIN_DEFINE_PLUGIN( account_statistics, bmchain::account_statistics::account_statistics_plugin );

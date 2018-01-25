@@ -30,4 +30,4 @@ void raw_block_plugin::plugin_shutdown()
 
 } } } // bmchain::plugin::raw_block
 
-STEEMIT_DEFINE_PLUGIN( raw_block, bmchain::plugin::raw_block::raw_block_plugin )
+BMCHAIN_DEFINE_PLUGIN( raw_block, bmchain::plugin::raw_block::raw_block_plugin )

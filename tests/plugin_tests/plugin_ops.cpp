@@ -78,7 +78,7 @@ test_plugin::test_plugin( application* app ) : plugin( app )
 
 } } // bmchain::plugin_tests
 
-STEEMIT_DEFINE_PLUGIN( test, bmchain::plugin_tests::test_plugin )
+BMCHAIN_DEFINE_PLUGIN( test, bmchain::plugin_tests::test_plugin )
 
 FC_REFLECT( bmchain::plugin_tests::test_a_operation, (account) )
 FC_REFLECT( bmchain::plugin_tests::test_b_operation, (account) )

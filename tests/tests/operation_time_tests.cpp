@@ -1369,9 +1369,9 @@ BOOST_AUTO_TEST_CASE( bmt_inflation )
       auto old_witness_balance = db.get_account( witness_name ).balance;
       auto old_witness_shares = db.get_account( witness_name ).vesting_shares;
 
-      auto new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
-         + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
-      auto witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
+      auto new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( BMCHAIN_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
+         + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( BMCHAIN_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
+      auto witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( BMCHAIN_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
       auto witness_pay_shares = asset( 0, REP_SYMBOL );
       auto new_vesting_bmt = asset( 0, BMT_SYMBOL );
       auto new_vesting_shares = gpo.total_vesting_shares;
@@ -1407,9 +1407,9 @@ BOOST_AUTO_TEST_CASE( bmt_inflation )
          old_witness_shares = db.get_account( witness_name ).vesting_shares;
 
 
-         new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
-            + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
-         witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
+         new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( BMCHAIN_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
+            + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( BMCHAIN_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
+         witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( BMCHAIN_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
          new_vesting_bmt = asset( 0, BMT_SYMBOL );
          new_vesting_shares = gpo.total_vesting_shares;
 
@@ -1449,9 +1449,9 @@ BOOST_AUTO_TEST_CASE( bmt_inflation )
          witness_name = db.get_scheduled_witness(1);
          old_witness_balance = db.get_account( witness_name ).balance;
 
-         new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
-            + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
-         witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
+         new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( BMCHAIN_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
+            + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( BMCHAIN_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
+         witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( BMCHAIN_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
          auto witness_pay_shares = asset( 0, REP_SYMBOL );
          new_vesting_bmt = asset( ( witness_pay + new_rewards ).amount * 9, BMT_SYMBOL );
          new_vesting_shares = gpo.total_vesting_shares;
@@ -1490,9 +1490,9 @@ BOOST_AUTO_TEST_CASE( bmt_inflation )
          witness_name = db.get_scheduled_witness(1);
          old_witness_balance = db.get_account( witness_name ).balance;
 
-         new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( STEEMIT_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
-            + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( STEEMIT_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
-         witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( STEEMIT_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
+         new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( BMCHAIN_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
+            + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( BMCHAIN_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
+         witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( BMCHAIN_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
          witness_pay_shares = witness_pay * gpo.get_vesting_share_price();
          new_vesting_bmt = asset( ( witness_pay + new_rewards ).amount * 9, BMT_SYMBOL ) + witness_pay;
          new_vesting_shares = gpo.total_vesting_shares + witness_pay_shares;

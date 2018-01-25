@@ -538,7 +538,7 @@ namespace bmchain { namespace protocol {
 
    /**
     *  This operation instructs the blockchain to start a conversion between BMT and SBD,
-    *  The funds are deposited after STEEMIT_CONVERSION_DELAY
+    *  The funds are deposited after BMCHAIN_CONVERSION_DELAY
     */
    struct convert_operation : public base_operation
    {

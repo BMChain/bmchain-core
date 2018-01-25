@@ -19,7 +19,7 @@
 
 //using namespace bmchain::chain::test;
 
-uint32_t STEEMIT_TESTING_GENESIS_TIMESTAMP = 1431700000;
+uint32_t BMCHAIN_TESTING_GENESIS_TIMESTAMP = 1431700000;
 
 namespace bmchain { namespace chain {
 

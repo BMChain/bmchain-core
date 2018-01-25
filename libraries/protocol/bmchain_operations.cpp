@@ -150,7 +150,7 @@ namespace bmchain { namespace protocol {
    {
       validate_account_name( voter );
       validate_account_name( author );\
-      FC_ASSERT( abs(weight) <= BMCHAIN_100_PERCENT, "Weight is not a STEEMIT percentage" );
+      FC_ASSERT( abs(weight) <= BMCHAIN_100_PERCENT, "Weight is not a BMCHAIN percentage" );
       validate_permlink( permlink );
    }
 

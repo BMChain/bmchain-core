@@ -454,4 +454,4 @@ uint32_t blockchain_statistics_plugin::get_max_history_per_bucket() const
 
 } } // bmchain::blockchain_statistics
 
-STEEMIT_DEFINE_PLUGIN( blockchain_statistics, bmchain::blockchain_statistics::blockchain_statistics_plugin );
+BMCHAIN_DEFINE_PLUGIN( blockchain_statistics, bmchain::blockchain_statistics::blockchain_statistics_plugin );

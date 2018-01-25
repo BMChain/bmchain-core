@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_SUITE(block_tests)
 BOOST_AUTO_TEST_CASE( generate_empty_blocks )
 {
    try {
-      fc::time_point_sec now( STEEMIT_TESTING_GENESIS_TIMESTAMP );
+      fc::time_point_sec now( BMCHAIN_TESTING_GENESIS_TIMESTAMP );
       fc::temp_directory data_dir( graphene::utilities::temp_directory_path() );
       signed_block b;
 
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE( undo_block )
          database db;
          db._log_hardforks = false;
          db.open(data_dir.path(), data_dir.path(), INITIAL_TEST_SUPPLY, TEST_SHARED_MEM_SIZE, chainbase::database::read_write );
-         fc::time_point_sec now( STEEMIT_TESTING_GENESIS_TIMESTAMP );
+         fc::time_point_sec now( BMCHAIN_TESTING_GENESIS_TIMESTAMP );
          std::vector< time_point_sec > time_stack;
 
          auto init_account_priv_key  = fc::ecc::private_key::regenerate(fc::sha256::hash(string("init_key")) );
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE( fork_blocks )
          b.transactions.back().operations.emplace_back(transfer_operation());
          b.sign( init_account_priv_key );
          BOOST_CHECK_EQUAL(b.block_num(), 14);
-         STEEMIT_CHECK_THROW(PUSH_BLOCK( db1, b ), fc::exception);
+         BMCHAIN_CHECK_THROW(PUSH_BLOCK( db1, b ), fc::exception);
       }
       BOOST_CHECK_EQUAL(db1.head_block_num(), 13);
       BOOST_CHECK_EQUAL(db1.head_block_id().str(), db1_tip);
@@ -319,13 +319,13 @@ BOOST_AUTO_TEST_CASE( duplicate_transactions )
       trx.sign( init_account_priv_key, db1.get_chain_id() );
       PUSH_TX( db1, trx, skip_sigs );
 
-      STEEMIT_CHECK_THROW(PUSH_TX( db1, trx, skip_sigs ), fc::exception);
+      BMCHAIN_CHECK_THROW(PUSH_TX( db1, trx, skip_sigs ), fc::exception);
 
       auto b = db1.generate_block( db1.get_slot_time(1), db1.get_scheduled_witness( 1 ), init_account_priv_key, skip_sigs );
       PUSH_BLOCK( db2, b, skip_sigs );
 
-      STEEMIT_CHECK_THROW(PUSH_TX( db1, trx, skip_sigs ), fc::exception);
-      STEEMIT_CHECK_THROW(PUSH_TX( db2, trx, skip_sigs ), fc::exception);
+      BMCHAIN_CHECK_THROW(PUSH_TX( db1, trx, skip_sigs ), fc::exception);
+      BMCHAIN_CHECK_THROW(PUSH_TX( db2, trx, skip_sigs ), fc::exception);
       BOOST_CHECK_EQUAL(db1.get_balance( "alice", BMT_SYMBOL ).amount.value, 500);
       BOOST_CHECK_EQUAL(db2.get_balance( "alice", BMT_SYMBOL ).amount.value, 500);
    } catch (fc::exception& e) {
