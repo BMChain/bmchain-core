@@ -351,46 +351,21 @@ namespace bmchain { namespace protocol {
 
    void feed_publish_operation::validate()const
    {
-      validate_account_name( publisher );
-      FC_ASSERT( ( is_asset_type( exchange_rate.base, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) )
-         || ( is_asset_type( exchange_rate.base, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ),
-         "Price feed must be a BMT/SBD price" );
-      exchange_rate.validate();
    }
 
    void limit_order_create_operation::validate()const
    {
-      validate_account_name( owner );
-      FC_ASSERT( ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( min_to_receive, BMT_SYMBOL ) )
-         || ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( min_to_receive, BMT_SYMBOL ) ),
-         "Limit order must be for the BMT:SBD market" );
-      (amount_to_sell / min_to_receive).validate();
    }
    void limit_order_create2_operation::validate()const
    {
-      validate_account_name( owner );
-      FC_ASSERT( amount_to_sell.symbol == exchange_rate.base.symbol, "Sell asset must be the base of the price" );
-      exchange_rate.validate();
-
-      FC_ASSERT( ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ) ||
-                 ( is_asset_type( amount_to_sell, BMT_SYMBOL ) && is_asset_type( exchange_rate.quote, BMT_SYMBOL ) ),
-                 "Limit order must be for the BMT:SBD market" );
-
-      FC_ASSERT( (amount_to_sell * exchange_rate).amount > 0, "Amount to sell cannot round to 0 when traded" );
    }
 
    void limit_order_cancel_operation::validate()const
    {
-      validate_account_name( owner );
    }
 
    void convert_operation::validate()const
    {
-      validate_account_name( owner );
-      /// only allow conversion from SBD to BMT, allowing the opposite can enable traders to abuse
-      /// market fluxuations through converting large quantities without moving the price.
-      FC_ASSERT( is_asset_type( amount, BMT_SYMBOL ), "Can only convert SBD to BMT" );
-      FC_ASSERT( amount.amount > 0, "Must convert some SBD" );
    }
 
    void report_over_production_operation::validate()const
