@@ -2312,7 +2312,7 @@ vector<best_author> wallet_api::get_best_authors(uint32_t limit)const{
 vector<discussion> wallet_api::get_discussions_by_hot(uint32_t limit, string filter_tags)const {
    discussion_query q;
    q.tag = "";
-   q.limit = 20;
+   q.limit = limit;
    q.truncate_body = 1024;
    q.filter_tags = get_tags_from_json(filter_tags);
    auto hot_discussions = my->_remote_db->get_discussions_by_hot(q);

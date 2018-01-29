@@ -1515,7 +1515,8 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
            c.vote_rshares = 0;
            c.total_vote_weight = 0;
            c.max_cashout_time = fc::time_point_sec::maximum();
-           c.cashout_time = fc::time_point_sec::maximum();
+           //c.cashout_time = fc::time_point_sec::maximum();
+           c.cashout_time = head_block_time() + BMCHAIN_SECOND_CASHOUT_WINDOW;
            c.last_payout = head_block_time();
        });
 

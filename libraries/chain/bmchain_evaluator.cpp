@@ -496,6 +496,7 @@ void comment_evaluator::do_apply( const comment_operation& o )
             from_string( com.parent_permlink, o.parent_permlink );
             from_string( com.category, o.parent_permlink );
             com.root_comment = com.id;
+            com.cashout_time = _db.head_block_time() + BMCHAIN_CASHOUT_WINDOW_SECONDS;
          }
          else
          {
@@ -1270,13 +1271,13 @@ try {
              "Voting weight is too small, please accumulate more voting power or BMT.");
 
    // Lazily delete vote
-   if( itr != comment_vote_idx.end() && itr->num_changes == -1 )
+   /*if( itr != comment_vote_idx.end() && itr->num_changes == -1 )
    {
       FC_ASSERT( false, "Cannot vote again on a comment after payout." );
 
       _db.remove( *itr );
       itr = comment_vote_idx.end();
-   }
+   }*/
 
    if( itr == comment_vote_idx.end() )
    {
@@ -1409,7 +1410,10 @@ try {
    else
    {
       FC_ASSERT( itr->num_changes < BMCHAIN_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment." );
-      FC_ASSERT( itr->vote_percent != o.weight, "You have already voted in a similar way." );
+      if ( itr->vote_percent != o.weight ) {
+          //FC_ASSERT(itr->vote_percent != o.weight, "You have already voted in a similar way.");
+          int point = 1;
+      }
 
       /// this is the rshares voting for or against the post
       int64_t rshares        = o.weight < 0 ? -abs_rshares : abs_rshares;
