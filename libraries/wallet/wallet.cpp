@@ -2353,7 +2353,7 @@ total_block_statistic wallet_api::get_total_block_statistic(uint32_t limit, uint
     return result;
 }
 
-annotated_signed_transaction wallet_api::post_crypto_comment( string author, string permlink, string category, string title, string body, string crypto_body, asset price, string json, bool broadcast ){
+annotated_signed_transaction wallet_api::post_encrypted_comment( string author, string permlink, string category, string title, string body, string crypto_body, asset price, string json, bool broadcast ){
     FC_ASSERT( !is_locked() );
 
     auto author_obj = get_account( author );

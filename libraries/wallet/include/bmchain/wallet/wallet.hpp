@@ -897,7 +897,7 @@ class wallet_api
 
       total_block_statistic get_total_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
 
-      annotated_signed_transaction post_crypto_comment( string author, string permlink, string category, string title, string body, string crypto_body, asset price, string json, bool broadcast );
+      annotated_signed_transaction post_encrypted_comment( string author, string permlink, string category, string title, string body, string crypto_body, asset price, string json, bool broadcast );
 
       annotated_signed_transaction create_content_order( string onwer, string author, string permlink, asset price, string json_metadata, bool broadcast);
 
@@ -1052,7 +1052,7 @@ FC_API( bmchain::wallet::wallet_api,
         (get_total_block_statistic)
 
         /// encrypted content
-        (post_crypto_comment)
+        (post_encrypted_comment)
         (create_content_order)
         (cancel_content_order)
         (apply_content_order)
