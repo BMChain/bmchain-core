@@ -2779,6 +2779,7 @@ BOOST_AUTO_TEST_CASE( escrow_transfer_apply )
       op.escrow_expiration = db.head_block_time() + 200;
 
       BOOST_TEST_MESSAGE( "--- falure when from cannot cover amount + fee" );
+      signed_transaction tx;
       op.bmt_amount.amount = 10000;
       tx.operations.clear();
       tx.signatures.clear();
@@ -4728,7 +4729,7 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_validate )
       op.reward_bmt = ASSET( "1.000 WRONG" );
       BMCHAIN_REQUIRE_THROW( op.validate(), fc::assert_exception );
 
-      BOOST_TEST_MESSAGE( "Testing wrong VESTS symbol" )
+      BOOST_TEST_MESSAGE( "Testing wrong VESTS symbol" );
       op.reward_vests = ASSET( "1.000000 WRONG" );
       BMCHAIN_REQUIRE_THROW( op.validate(), fc::assert_exception );
 

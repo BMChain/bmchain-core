@@ -1,4 +1,4 @@
-# Building Steem
+# Building BMChain
 
 ## Compile-Time Options (cmake)
 
@@ -20,7 +20,7 @@ Clears old votes from memory that are no longer required for consensus.
 
 ### BUILD_STEEM_TESTNET=[OFF/ON]
 
-Builds steem for use in a private testnet. Also required for building unit tests.
+Builds BMChain for use in a private testnet. Also required for building unit tests.
 
 ### SKIP_BY_TX_ID=[OFF/ON]
 
@@ -30,7 +30,7 @@ huge gain if you do not need this functionality.
 
 ## Building on Ubuntu 16.04
 
-For Ubuntu 16.04 users, after installing the right packages with `apt` Steem
+For Ubuntu 16.04 users, after installing the right packages with `apt` BMChain
 will build out of the box without further effort:
 
     # Required packages
