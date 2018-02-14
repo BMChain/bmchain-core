@@ -1,6 +1,6 @@
 # Introducing BMChain (beta)
 
-Coming soon...
+BMChain is a Delegated Proof of Stake blockchain that uses a social consensus algorithm based on users reputation and activities.
 
 # No Support & No Warranty
 
@@ -16,3 +16,6 @@ IN THE SOFTWARE.
 
 You can read the BMChain Whitepaper at [BMCHAIN_Whitepaper_en.pdf](https://bmchain.io/download/BMCHAIN_Whitepaper_en.pdf).
 [BMCHAIN_Whitepaper_ru.pdf](https://bmchain.io/download/BMCHAIN_Whitepaper_ru.pdf)
+
+# Building BMChain
+https://github.com/BMChain/bmchain-core/blob/master/doc/building.md
