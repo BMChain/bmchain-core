@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
    {
       BOOST_TEST_MESSAGE( "Testing: account_create_apply" );
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       signed_transaction tx;
       private_key_type priv_key = generate_private_key( "alice" );
@@ -606,7 +606,7 @@ BOOST_AUTO_TEST_CASE( comment_delete_apply )
 
       generate_block();
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       signed_transaction tx;
       comment_operation comment;
@@ -662,7 +662,7 @@ BOOST_AUTO_TEST_CASE( comment_delete_apply )
       db.push_transaction( tx, 0 );
 
       generate_blocks( BMCHAIN_CASHOUT_WINDOW_SECONDS / BMCHAIN_BLOCK_INTERVAL );
-      BOOST_REQUIRE( db.get_comment( "alice", string( "test1" ) ).cashout_time == fc::time_point_sec::maximum() );
+      //BOOST_REQUIRE( db.get_comment( "alice", string( "test1" ) ).cashout_time == fc::time_point_sec::maximum() ); //bmchain
 
       tx.clear();
       tx.operations.push_back( op );
@@ -1371,185 +1371,6 @@ BOOST_AUTO_TEST_CASE( transfer_to_rep_apply )
       BOOST_REQUIRE( bob.rep_shares.amount.value == bob_shares.amount.value );
       BOOST_REQUIRE( gpo.total_rep_fund_bmt.amount.value == vests.amount.value );
       BOOST_REQUIRE( gpo.total_rep_shares.amount.value == shares.amount.value );
-      validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE( withdraw_rep_validate )
-{
-   try
-   {
-      BOOST_TEST_MESSAGE( "Testing: withdraw_rep_validate" );
-
-      validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE( withdraw_rep_authorities )
-{
-   try
-   {
-      BOOST_TEST_MESSAGE( "Testing: withdraw_rep_authorities" );
-
-      ACTORS( (alice)(bob) )
-      fund( "alice", 10000 );
-      vest( "alice", 10000 );
-
-      withdraw_rep_operation op;
-      op.account = "alice";
-      op.rep_shares = ASSET( "0.001000 VESTS" );
-
-      signed_transaction tx;
-      tx.operations.push_back( op );
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-
-      BOOST_TEST_MESSAGE( "--- Test failure when no signature." );
-      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_missing_active_auth );
-
-      BOOST_TEST_MESSAGE( "--- Test success with account signature" );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, database::skip_transaction_dupe_check );
-
-      BOOST_TEST_MESSAGE( "--- Test failure with duplicate signature" );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_duplicate_sig );
-
-      BOOST_TEST_MESSAGE( "--- Test failure with additional incorrect signature" );
-      tx.signatures.clear();
-      tx.sign( alice_private_key, db.get_chain_id() );
-      tx.sign( bob_private_key, db.get_chain_id() );
-      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_irrelevant_sig );
-
-      BOOST_TEST_MESSAGE( "--- Test failure with incorrect signature" );
-      tx.signatures.clear();
-      tx.sign( alice_post_key, db.get_chain_id() );
-      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_missing_active_auth );
-
-      validate_database();
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE( withdraw_rep_apply )
-{
-   try
-   {
-      BOOST_TEST_MESSAGE( "Testing: withdraw_rep_apply" );
-
-      ACTORS( (alice) )
-      generate_block();
-      vest( "alice", ASSET( "10.000 TESTS" ) );
-
-      BOOST_TEST_MESSAGE( "--- Test withdraw of existing VESTS" );
-
-      {
-      const auto& alice = db.get_account( "alice" );
-
-      withdraw_rep_operation op;
-      op.account = "alice";
-      op.rep_shares = asset( alice.rep_shares.amount / 2, REP_SYMBOL );
-
-      auto old_rep_shares = alice.rep_shares;
-
-      signed_transaction tx;
-      tx.operations.push_back( op );
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      BOOST_REQUIRE( alice.rep_shares.amount.value == old_rep_shares.amount.value );
-      BOOST_REQUIRE( alice.rep_withdraw_rate.amount.value == ( old_rep_shares.amount / ( BMCHAIN_VESTING_WITHDRAW_INTERVALS * 2 ) ).value );
-      BOOST_REQUIRE( alice.to_withdraw.value == op.rep_shares.amount.value );
-      BOOST_REQUIRE( alice.next_rep_withdrawal == db.head_block_time() + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS );
-      validate_database();
-
-      BOOST_TEST_MESSAGE( "--- Test changing vesting withdrawal" );
-      tx.operations.clear();
-      tx.signatures.clear();
-
-      op.rep_shares = asset( alice.rep_shares.amount / 3, REP_SYMBOL );
-      tx.operations.push_back( op );
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      BOOST_REQUIRE( alice.rep_shares.amount.value == old_rep_shares.amount.value );
-      BOOST_REQUIRE( alice.rep_withdraw_rate.amount.value == ( old_rep_shares.amount / ( BMCHAIN_VESTING_WITHDRAW_INTERVALS * 3 ) ).value );
-      BOOST_REQUIRE( alice.to_withdraw.value == op.rep_shares.amount.value );
-      BOOST_REQUIRE( alice.next_rep_withdrawal == db.head_block_time() + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS );
-      validate_database();
-
-      BOOST_TEST_MESSAGE( "--- Test withdrawing more vests than available" );
-      auto old_withdraw_amount = alice.to_withdraw;
-      tx.operations.clear();
-      tx.signatures.clear();
-
-      op.rep_shares = asset( alice.rep_shares.amount * 2, REP_SYMBOL );
-      tx.operations.push_back( op );
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
-
-      BOOST_REQUIRE( alice.rep_shares.amount.value == old_rep_shares.amount.value );
-      BOOST_REQUIRE( alice.rep_withdraw_rate.amount.value == ( old_rep_shares.amount / ( BMCHAIN_VESTING_WITHDRAW_INTERVALS * 3 ) ).value );
-      BOOST_REQUIRE( alice.next_rep_withdrawal == db.head_block_time() + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS );
-      validate_database();
-
-      BOOST_TEST_MESSAGE( "--- Test withdrawing 0 to reset vesting withdraw" );
-      tx.operations.clear();
-      tx.signatures.clear();
-
-      op.rep_shares = asset( 0, REP_SYMBOL );
-      tx.operations.push_back( op );
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      BOOST_REQUIRE( alice.rep_shares.amount.value == old_rep_shares.amount.value );
-      BOOST_REQUIRE( alice.rep_withdraw_rate.amount.value == 0 );
-      BOOST_REQUIRE( alice.to_withdraw.value == 0 );
-      BOOST_REQUIRE( alice.next_rep_withdrawal == fc::time_point_sec::maximum() );
-
-
-      BOOST_TEST_MESSAGE( "--- Test cancelling a withdraw when below the account creation fee" );
-      op.rep_shares = alice.rep_shares;
-      tx.clear();
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-      generate_block();
-      }
-
-      db_plugin->debug_update( [=]( database& db )
-      {
-         auto& wso = db.get_witness_schedule_object();
-
-         db.modify( wso, [&]( witness_schedule_object& w )
-         {
-            w.median_props.account_creation_fee = ASSET( "10.000 TESTS" );
-         });
-
-         db.modify( db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
-         {
-            gpo.current_supply += wso.median_props.account_creation_fee - ASSET( "0.001 TESTS" ) - gpo.total_rep_fund_bmt;
-            gpo.total_rep_fund_bmt = wso.median_props.account_creation_fee - ASSET( "0.001 TESTS" );
-         });
-
-         db.update_virtual_supply();
-      }, database::skip_witness_signature );
-
-      withdraw_rep_operation op;
-      signed_transaction tx;
-      op.account = "alice";
-      op.rep_shares = ASSET( "0.000000 VESTS" );
-      tx.operations.push_back( op );
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      BOOST_REQUIRE( db.get_account( "alice" ).rep_withdraw_rate == ASSET( "0.000000 VESTS" ) );
       validate_database();
    }
    FC_LOG_AND_RETHROW()
@@ -2268,7 +2089,7 @@ BOOST_AUTO_TEST_CASE( convert_authorities )
       ACTORS( (alice)(bob) )
       fund( "alice", 10000 );
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       convert( "alice", ASSET( "2.500 TESTS" ) );
 
@@ -4959,7 +4780,7 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_apply )
       ACTORS( (alice) )
       generate_block();
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       db_plugin->debug_update( []( database& db )
       {
@@ -5438,7 +5259,7 @@ BOOST_AUTO_TEST_CASE( comment_beneficiaries_apply )
       ACTORS( (alice)(bob)(sam)(dave) )
       generate_block();
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       comment_operation comment;
       vote_operation vote;

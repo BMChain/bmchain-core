@@ -67,7 +67,6 @@ int main( int argc, char** argv, char** envp )
 
 /*
 #define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1458835200))
-#define BMCHAIN_MINING_TIME                     (fc::time_point_sec(1458838800))
 #define BMCHAIN_FIRST_CASHOUT_TIME              (fc::time_point_sec(1467590400))  /// July 4th
 */
 
@@ -82,7 +81,7 @@ int main( int argc, char** argv, char** envp )
 
    auto block_inflation_model = [&]( uint32_t block_num, share_type& current_supply )
    {
-      uint32_t rep_factor = (block_num < BMCHAIN_START_VESTING_BLOCK) ? 0 : 9;
+      uint32_t rep_factor = 9;
 
       share_type curate_reward   = calc_percent_reward_per_block< BMCHAIN_CURATE_APR_PERCENT >( current_supply );
       reward_delta[ CURATE_OFF ] = std::max( curate_reward, BMCHAIN_MIN_CURATE_REWARD.amount );

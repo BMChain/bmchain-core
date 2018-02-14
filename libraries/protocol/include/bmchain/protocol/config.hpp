@@ -13,21 +13,15 @@
 
 #define REP_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define BMT_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< BMT with 3 digits of precision
-#define STMD_SYMBOL   (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('S') << 16) | (uint64_t('T') << 24) | (uint64_t('D') << 32) ) ///< Test Dollars with 3 digits of precision
 
 #define BMCHAIN_SYMBOL                          "TEST"
 #define BMCHAIN_ADDRESS_PREFIX                  "TST"
 
 #define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1451606400))
-#define BMCHAIN_MINING_TIME                     (fc::time_point_sec(1451606400))
 #define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*10) /// 1 hr /// bmchain
 #define BMCHAIN_SECOND_CASHOUT_WINDOW           (60*60*24*3) /// 3 days
-#define BMCHAIN_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24) /// 1 day
-#define BMCHAIN_VOTE_CHANGE_LOCKOUT_PERIOD      (60*10) /// 10 minutes
 #define BMCHAIN_UPVOTE_LOCKOUT             (fc::minutes(5))
 
-
-#define BMCHAIN_ORIGINAL_MIN_ACCOUNT_CREATION_FEE 0
 #define BMCHAIN_MIN_ACCOUNT_CREATION_FEE          0
 
 #define BMCHAIN_OWNER_AUTH_RECOVERY_PERIOD                  fc::seconds(60)
@@ -39,21 +33,16 @@
 #define BMCHAIN_INIT_PUBLIC_KEY_STR             "BMT76G5486bhLKXkXgN1nSkeDbpWEaiavF7i6tDULdpvyr69CLbHC"
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain"))
 #define REP_SYMBOL  (uint64_t(6) | (uint64_t('R') << 8) | (uint64_t('E') << 16) | (uint64_t('P') << 24) ) ///< RPT with 6 digits of precision
-#define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precision
-#define STMD_SYMBOL   (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('M') << 24) | (uint64_t('D') << 32) ) ///< BMT Dollars with 3 digits of precision
+#define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precisionDollars with 3 digits of precision
 #define BMCHAIN_SYMBOL                          "BMT"
 #define BMCHAIN_ADDRESS_PREFIX                  "BMT"
 
-#define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1458835200))
-#define BMCHAIN_MINING_TIME                     (fc::time_point_sec(1458838800))
-#define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*60*24)    /// 24 hours, bmchain /// (60*60*24*7)  /// 7 days
+#define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1519862400))
+#define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
 #define BMCHAIN_SECOND_CASHOUT_WINDOW           (60*60*24*30) /// 30 days
-#define BMCHAIN_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24*14) /// 2 weeks
-#define BMCHAIN_VOTE_CHANGE_LOCKOUT_PERIOD      (60*60*2)     /// 2 hours
-#define BMCHAIN_UPVOTE_LOCKOUT             (fc::hours(1)) /// bmchain /// (fc::hours(12))
+#define BMCHAIN_UPVOTE_LOCKOUT                  (fc::hours(12))
 
-#define BMCHAIN_ORIGINAL_MIN_ACCOUNT_CREATION_FEE  100000
-#define BMCHAIN_MIN_ACCOUNT_CREATION_FEE           0 /// 1 /// bmchain
+#define BMCHAIN_MIN_ACCOUNT_CREATION_FEE        0 /// 1 /// bmchain
 
 #define BMCHAIN_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
 #define BMCHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
@@ -65,8 +54,7 @@
 #define BMCHAIN_BLOCK_INTERVAL                  3
 #define BMCHAIN_BLOCKS_PER_YEAR                 (365*24*60*60/BMCHAIN_BLOCK_INTERVAL)
 #define BMCHAIN_BLOCKS_PER_DAY                  (24*60*60/BMCHAIN_BLOCK_INTERVAL)
-#define BMCHAIN_START_VESTING_BLOCK             1 // (BMCHAIN_BLOCKS_PER_DAY * 7) // bmchain
-#define BMCHAIN_START_MINER_VOTING_BLOCK        1200 // (BMCHAIN_BLOCKS_PER_DAY * 30)
+#define BMCHAIN_START_MINER_VOTING_BLOCK        (BMCHAIN_BLOCKS_PER_DAY * 30)
 
 #define BMCHAIN_INIT_MINER_NAME                 "initminer"
 #define BMCHAIN_NUM_INIT_MINERS                 1
@@ -82,22 +70,16 @@
 #define BMCHAIN_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define BMCHAIN_MAX_MEMO_SIZE                   2048
 #define BMCHAIN_MAX_PROXY_RECURSION_DEPTH       4
-#define BMCHAIN_VESTING_WITHDRAW_INTERVALS      13
-#define BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) /// 1 week per interval
-#define BMCHAIN_MAX_WITHDRAW_ROUTES             10
 #define BMCHAIN_SAVINGS_WITHDRAW_TIME        	(fc::days(3))
 #define BMCHAIN_SAVINGS_WITHDRAW_REQUEST_LIMIT  100
 #define BMCHAIN_VOTE_REGENERATION_SECONDS       (5*60*60*24) // 5 day
 #define BMCHAIN_MAX_VOTE_CHANGES                5
 #define BMCHAIN_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
-#define BMCHAIN_MIN_VOTE_INTERVAL_SEC           (0) /// bmchain stress-testing, было 3
+#define BMCHAIN_MIN_VOTE_INTERVAL_SEC           (3)
 #define BMCHAIN_VOTE_DUST_THRESHOLD             (10000) /// bmchain stress-testing, было 50000000
 
-#define BMCHAIN_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(0)) // 5 minutes  /// bmchain
-#define BMCHAIN_MIN_REPLY_INTERVAL              (fc::seconds(0)) // 20 seconds /// bmchain
-#define BMCHAIN_POST_AVERAGE_WINDOW             (60*60*24u) // 1 day
-#define BMCHAIN_POST_MAX_BANDWIDTH              (4*BMCHAIN_100_PERCENT) // 2 posts per 1 days, average 1 every 12 hours
-#define BMCHAIN_POST_WEIGHT_CONSTANT            (uint64_t(BMCHAIN_POST_MAX_BANDWIDTH) * BMCHAIN_POST_MAX_BANDWIDTH)
+#define BMCHAIN_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
+#define BMCHAIN_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 
 #define BMCHAIN_MAX_ACCOUNT_WITNESS_VOTES       30
 
@@ -105,16 +87,7 @@
 #define BMCHAIN_1_PERCENT                       (BMCHAIN_100_PERCENT/100)
 #define BMCHAIN_1_TENTH_PERCENT                 (BMCHAIN_100_PERCENT/1000)
 
-#define BMCHAIN_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
-#define BMCHAIN_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
-#define BMCHAIN_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define BMCHAIN_CONTENT_REWARD_PERCENT          (90*BMCHAIN_1_PERCENT) //75% of inflation, 7.125% inflation
-#define BMCHAIN_VESTING_FUND_PERCENT            (0*BMCHAIN_1_PERCENT) //15% of inflation, 1.425% inflation
-
-#define BMCHAIN_MINER_PAY_PERCENT               (BMCHAIN_1_PERCENT) // 1%
-#define BMCHAIN_MIN_RATION                      100000
-#define BMCHAIN_MAX_RATION_DECAY_RATE           (1000000)
-#define BMCHAIN_FREE_TRANSACTIONS_WITH_NEW_ACCOUNT 100
+#define BMCHAIN_CONTENT_REWARD_PERCENT          (90*BMCHAIN_1_PERCENT)
 
 #define BMCHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define BMCHAIN_BANDWIDTH_PRECISION             (uint64_t(1000000)) ///< 1 million
@@ -124,15 +97,13 @@
 #define BMCHAIN_MAX_RESERVE_RATIO               (20000)
 
 #define BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER 30
-#define BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO    5
-#define BMCHAIN_CREATE_ACCOUNT_DELEGATION_TIME     fc::days(30)
+#define BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO  5
+#define BMCHAIN_CREATE_ACCOUNT_DELEGATION_TIME   fc::days(30)
 
 #define BMCHAIN_MINING_REWARD                   asset( 1000, BMT_SYMBOL )
 #define BMCHAIN_EQUIHASH_N                      140
 #define BMCHAIN_EQUIHASH_K                      6
 
-#define BMCHAIN_LIQUIDITY_TIMEOUT_SEC           (fc::seconds(60*60*24*7)) // After one week volume is set to 0
-#define BMCHAIN_MIN_LIQUIDITY_REWARD_PERIOD_SEC (fc::seconds(60)) // 1 minute required on books to receive volume
 #define BMCHAIN_LIQUIDITY_REWARD_PERIOD_SEC     (60*60)
 #define BMCHAIN_LIQUIDITY_REWARD_BLOCKS         (BMCHAIN_LIQUIDITY_REWARD_PERIOD_SEC/BMCHAIN_BLOCK_INTERVAL)
 #define BMCHAIN_MIN_LIQUIDITY_REWARD            (asset( 1000*BMCHAIN_LIQUIDITY_REWARD_BLOCKS, BMT_SYMBOL )) // Minumum reward to be paid out to liquidity providers
@@ -208,7 +179,7 @@
 #define BMCHAIN_MAX_BLOCK_SIZE                  (BMCHAIN_MAX_TRANSACTION_SIZE*BMCHAIN_BLOCK_INTERVAL*2000)
 #define BMCHAIN_MIN_BLOCK_SIZE                  115
 #define BMCHAIN_BLOCKS_PER_HOUR                 (60*60/BMCHAIN_BLOCK_INTERVAL)
-#define BMCHAIN_FEED_INTERVAL_BLOCKS            (BMCHAIN_BLOCKS_PER_HOUR / 24) /// bmchain
+#define BMCHAIN_FEED_INTERVAL_BLOCKS            (BMCHAIN_BLOCKS_PER_HOUR) /// bmchain
 #define BMCHAIN_FEED_HISTORY_WINDOW             (12*7) // 3.5 days
 #define BMCHAIN_MAX_FEED_AGE_SECONDS            (60*60*24*7) // 7 days
 #define BMCHAIN_MIN_FEEDS                       (BMCHAIN_MAX_WITNESSES/BMCHAIN_MAX_WITNESSES) /// bmchain /// protects the network from conversions before price has been established

@@ -1007,57 +1007,6 @@ void transfer_to_rep_evaluator::do_apply( const transfer_to_rep_operation& o )
    _db.create_rep( to_account, o.amount );
 }
 
-void withdraw_rep_evaluator::do_apply( const withdraw_rep_operation& o )
-{
-   const auto& account = _db.get_account( o.account );
-
-   FC_ASSERT( account.rep_shares >= asset( 0, REP_SYMBOL ), "Account does not have sufficient BMT for withdraw." );
-   FC_ASSERT( account.rep_shares - account.delegated_rep_shares >= o.rep_shares, "Account does not have sufficient BMT for withdraw." );
-
-   if( !account.mined )
-   {
-      const auto& props = _db.get_dynamic_global_properties();
-      const witness_schedule_object& wso = _db.get_witness_schedule_object();
-
-      asset min_vests = wso.median_props.account_creation_fee * props.get_rep_share_price();
-      min_vests.amount.value *= 10;
-
-      FC_ASSERT( account.rep_shares > min_vests && o.rep_shares.amount == 0,
-                 "Account registered by another account requires 10x account creation fee worth of BMT before it can be powered down." );
-   }
-
-   if( o.rep_shares.amount == 0 )
-   {
-      FC_ASSERT( account.rep_withdraw_rate.amount  != 0, "This operation would not change the vesting withdraw rate." );
-
-      _db.modify( account, [&]( account_object& a ) {
-         a.rep_withdraw_rate = asset( 0, REP_SYMBOL );
-         a.next_rep_withdrawal = time_point_sec::maximum();
-         a.to_withdraw = 0;
-         a.withdrawn = 0;
-      });
-   }
-   else
-   {
-      int rep_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
-
-      _db.modify( account, [&]( account_object& a )
-      {
-         auto new_rep_withdraw_rate = asset( o.rep_shares.amount / rep_withdraw_intervals, REP_SYMBOL );
-
-         if( new_rep_withdraw_rate.amount == 0 )
-            new_rep_withdraw_rate.amount = 1;
-
-         FC_ASSERT( account.rep_withdraw_rate  != new_rep_withdraw_rate, "This operation would not change the vesting withdraw rate." );
-
-         a.rep_withdraw_rate = new_rep_withdraw_rate;
-         a.next_rep_withdrawal = _db.head_block_time() + fc::seconds(BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS);
-         a.to_withdraw = o.rep_shares.amount;
-         a.withdrawn = 0;
-      });
-   }
-}
-
 void set_withdraw_rep_route_evaluator::do_apply( const set_withdraw_rep_route_operation& o )
 {
    try
@@ -1070,7 +1019,7 @@ void set_withdraw_rep_route_evaluator::do_apply( const set_withdraw_rep_route_op
    if( itr == wd_idx.end() )
    {
       FC_ASSERT( o.percent != 0, "Cannot create a 0% destination." );
-      FC_ASSERT( from_account.withdraw_routes < BMCHAIN_MAX_WITHDRAW_ROUTES, "Account already has the maximum number of routes." );
+      FC_ASSERT( from_account.withdraw_routes < 10, "Account already has the maximum number of routes." );
 
       _db.create< withdraw_rep_route_object >( [&]( withdraw_rep_route_object& wvdo )
       {

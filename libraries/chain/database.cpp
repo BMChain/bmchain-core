@@ -1245,127 +1245,6 @@ void database::update_owner_authority( const account_object& account, const auth
    });
 }
 
-void database::process_rep_withdrawals()
-{
-   const auto& widx = get_index< account_index >().indices().get< by_next_rep_withdrawal >();
-   const auto& didx = get_index< withdraw_rep_route_index >().indices().get< by_withdraw_route >();
-   auto current = widx.begin();
-
-   const auto& cprops = get_dynamic_global_properties();
-
-   while( current != widx.end() && current->next_rep_withdrawal <= head_block_time() )
-   {
-      const auto& from_account = *current; ++current;
-
-      /**
-      *  Let T = total tokens in vesting fund
-      *  Let V = total vesting shares
-      *  Let v = total vesting shares being cashed out
-      *
-      *  The user may withdraw  vT / V tokens
-      */
-      share_type to_withdraw;
-      if ( from_account.to_withdraw - from_account.withdrawn < from_account.rep_withdraw_rate.amount )
-         to_withdraw = std::min( from_account.rep_shares.amount, from_account.to_withdraw % from_account.rep_withdraw_rate.amount ).value;
-      else
-         to_withdraw = std::min( from_account.rep_shares.amount, from_account.rep_withdraw_rate.amount ).value;
-
-      share_type vests_deposited_as_bmt = 0;
-      share_type vests_deposited_as_vests = 0;
-      asset total_bmt_converted = asset( 0, BMT_SYMBOL );
-
-      // Do two passes, the first for REP, the second for BMT. Try to maintain as much accuracy for vests as possible.
-      for( auto itr = didx.upper_bound( boost::make_tuple( from_account.id, account_id_type() ) );
-           itr != didx.end() && itr->from_account == from_account.id;
-           ++itr )
-      {
-         if( itr->auto_vest )
-         {
-            share_type to_deposit = ( ( fc::uint128_t ( to_withdraw.value ) * itr->percent ) / BMCHAIN_100_PERCENT ).to_uint64();
-            vests_deposited_as_vests += to_deposit;
-
-            if( to_deposit > 0 )
-            {
-               const auto& to_account = get(itr->to_account);
-
-               modify( to_account, [&]( account_object& a )
-               {
-                  a.rep_shares.amount += to_deposit;
-               });
-
-               adjust_proxied_witness_votes( to_account, to_deposit );
-
-               push_virtual_operation( fill_rep_withdraw_operation( from_account.name, to_account.name, asset( to_deposit, REP_SYMBOL ), asset( to_deposit, REP_SYMBOL ) ) );
-            }
-         }
-      }
-
-      for( auto itr = didx.upper_bound( boost::make_tuple( from_account.id, account_id_type() ) );
-           itr != didx.end() && itr->from_account == from_account.id;
-           ++itr )
-      {
-         if( !itr->auto_vest )
-         {
-            const auto& to_account = get(itr->to_account);
-
-            share_type to_deposit = ( ( fc::uint128_t ( to_withdraw.value ) * itr->percent ) / BMCHAIN_100_PERCENT ).to_uint64();
-            vests_deposited_as_bmt += to_deposit;
-            auto converted_bmt = asset( to_deposit, REP_SYMBOL ) * cprops.get_rep_share_price();
-            total_bmt_converted += converted_bmt;
-
-            if( to_deposit > 0 )
-            {
-               modify( to_account, [&]( account_object& a )
-               {
-                  a.balance += converted_bmt;
-               });
-
-               modify( cprops, [&]( dynamic_global_property_object& o )
-               {
-                  o.total_rep_fund_bmt -= converted_bmt;
-                  o.total_rep_shares.amount -= to_deposit;
-               });
-
-               push_virtual_operation( fill_rep_withdraw_operation( from_account.name, to_account.name, asset( to_deposit, REP_SYMBOL), converted_bmt ) );
-            }
-         }
-      }
-
-      share_type to_convert = to_withdraw - vests_deposited_as_bmt - vests_deposited_as_vests;
-      FC_ASSERT( to_convert >= 0, "Deposited more vests than were supposed to be withdrawn" );
-
-      auto converted_bmt = asset( to_convert, REP_SYMBOL ) * cprops.get_rep_share_price();
-
-      modify( from_account, [&]( account_object& a )
-      {
-         a.rep_shares.amount -= to_withdraw;
-         a.balance += converted_bmt;
-         a.withdrawn += to_withdraw;
-
-         if( a.withdrawn >= a.to_withdraw || a.rep_shares.amount == 0 )
-         {
-            a.rep_withdraw_rate.amount = 0;
-            a.next_rep_withdrawal = fc::time_point_sec::maximum();
-         }
-         else
-         {
-            a.next_rep_withdrawal += fc::seconds( BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS );
-         }
-      });
-
-      modify( cprops, [&]( dynamic_global_property_object& o )
-      {
-         o.total_rep_fund_bmt -= converted_bmt;
-         o.total_rep_shares.amount -= to_convert;
-      });
-
-      if( to_withdraw > 0 )
-         adjust_proxied_witness_votes( from_account, -to_withdraw );
-
-      push_virtual_operation( fill_rep_withdraw_operation( from_account.name, from_account.name, asset( to_withdraw, REP_SYMBOL ), converted_bmt ) );
-   }
-}
-
 void database::adjust_total_payout(const comment_object &cur, const asset &bmt_created, const asset &curator_bmt_value,
                                    const asset &beneficiary_value)
 {
@@ -1709,7 +1588,7 @@ asset database::get_pow_reward()const
 
 #ifndef IS_TEST_NET
    /// 0 block rewards until at least BMCHAIN_MAX_WITNESSES have produced a POW
-   if( props.num_pow_witnesses < BMCHAIN_MAX_WITNESSES && props.head_block_number < BMCHAIN_START_VESTING_BLOCK )
+   if( props.num_pow_witnesses < BMCHAIN_MAX_WITNESSES )
       return asset( 0, BMT_SYMBOL );
 #endif
 
@@ -1865,7 +1744,6 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< delete_comment_evaluator                 >();
    _my->_evaluator_registry.register_evaluator< transfer_evaluator                       >();
    _my->_evaluator_registry.register_evaluator< transfer_to_rep_evaluator            >();
-   _my->_evaluator_registry.register_evaluator< withdraw_rep_evaluator               >();
    _my->_evaluator_registry.register_evaluator< set_withdraw_rep_route_evaluator     >();
    _my->_evaluator_registry.register_evaluator< account_create_evaluator                 >();
    _my->_evaluator_registry.register_evaluator< account_update_evaluator                 >();
@@ -2368,7 +2246,6 @@ void database::_apply_block( const signed_block& next_block )
 
    clear_null_account_balance();
    process_comment_cashout();
-   process_rep_withdrawals();
    process_savings_withdraws();
    update_virtual_supply();
 
@@ -3183,7 +3060,6 @@ void database::perform_rep_share_split( uint32_t magnitude )
             a.rep_shares.amount *= magnitude;
             a.withdrawn             *= magnitude;
             a.to_withdraw           *= magnitude;
-            a.rep_withdraw_rate  = asset( a.to_withdraw / BMCHAIN_VESTING_WITHDRAW_INTERVALS, REP_SYMBOL );
             if( a.rep_withdraw_rate.amount == 0 )
                a.rep_withdraw_rate.amount = 1;
 

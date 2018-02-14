@@ -315,7 +315,6 @@ namespace bmchain { namespace chain {
           * adjust_proxied_witness_votes( a, -a.witness_vote_weight() )
           */
          void clear_witness_votes( const account_object& a );
-         void process_rep_withdrawals();
          share_type pay_curators( const comment_object& c, share_type& max_rewards );
          share_type cashout_comment_helper( util::comment_reward_context& ctx, const comment_object& comment );
          void process_comment_cashout();

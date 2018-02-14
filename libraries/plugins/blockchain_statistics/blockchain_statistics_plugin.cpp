@@ -338,27 +338,6 @@ void blockchain_statistics_plugin_impl::pre_operation( const operation_notificat
                b.root_comments_deleted++;
          });
       }
-      else if( o.op.which() == operation::tag< withdraw_rep_operation >::value )
-      {
-         withdraw_rep_operation op = o.op.get< withdraw_rep_operation >();
-         auto& account = db.get_account( op.account );
-         const auto& bucket = db.get(bucket_id);
-
-         auto new_rep_withdrawal_rate = op.rep_shares.amount / BMCHAIN_VESTING_WITHDRAW_INTERVALS;
-         if( op.rep_shares.amount > 0 && new_rep_withdrawal_rate == 0 )
-            new_rep_withdrawal_rate = 1;
-
-         db.modify( bucket, [&]( bucket_object& b )
-         {
-            if( account.rep_withdraw_rate.amount > 0 )
-               b.modified_rep_withdrawal_requests++;
-            else
-               b.new_rep_withdrawal_requests++;
-
-            // TODO: Figure out how to change delta when a vesting withdraw finishes. Have until March 24th 2018 to figure that out...
-            b.rep_withdraw_rate_delta += new_rep_withdrawal_rate - account.rep_withdraw_rate.amount;
-         });
-      }
    }
 }
 

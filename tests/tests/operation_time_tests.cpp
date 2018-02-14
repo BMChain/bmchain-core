@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
       // U,V,W : voters
 
       // set a ridiculously high BMT price ($1 / satoshi) to disable dust threshold
-      set_price_feed( price( ASSET( "0.001 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "0.001 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       for( const auto& voter : voters )
       {
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_dust )
       vest( "alice", ASSET( "10.000 TESTS" ) );
       vest( "bob", ASSET( "10.000 TESTS" ) );
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       generate_block();
       validate_database();
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE( reward_funds )
       ACTORS( (alice)(bob) )
       generate_block();
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
       generate_block();
 
       comment_operation comment;
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE( recent_claims_decay )
       ACTORS( (alice)(bob) )
       generate_block();
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
       generate_block();
 
       comment_operation comment;
@@ -378,7 +378,7 @@ BOOST_AUTO_TEST_CASE( recent_claims_decay )
       vest( "dave", 5000 );
 
       price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
-      set_price_feed( exchange_rate );
+      //set_price_feed( exchange_rate );
 
       signed_transaction tx;
 
@@ -541,7 +541,7 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       vest( "dave", 5000 );
 
       price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
-      set_price_feed( exchange_rate );
+      //set_price_feed( exchange_rate );
 
       auto gpo = db.get_dynamic_global_properties();
 
@@ -844,7 +844,7 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       vest( "dave", 10000 );
 
       price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
-      set_price_feed( exchange_rate );
+      //set_price_feed( exchange_rate );
 
       signed_transaction tx;
       comment_operation comment_op;
@@ -1118,130 +1118,6 @@ BOOST_AUTO_TEST_CASE( nested_comments )
 }
 */
 
-
-BOOST_AUTO_TEST_CASE( rep_withdrawals )
-{
-   try
-   {
-      ACTORS( (alice) )
-      fund( "alice", 100000 );
-      vest( "alice", 100000 );
-
-      const auto& new_alice = db.get_account( "alice" );
-
-      BOOST_TEST_MESSAGE( "Setting up withdrawal" );
-
-      signed_transaction tx;
-      withdraw_rep_operation op;
-      op.account = "alice";
-      op.rep_shares = asset( new_alice.rep_shares.amount / 2, REP_SYMBOL );
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.operations.push_back( op );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      db.push_transaction( tx, 0 );
-
-      auto next_withdrawal = db.head_block_time() + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS;
-      asset rep_shares = new_alice.rep_shares;
-      asset to_withdraw = op.rep_shares;
-      asset original_rep = rep_shares;
-      asset withdraw_rate = new_alice.rep_withdraw_rate;
-
-      BOOST_TEST_MESSAGE( "Generating block up to first withdrawal" );
-      generate_blocks( next_withdrawal - ( BMCHAIN_BLOCK_INTERVAL / 2 ), true);
-
-      BOOST_REQUIRE( db.get_account( "alice" ).rep_shares.amount.value == rep_shares.amount.value );
-
-      BOOST_TEST_MESSAGE( "Generating block to cause withdrawal" );
-      generate_block();
-
-      auto fill_op = get_last_operations( 1 )[0].get< fill_rep_withdraw_operation >();
-      auto gpo = db.get_dynamic_global_properties();
-
-      BOOST_REQUIRE( db.get_account( "alice" ).rep_shares.amount.value == ( rep_shares - withdraw_rate ).amount.value );
-      BOOST_REQUIRE( ( withdraw_rate * gpo.get_rep_share_price() ).amount.value - db.get_account( "alice" ).balance.amount.value <= 1 ); // Check a range due to differences in the share price
-      BOOST_REQUIRE( fill_op.from_account == "alice" );
-      BOOST_REQUIRE( fill_op.to_account == "alice" );
-      BOOST_REQUIRE( fill_op.withdrawn.amount.value == withdraw_rate.amount.value );
-      BOOST_REQUIRE( std::abs( ( fill_op.deposited - fill_op.withdrawn * gpo.get_rep_share_price() ).amount.value ) <= 1 );
-      validate_database();
-
-      BOOST_TEST_MESSAGE( "Generating the rest of the blocks in the withdrawal" );
-
-      rep_shares = db.get_account( "alice" ).rep_shares;
-      auto balance = db.get_account( "alice" ).balance;
-      auto old_next_rep = db.get_account( "alice" ).next_rep_withdrawal;
-
-      for( int i = 1; i < BMCHAIN_VESTING_WITHDRAW_INTERVALS - 1; i++ )
-      {
-         generate_blocks( db.head_block_time() + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS );
-
-         const auto& alice = db.get_account( "alice" );
-
-         gpo = db.get_dynamic_global_properties();
-         fill_op = get_last_operations( 1 )[0].get< fill_rep_withdraw_operation >();
-
-         BOOST_REQUIRE( alice.rep_shares.amount.value == ( rep_shares - withdraw_rate ).amount.value );
-         BOOST_REQUIRE( balance.amount.value + ( withdraw_rate * gpo.get_rep_share_price() ).amount.value - alice.balance.amount.value <= 1 );
-         BOOST_REQUIRE( fill_op.from_account == "alice" );
-         BOOST_REQUIRE( fill_op.to_account == "alice" );
-         BOOST_REQUIRE( fill_op.withdrawn.amount.value == withdraw_rate.amount.value );
-         BOOST_REQUIRE( std::abs( ( fill_op.deposited - fill_op.withdrawn * gpo.get_rep_share_price() ).amount.value ) <= 1 );
-
-         if ( i == BMCHAIN_VESTING_WITHDRAW_INTERVALS - 1 )
-            BOOST_REQUIRE( alice.next_rep_withdrawal == fc::time_point_sec::maximum() );
-         else
-            BOOST_REQUIRE( alice.next_rep_withdrawal.sec_since_epoch() == ( old_next_rep + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS ).sec_since_epoch() );
-
-         validate_database();
-
-         rep_shares = alice.rep_shares;
-         balance = alice.balance;
-         old_next_rep = alice.next_rep_withdrawal;
-      }
-
-      if (  to_withdraw.amount.value % withdraw_rate.amount.value != 0 )
-      {
-         BOOST_TEST_MESSAGE( "Generating one more block to take care of remainder" );
-         generate_blocks( db.head_block_time() + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS, true );
-         fill_op = get_last_operations( 1 )[0].get< fill_rep_withdraw_operation >();
-         gpo = db.get_dynamic_global_properties();
-
-         BOOST_REQUIRE( db.get_account( "alice" ).next_rep_withdrawal.sec_since_epoch() == ( old_next_rep + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS ).sec_since_epoch() );
-         BOOST_REQUIRE( fill_op.from_account == "alice" );
-         BOOST_REQUIRE( fill_op.to_account == "alice" );
-         BOOST_REQUIRE( fill_op.withdrawn.amount.value == withdraw_rate.amount.value );
-         BOOST_REQUIRE( std::abs( ( fill_op.deposited - fill_op.withdrawn * gpo.get_rep_share_price() ).amount.value ) <= 1 );
-
-         generate_blocks( db.head_block_time() + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS, true );
-         gpo = db.get_dynamic_global_properties();
-         fill_op = get_last_operations( 1 )[0].get< fill_rep_withdraw_operation >();
-
-         BOOST_REQUIRE( db.get_account( "alice" ).next_rep_withdrawal.sec_since_epoch() == fc::time_point_sec::maximum().sec_since_epoch() );
-         BOOST_REQUIRE( fill_op.to_account == "alice" );
-         BOOST_REQUIRE( fill_op.from_account == "alice" );
-         BOOST_REQUIRE( fill_op.withdrawn.amount.value == to_withdraw.amount.value % withdraw_rate.amount.value );
-         BOOST_REQUIRE( std::abs( ( fill_op.deposited - fill_op.withdrawn * gpo.get_rep_share_price() ).amount.value ) <= 1 );
-
-         validate_database();
-      }
-      else
-      {
-         generate_blocks( db.head_block_time() + BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS, true );
-
-         BOOST_REQUIRE( db.get_account( "alice" ).next_rep_withdrawal.sec_since_epoch() == fc::time_point_sec::maximum().sec_since_epoch() );
-
-         fill_op = get_last_operations( 1 )[0].get< fill_rep_withdraw_operation >();
-         BOOST_REQUIRE( fill_op.from_account == "alice" );
-         BOOST_REQUIRE( fill_op.to_account == "alice" );
-         BOOST_REQUIRE( fill_op.withdrawn.amount.value == withdraw_rate.amount.value );
-         BOOST_REQUIRE( std::abs( ( fill_op.deposited - fill_op.withdrawn * gpo.get_rep_share_price() ).amount.value ) <= 1 );
-      }
-
-      BOOST_REQUIRE( db.get_account( "alice" ).rep_shares.amount.value == ( original_rep - op.rep_shares ).amount.value );
-   }
-   FC_LOG_AND_RETHROW()
-}
-
 BOOST_AUTO_TEST_CASE( rep_withdraw_route )
 {
    try
@@ -1398,48 +1274,6 @@ BOOST_AUTO_TEST_CASE( bmt_inflation )
       BOOST_REQUIRE( db.get_account( witness_name ).balance.amount.value == ( old_witness_balance + witness_pay ).amount.value );
 
       validate_database();
-
-      while( db.head_block_num() < BMCHAIN_START_VESTING_BLOCK - 1)
-      {
-         virtual_supply = gpo.virtual_supply;
-         witness_name = db.get_scheduled_witness(1);
-         old_witness_balance = db.get_account( witness_name ).balance;
-         old_witness_shares = db.get_account( witness_name ).rep_shares;
-
-
-         new_rewards = std::max( BMCHAIN_MIN_CONTENT_REWARD, asset( ( BMCHAIN_CONTENT_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) )
-            + std::max( BMCHAIN_MIN_CURATE_REWARD, asset( ( BMCHAIN_CURATE_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
-         witness_pay = std::max( BMCHAIN_MIN_PRODUCER_REWARD, asset( ( BMCHAIN_PRODUCER_APR * gpo.virtual_supply.amount ) / ( BMCHAIN_BLOCKS_PER_YEAR * 100 ), BMT_SYMBOL ) );
-         new_rep_bmt = asset( 0, BMT_SYMBOL );
-         new_rep_shares = gpo.total_rep_shares;
-
-         if ( db.get_account( witness_name ).rep_shares.amount.value == 0 )
-         {
-            new_rep_bmt += witness_pay;
-            witness_pay_shares = witness_pay * gpo.get_rep_share_price();
-            new_rep_shares += witness_pay_shares;
-            new_supply += witness_pay;
-            witness_pay = asset( 0, BMT_SYMBOL );
-         }
-
-         new_supply = gpo.current_supply + new_rewards + witness_pay + new_rep_bmt;
-         new_rewards += gpo.total_reward_fund_bmt;
-         new_rep_bmt += gpo.total_rep_fund_bmt;
-
-         generate_block();
-
-         gpo = db.get_dynamic_global_properties();
-
-         BOOST_REQUIRE( gpo.current_supply.amount.value == new_supply.amount.value );
-         BOOST_REQUIRE( gpo.virtual_supply.amount.value == new_supply.amount.value );
-         BOOST_REQUIRE( gpo.total_reward_fund_bmt.amount.value == new_rewards.amount.value );
-         BOOST_REQUIRE( gpo.total_rep_fund_bmt.amount.value == new_rep_bmt.amount.value );
-         BOOST_REQUIRE( gpo.total_rep_shares.amount.value == new_rep_shares.amount.value );
-         BOOST_REQUIRE( db.get_account( witness_name ).balance.amount.value == ( old_witness_balance + witness_pay ).amount.value );
-         BOOST_REQUIRE( db.get_account( witness_name ).rep_shares.amount.value == ( old_witness_shares + witness_pay_shares ).amount.value );
-
-         validate_database();
-      }
 
       BOOST_TEST_MESSAGE( "Testing up to the start block for miner voting" );
 
@@ -1635,8 +1469,8 @@ BOOST_AUTO_TEST_CASE( comment_freeze )
       vest( "sam", 10000 );
       vest( "dave", 10000 );
 
-      auto exchange_rate = price( ASSET( "1.250 TESTS" ), ASSET( "1.000 TBD" ) );
-      set_price_feed( exchange_rate );
+      //auto exchange_rate = price( ASSET( "1.250 TESTS" ), ASSET( "1.000 TBD" ) );
+      //set_price_feed( exchange_rate );
 
       signed_transaction tx;
 
@@ -1748,7 +1582,7 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
       ACTORS( (alice) );
       generate_block();
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
+      //set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       fund( "alice", ASSET( "10.000 TESTS" ) );
       fund( "alice", ASSET( "10.000 TBD" ) );
