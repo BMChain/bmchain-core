@@ -1536,11 +1536,6 @@ void database::process_savings_withdraws()
   }
 }
 
-asset database::get_liquidity_reward()const
-{
-   return asset( 0, BMT_SYMBOL );
-}
-
 asset database::get_content_reward()const
 {
    const auto& props = get_dynamic_global_properties();
@@ -2241,7 +2236,6 @@ void database::_apply_block( const signed_block& next_block )
    clear_expired_delegations();
    update_witness_schedule(*this);
 
-   update_median_feed();
    update_virtual_supply();
 
    clear_null_account_balance();
@@ -2311,19 +2305,6 @@ void database::process_header_extensions( const signed_block& next_block )
       ++itr;
    }
 }
-
-
-
-void database::update_median_feed() {
-try {
-   if( (head_block_num() % BMCHAIN_FEED_INTERVAL_BLOCKS) != 0 )
-      return;
-
-    modify( get_feed_history(), [&]( feed_history_object& fho ){
-        fho.current_median_history = price(asset(1000, BMT_SYMBOL), asset(1000, BMT_SYMBOL));
-    });
-
-} FC_CAPTURE_AND_RETHROW() }
 
 void database::apply_transaction(const signed_transaction& trx, uint32_t skip)
 {

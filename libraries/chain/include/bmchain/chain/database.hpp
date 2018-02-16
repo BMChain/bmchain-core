@@ -323,9 +323,7 @@ namespace bmchain { namespace chain {
          void account_recovery_processing();
          void expire_escrow_ratification();
          void process_decline_voting_rights();
-         void update_median_feed();
 
-         asset get_liquidity_reward()const;
          asset get_content_reward()const;
          asset get_producer_reward();
          asset get_curation_reward()const;
