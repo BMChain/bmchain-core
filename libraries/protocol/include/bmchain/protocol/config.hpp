@@ -37,7 +37,7 @@
 #define BMCHAIN_SYMBOL                          "BMT"
 #define BMCHAIN_ADDRESS_PREFIX                  "BMT"
 
-#define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1519862400))
+#define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1510655500)) /// 11/14/2017
 #define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
 #define BMCHAIN_SECOND_CASHOUT_WINDOW           (60*60*24*30) /// 30 days
 #define BMCHAIN_UPVOTE_LOCKOUT                  (fc::hours(12))
