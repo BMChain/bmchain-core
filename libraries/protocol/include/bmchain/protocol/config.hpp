@@ -167,7 +167,7 @@
 #define BMCHAIN_MAX_PERMLINK_LENGTH             256
 #define BMCHAIN_MAX_WITNESS_URL_LENGTH          2048
 
-#define BMCHAIN_INIT_SUPPLY                     int64_t(200000000000ll)
+#define BMCHAIN_INIT_SUPPLY                     int64_t(91907667000ll)
 #define BMCHAIN_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define BMCHAIN_MAX_SIG_CHECK_DEPTH             2
 
@@ -221,12 +221,12 @@
 
 #define BMCHAIN_ENABLE                          true
 #define BMCHAIN_STRESS_TESTING                  false
-#define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*2)) /// 2 days
+#define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*7)) /// 7 days
 
-#define BMCHAIN_VOTE_EMISSION_RATE              50
-#define BMCHAIN_COMMENT_EMISSION_RATE           200
-#define BMCHAIN_POST_EMISSION_RATE              500
-#define BMCHAIN_USER_EMISSION_RATE              1000
+#define BMCHAIN_VOTE_EMISSION_RATE              500
+#define BMCHAIN_COMMENT_EMISSION_RATE           2000
+#define BMCHAIN_POST_EMISSION_RATE              5000
+#define BMCHAIN_USER_EMISSION_RATE              10000
 
 #ifdef IS_TEST_NET
 #define BMCHAIN_REVERSE_AUCTION_TIME (0)
