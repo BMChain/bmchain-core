@@ -1897,6 +1897,8 @@ void database::init_genesis( uint64_t init_supply )
 {
    try
    {
+      uint64_t init_rep = BMCHAIN_INIT_REP;
+
       struct auth_inhibitor
       {
          auth_inhibitor(database& db) : db(db), old_flags(db.node_properties().skip_flags)
@@ -1954,6 +1956,7 @@ void database::init_genesis( uint64_t init_supply )
             a.name = BMCHAIN_INIT_MINER_NAME + ( i ? fc::to_string( i ) : std::string() );
             a.memo_key = init_public_key;
             a.balance  = asset( i ? 0 : init_supply, BMT_SYMBOL );
+            a.rep_shares  = asset( i ? 0 : init_rep, REP_SYMBOL );
          } );
 
          create< account_authority_object >( [&]( account_authority_object& auth )
@@ -1979,8 +1982,10 @@ void database::init_genesis( uint64_t init_supply )
          p.time = BMCHAIN_GENESIS_TIME;
          p.recent_slots_filled = fc::uint128::max_value();
          p.participation_count = 128;
-         p.current_supply = asset( init_supply, BMT_SYMBOL );
+         p.current_supply = asset( init_supply + init_rep / 1000, BMT_SYMBOL );
          p.virtual_supply = p.current_supply;
+         p.total_rep_shares = asset( init_rep, REP_SYMBOL);
+         p.total_rep_fund_bmt = asset( init_rep / 1000, BMT_SYMBOL);
          p.maximum_block_size = BMCHAIN_MAX_BLOCK_SIZE;
       } );
 
