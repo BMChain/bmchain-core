@@ -1221,7 +1221,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys( string creato
    op.posting = authority( 1, posting, 1 );
    op.memo_key = memo;
    op.json_metadata = json_meta;
-   op.fee = my->_remote_db->get_chain_properties().account_creation_fee * asset( BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER, BMT_SYMBOL );
+   op.fee = asset(my->_remote_db->get_chain_properties().account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER, BMT_SYMBOL );
 
    signed_transaction tx;
    tx.operations.push_back(op);
