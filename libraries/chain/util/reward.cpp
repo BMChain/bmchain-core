@@ -86,6 +86,13 @@ uint128_t evaluate_reward_curve( const uint128_t& rshares, const curve_id& curve
       case square_root:
          result = approx_sqrt( rshares );
          break;
+      case power17:
+         result = rshares * rshares;
+         if (result.hi == 0){
+             uint64_t rshares64 = rshares.to_uint64();
+             uint64_t result64 = std::pow(rshares64, 1.7);
+             result = uint128_t(result64);
+         }
    }
 
    return result;
