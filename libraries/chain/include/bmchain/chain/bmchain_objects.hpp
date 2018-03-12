@@ -198,7 +198,8 @@ namespace bmchain { namespace chain {
       quadratic,
       quadratic_curation,
       linear,
-      square_root
+      square_root,
+      power17
    };
 
    class reward_fund_object : public object< reward_fund_object_type, reward_fund_object >
@@ -220,7 +221,7 @@ namespace bmchain { namespace chain {
          uint128_t               content_constant = 0;
          uint16_t                percent_curation_rewards = 0;
          uint16_t                percent_content_rewards = 0;
-         curve_id                author_reward_curve = quadratic; /// bmchain /// linear;
+         curve_id                author_reward_curve = power17; // quadratic; // linear;
          curve_id                curation_reward_curve = square_root;
    };
 
@@ -458,7 +459,7 @@ namespace bmchain { namespace chain {
 #include <bmchain/chain/account_object.hpp>
 
 FC_REFLECT_ENUM( bmchain::chain::curve_id,
-                  (quadratic)(quadratic_curation)(linear)(square_root))
+                  (quadratic)(quadratic_curation)(linear)(square_root)(power17))
 
 FC_REFLECT( bmchain::chain::limit_order_object,
              (id)(created)(expiration)(seller)(orderid)(for_sale)(sell_price) )
