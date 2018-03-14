@@ -139,6 +139,17 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
       acc.mined = false;
       acc.recovery_account = o.creator;
 
+      if (!o.json_metadata.empty()){
+         auto variant_value = fc::json::from_string(o.json_metadata);
+         if (variant_value.is_object()) {
+             for (auto value : variant_value.get_object()) {
+                 if (value.key() == "avatar") {
+                     from_string(acc.avatar, value.value().as_string());
+                 }
+             }
+         }
+      }
+
       #ifndef IS_LOW_MEM
          from_string( acc.json_metadata, o.json_metadata );
       #endif
@@ -307,6 +318,18 @@ void account_update_evaluator::do_apply( const account_update_operation& o )
       }
 
       acc.last_account_update = _db.head_block_time();
+
+      // update account avatar
+      if (!o.json_metadata.empty()){
+         auto variant_value = fc::json::from_string(o.json_metadata);
+         if (variant_value.is_object()) {
+            for (auto value : variant_value.get_object()) {
+               if (value.key() == "avatar") {
+                  from_string(acc.avatar, value.value().as_string());
+               }
+            }
+         }
+      }
 
       #ifndef IS_LOW_MEM
         if ( o.json_metadata.size() > 0 )

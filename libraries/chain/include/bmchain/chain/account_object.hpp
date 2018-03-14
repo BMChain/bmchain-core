@@ -23,7 +23,7 @@ namespace bmchain { namespace chain {
       public:
          template<typename Constructor, typename Allocator>
          account_object( Constructor&& c, allocator< Allocator > a )
-            :json_metadata( a )
+            :json_metadata( a ), avatar( a )
          {
             c(*this);
          };
@@ -34,6 +34,7 @@ namespace bmchain { namespace chain {
          public_key_type   memo_key;
          shared_string     json_metadata;
          account_name_type proxy;
+         shared_string     avatar;
 
          time_point_sec    last_account_update;
 
@@ -439,7 +440,7 @@ namespace bmchain { namespace chain {
 } }
 
 FC_REFLECT( bmchain::chain::account_object,
-             (id)(name)(memo_key)(json_metadata)(proxy)(last_account_update)
+             (id)(name)(memo_key)(json_metadata)(proxy)(avatar)(last_account_update)
              (created)(mined)
              (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)(reset_account)
              (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)

@@ -190,6 +190,7 @@ struct account_api_obj
       memo_key( a.memo_key ),
       json_metadata( to_string( a.json_metadata ) ),
       proxy( a.proxy ),
+      avatar( to_string( a.avatar ) ),
       last_account_update( a.last_account_update ),
       created( a.created ),
       mined( a.mined ),
@@ -271,6 +272,7 @@ struct account_api_obj
    public_key_type   memo_key;
    string            json_metadata;
    account_name_type proxy;
+   string            avatar;
 
    time_point_sec    last_owner_update;
    time_point_sec    last_account_update;
@@ -540,7 +542,7 @@ FC_REFLECT( bmchain::app::comment_api_obj,
           )
 
 FC_REFLECT( bmchain::app::account_api_obj,
-             (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(last_owner_update)(last_account_update)
+             (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(avatar)(last_owner_update)(last_account_update)
              (created)(mined)
              (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)(reset_account)
              (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
