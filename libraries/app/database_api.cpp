@@ -853,6 +853,7 @@ namespace bmchain {
                     const auto &vo = my->_db.get(itr->voter);
                     vote_state vstate;
                     vstate.voter = vo.name;
+                    vstate.avatar = to_string(vo.avatar);
                     vstate.weight = itr->weight;
                     vstate.rshares = itr->rshares;
                     vstate.percent = itr->vote_percent;

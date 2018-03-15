@@ -46,6 +46,7 @@ namespace bmchain { namespace app {
    struct vote_state
    {
       string         voter;
+      string         avatar;
       uint64_t       weight = 0;
       int64_t        rshares = 0;
       int16_t        percent = 0;
@@ -183,7 +184,7 @@ FC_REFLECT_DERIVED( bmchain::app::extended_account,
                    (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(recommended) )
 
 
-FC_REFLECT( bmchain::app::vote_state, (voter)(weight)(rshares)(percent)(reputation)(time)(comment_bmchain) );
+FC_REFLECT( bmchain::app::vote_state, (voter)(avatar)(weight)(rshares)(percent)(reputation)(time)(comment_bmchain) );
 FC_REFLECT( bmchain::app::account_vote, (authorperm)(weight)(rshares)(percent)(time) );
 
 FC_REFLECT( bmchain::app::discussion_index, (category)(trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout) )
