@@ -1461,6 +1461,7 @@ namespace bmchain {
 
                     ++blog_itr;
                 }
+                set_last_comments(result, 3);
                 return result;
             });
         }
