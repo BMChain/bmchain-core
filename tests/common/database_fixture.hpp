@@ -139,6 +139,7 @@ struct database_fixture {
    //   plugins
    bmchain::app::application app;
    chain::database &db;
+//   chain::database* db = nullptr;
    signed_transaction trx;
    public_key_type committee_key;
    account_id_type committee_account;
