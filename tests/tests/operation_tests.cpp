@@ -16,6 +16,7 @@
 
 #include "../common/database_fixture.hpp"
 
+#include <fc/macros.hpp>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
@@ -27,7 +28,7 @@ using fc::string;
 
 BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 
-BOOST_AUTO_TEST_CASE( account_create_validate ){
+BOOST_AUTO_TEST_CASE( account_create_validate ) {
    try
    {
 
@@ -35,7 +36,7 @@ BOOST_AUTO_TEST_CASE( account_create_validate ){
    FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE( account_create_authorities ){
+BOOST_AUTO_TEST_CASE( account_create_authorities ) {
    try
    {
       BOOST_TEST_MESSAGE( "Testing: account_create_authorities" );
@@ -65,7 +66,7 @@ BOOST_AUTO_TEST_CASE( account_create_authorities ){
    FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE( account_create_apply ){
+BOOST_AUTO_TEST_CASE( account_create_apply ) {
 //   try
 //   {
 //      BOOST_TEST_MESSAGE( "Testing: account_create_apply" );
@@ -277,7 +278,7 @@ BOOST_AUTO_TEST_CASE( account_update_authorities ) {
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE( account_update_apply ){
+BOOST_AUTO_TEST_CASE( account_update_apply ) {
     try {
         BOOST_TEST_MESSAGE("Testing: account_update_apply");
 
@@ -340,6 +341,340 @@ BOOST_AUTO_TEST_CASE( account_update_apply ){
         validate_database();
     }
     FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( comment_validate ) {
+    try {
+        BOOST_TEST_MESSAGE("Testing: comment_validate");
+
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( comment_authorities ) {
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: comment_authorities");
+
+        ACTORS((alice)(bob));
+        generate_blocks(60 / BMCHAIN_BLOCK_INTERVAL);
+
+        comment_operation op;
+        op.author = "alice";
+        op.permlink = "lorem";
+        op.parent_author = "";
+        op.parent_permlink = "ipsum";
+        op.title = "Lorem Ipsum";
+        op.body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+        op.json_metadata = "{\"foo\":\"bar\"}";
+
+        signed_transaction tx;
+        tx.operations.push_back(op);
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+
+        BOOST_TEST_MESSAGE("--- Test failure when no signatures");
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_posting_auth);
+
+        BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
+        tx.sign(alice_post_key, db.get_chain_id());
+        tx.sign(alice_post_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+
+        BOOST_TEST_MESSAGE("--- Test success with post signature");
+        tx.signatures.clear();
+        tx.sign(alice_post_key, db.get_chain_id());
+        db.push_transaction(tx, 0);
+
+        BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
+        tx.sign(bob_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_irrelevant_sig);
+
+        BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the creator's authority");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_posting_auth);
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( comment_apply ) {
+//    try {
+//        BOOST_TEST_MESSAGE("Testing: comment_apply");
+//
+//        ACTORS((alice)(bob)(sam))
+//        generate_blocks(60 / BMCHAIN_BLOCK_INTERVAL);
+//
+//        comment_operation op;
+//        op.author = "alice";
+//        op.permlink = "lorem";
+//        op.parent_author = "";
+//        op.parent_permlink = "ipsum";
+//        op.title = "Lorem Ipsum";
+//        op.body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+//        op.json_metadata = "{\"foo\":\"bar\"}";
+//
+//        signed_transaction tx;
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+//
+//        BOOST_TEST_MESSAGE("--- Test Alice posting a root comment");
+//        tx.operations.push_back(op);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        const comment_object &alice_comment = db.get_comment("alice", string("lorem"));
+//
+//        BOOST_REQUIRE(alice_comment.author == op.author);
+//        BOOST_REQUIRE(to_string(alice_comment.permlink) == op.permlink);
+//        BOOST_REQUIRE(to_string(alice_comment.parent_permlink) == op.parent_permlink);
+//        BOOST_REQUIRE(alice_comment.last_update == db.head_block_time());
+//        BOOST_REQUIRE(alice_comment.created == db.head_block_time());
+//        BOOST_REQUIRE(alice_comment.net_rshares.value == 0);
+//        BOOST_REQUIRE(alice_comment.abs_rshares.value == 0);
+//        BOOST_REQUIRE(alice_comment.cashout_time ==
+//                      fc::time_point_sec(db.head_block_time() + fc::seconds(BMCHAIN_CASHOUT_WINDOW_SECONDS)));
+//
+//        validate_database();
+//
+//        BOOST_TEST_MESSAGE("--- Test Bob posting a comment on a non-existent comment");
+//        op.author = "bob";
+//        op.permlink = "ipsum";
+//        op.parent_author = "alice";
+//        op.parent_permlink = "foobar";
+//
+//        tx.signatures.clear();
+//        tx.operations.clear();
+//        tx.operations.push_back(op);
+//        tx.sign(bob_private_key, db.get_chain_id());
+//        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+//
+//        BOOST_TEST_MESSAGE("--- Test Bob posting a comment on Alice's comment");
+//        op.parent_permlink = "lorem";
+//
+//        tx.signatures.clear();
+//        tx.operations.clear();
+//        tx.operations.push_back(op);
+//        tx.sign(bob_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        const comment_object &bob_comment = db.get_comment("bob", string("ipsum"));
+//
+//        BOOST_REQUIRE(bob_comment.author == op.author);
+//        BOOST_REQUIRE(to_string(bob_comment.permlink) == op.permlink);
+//        BOOST_REQUIRE(bob_comment.parent_author == op.parent_author);
+//        BOOST_REQUIRE(to_string(bob_comment.parent_permlink) == op.parent_permlink);
+//        BOOST_REQUIRE(bob_comment.last_update == db.head_block_time());
+//        BOOST_REQUIRE(bob_comment.created == db.head_block_time());
+//        BOOST_REQUIRE(bob_comment.net_rshares.value == 0);
+//        BOOST_REQUIRE(bob_comment.abs_rshares.value == 0);
+//        BOOST_REQUIRE(bob_comment.cashout_time == bob_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+//        BOOST_REQUIRE(bob_comment.root_comment == alice_comment.id);
+//        validate_database();
+//
+//        BOOST_TEST_MESSAGE("--- Test Sam posting a comment on Bob's comment");
+//
+//        op.author = "sam";
+//        op.permlink = "dolor";
+//        op.parent_author = "bob";
+//        op.parent_permlink = "ipsum";
+//
+//        tx.signatures.clear();
+//        tx.operations.clear();
+//        tx.operations.push_back(op);
+//        tx.sign(sam_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        const comment_object &sam_comment = db.get_comment("sam", string("dolor"));
+//
+//        BOOST_REQUIRE(sam_comment.author == op.author);
+//        BOOST_REQUIRE(to_string(sam_comment.permlink) == op.permlink);
+//        BOOST_REQUIRE(sam_comment.parent_author == op.parent_author);
+//        BOOST_REQUIRE(to_string(sam_comment.parent_permlink) == op.parent_permlink);
+//        BOOST_REQUIRE(sam_comment.last_update == db.head_block_time());
+//        BOOST_REQUIRE(sam_comment.created == db.head_block_time());
+//        BOOST_REQUIRE(sam_comment.net_rshares.value == 0);
+//        BOOST_REQUIRE(sam_comment.abs_rshares.value == 0);
+//        BOOST_REQUIRE(sam_comment.cashout_time == sam_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+//        BOOST_REQUIRE(sam_comment.root_comment == alice_comment.id);
+//        validate_database();
+//
+//        generate_blocks(60 * 5 / BMCHAIN_BLOCK_INTERVAL + 1);
+//
+//        BOOST_TEST_MESSAGE("--- Test modifying a comment");
+//        const auto &mod_sam_comment = db.get_comment("sam", string("dolor"));
+//        const auto &mod_bob_comment = db.get_comment("bob", string("ipsum"));
+//        const auto &mod_alice_comment = db.get_comment("alice", string("lorem"));
+//
+//        FC_UNUSED(mod_bob_comment, mod_alice_comment);
+//
+//        fc::time_point_sec created = mod_sam_comment.created;
+//
+//        db.modify(mod_sam_comment, [&](comment_object &com) {
+//            com.net_rshares = 10;
+//            com.abs_rshares = 10;
+//        });
+//
+//        db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &o) {
+//            o.total_reward_shares2 = bmchain::chain::util::evaluate_reward_curve(10);
+//        });
+//
+//        tx.signatures.clear();
+//        tx.operations.clear();
+//        op.title = "foo";
+//        op.body = "bar";
+//        op.json_metadata = "{\"bar\":\"foo\"}";
+//        tx.operations.push_back(op);
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.sign(sam_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        BOOST_REQUIRE(mod_sam_comment.author == op.author);
+//        BOOST_REQUIRE(to_string(mod_sam_comment.permlink) == op.permlink);
+//        BOOST_REQUIRE(mod_sam_comment.parent_author == op.parent_author);
+//        BOOST_REQUIRE(to_string(mod_sam_comment.parent_permlink) == op.parent_permlink);
+//        BOOST_REQUIRE(mod_sam_comment.last_update == db.head_block_time());
+//        BOOST_REQUIRE(mod_sam_comment.created == created);
+//        BOOST_REQUIRE(mod_sam_comment.cashout_time == mod_sam_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+//        validate_database();
+//
+//        BOOST_TEST_MESSAGE("--- Test failure posting withing 1 minute");
+//
+//        op.permlink = "sit";
+//        op.parent_author = "";
+//        op.parent_permlink = "test";
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.operations.push_back(op);
+//        tx.sign(sam_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        generate_blocks(60 * 5 / BMCHAIN_BLOCK_INTERVAL);
+//
+//        op.permlink = "amet";
+//        tx.operations.clear();
+//        tx.signatures.clear();
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+//        tx.operations.push_back(op);
+//        tx.sign(sam_private_key, db.get_chain_id());
+//        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+//
+//        validate_database();
+//
+//        generate_block();
+//        db.push_transaction(tx, 0);
+//        validate_database();
+//    }
+//    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( comment_delete_apply ) {
+//    try
+//    {
+//        BOOST_TEST_MESSAGE("Testing: comment_delete_apply");
+//        ACTORS((alice))
+//        generate_block();
+//
+//        vest("alice", ASSET("1000.000 TESTS"));
+//
+//        generate_block();
+//
+////        set_price_feed(price(ASSET("1.000 TBD"), ASSET("1.000 TESTS")));
+//
+//        signed_transaction tx;
+//        comment_operation comment;
+//        vote_operation vote;
+//
+//        comment.author = "alice";
+//        comment.permlink = "test1";
+//        comment.title = "test";
+//        comment.body = "foo bar";
+//        comment.parent_permlink = "test";
+//        vote.voter = "alice";
+//        vote.author = "alice";
+//        vote.permlink = "test1";
+//        vote.weight = BMCHAIN_100_PERCENT;
+//        tx.operations.push_back(comment);
+//        tx.operations.push_back(vote);
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MIN_TRANSACTION_EXPIRATION_LIMIT);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        BOOST_TEST_MESSAGE("--- Test failue deleting a comment with positive rshares");
+//
+//        delete_comment_operation op;
+//        op.author = "alice";
+//        op.permlink = "test1";
+//        tx.clear();
+//        tx.operations.push_back(op);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::assert_exception);
+//
+//
+//        BOOST_TEST_MESSAGE("--- Test success deleting a comment with negative rshares");
+//
+//        generate_block();
+//        vote.weight = -1 * BMCHAIN_100_PERCENT;
+//        tx.clear();
+//        tx.operations.push_back(vote);
+//        tx.operations.push_back(op);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        auto test_comment = db.find<comment_object, by_permlink>(boost::make_tuple("alice", string("test1")));
+//        BOOST_REQUIRE(test_comment == nullptr);
+//
+//
+//        BOOST_TEST_MESSAGE("--- Test failure deleting a comment past cashout");
+//        generate_blocks(BMCHAIN_MIN_ROOT_COMMENT_INTERVAL.to_seconds() / BMCHAIN_BLOCK_INTERVAL);
+//
+//        tx.clear();
+//        tx.operations.push_back(comment);
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MIN_TRANSACTION_EXPIRATION_LIMIT);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        generate_blocks(BMCHAIN_CASHOUT_WINDOW_SECONDS / BMCHAIN_BLOCK_INTERVAL);
+////        auto comment1 = db.get_comment("alice", string("test1"));
+////        BOOST_REQUIRE(db.get_comment("alice", string("test1")).cashout_time == fc::time_point_sec::maximum());
+//
+//        tx.clear();
+//        tx.operations.push_back(op);
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MIN_TRANSACTION_EXPIRATION_LIMIT);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::assert_exception);
+//
+//
+//        BOOST_TEST_MESSAGE("--- Test failure deleting a comment with a reply");
+//
+//        comment.permlink = "test2";
+//        comment.parent_author = "alice";
+//        comment.parent_permlink = "test1";
+//        tx.clear();
+//        tx.operations.push_back(comment);
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MIN_TRANSACTION_EXPIRATION_LIMIT);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        generate_blocks(BMCHAIN_MIN_ROOT_COMMENT_INTERVAL.to_seconds() / BMCHAIN_BLOCK_INTERVAL);
+//        comment.permlink = "test3";
+//        comment.parent_permlink = "test2";
+//        tx.clear();
+//        tx.operations.push_back(comment);
+//        tx.set_expiration(db.head_block_time() + BMCHAIN_MIN_TRANSACTION_EXPIRATION_LIMIT);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        db.push_transaction(tx, 0);
+//
+//        op.permlink = "test2";
+//        tx.clear();
+//        tx.operations.push_back(op);
+//        tx.sign(alice_private_key, db.get_chain_id());
+//        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::assert_exception);
+//    }
+//    FC_LOG_AND_RETHROW()
 }
 
 BOOST_AUTO_TEST_SUITE_END()
