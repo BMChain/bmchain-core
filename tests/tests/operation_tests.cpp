@@ -677,5 +677,396 @@ BOOST_AUTO_TEST_CASE( comment_delete_apply ) {
 //    FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE( vote_validate ) {
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: vote_validate");
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( vote_authorities ) {
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: vote_authorities");
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( vote_apply )
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: vote_apply");
+
+        ACTORS((alice)(bob)(sam)(dave))
+        generate_block();
+
+        vest("alice", ASSET("10.000 TESTS"));
+        validate_database();
+        vest("bob", ASSET("10.000 TESTS"));
+        vest("sam", ASSET("10.000 TESTS"));
+        vest("dave", ASSET("10.000 TESTS"));
+        generate_block();
+
+        const auto &vote_idx = db.get_index<comment_vote_index>().indices().get<by_comment_voter>();
+
+        {
+            const auto &alice = db.get_account("alice");
+
+            signed_transaction tx;
+            comment_operation comment_op;
+            comment_op.author = "alice";
+            comment_op.permlink = "foo";
+            comment_op.parent_permlink = "test";
+            comment_op.title = "bar";
+            comment_op.body = "foo bar";
+            tx.operations.push_back(comment_op);
+            tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            BOOST_TEST_MESSAGE("--- Testing voting on a non-existent comment");
+
+            tx.operations.clear();
+            tx.signatures.clear();
+
+            vote_operation op;
+            op.voter = "alice";
+            op.author = "bob";
+            op.permlink = "foo";
+            op.weight = BMCHAIN_100_PERCENT;
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+
+            BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Testing voting with a weight of 0");
+
+            op.weight = (int16_t) 0;
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+
+            BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Testing success");
+
+            auto old_voting_power = alice.voting_power;
+
+            op.weight = BMCHAIN_100_PERCENT;
+            op.author = "alice";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+
+            db.push_transaction(tx, 0);
+
+            auto &alice_comment = db.get_comment("alice", string("foo"));
+            auto itr = vote_idx.find(std::make_tuple(alice_comment.id, alice.id));
+            int64_t max_vote_denom =
+                    (db.get_dynamic_global_properties().vote_power_reserve_rate * BMCHAIN_VOTE_REGENERATION_SECONDS) /
+                    (60 * 60 * 24);
+
+            BOOST_REQUIRE(alice.voting_power ==
+                          old_voting_power - ((old_voting_power + max_vote_denom - 1) / max_vote_denom));
+            BOOST_REQUIRE(alice.last_vote_time == db.head_block_time());
+            BOOST_REQUIRE(alice_comment.net_rshares.value == alice.rep_shares.amount.value * (old_voting_power - alice.voting_power) / BMCHAIN_100_PERCENT - BMCHAIN_VOTE_DUST_THRESHOLD);
+            BOOST_REQUIRE(alice_comment.cashout_time == alice_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+            BOOST_REQUIRE(itr->rshares == alice.rep_shares.amount.value * (old_voting_power - alice.voting_power) /
+                                          BMCHAIN_100_PERCENT - BMCHAIN_VOTE_DUST_THRESHOLD);
+            BOOST_REQUIRE(itr != vote_idx.end());
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test reduced power for quick voting");
+
+            generate_blocks(db.head_block_time() + BMCHAIN_MIN_VOTE_INTERVAL_SEC);
+
+            old_voting_power = db.get_account("alice").voting_power;
+
+            comment_op.author = "bob";
+            comment_op.permlink = "foo";
+            comment_op.title = "bar";
+            comment_op.body = "foo bar";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(comment_op);
+            tx.sign(bob_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            op.weight = BMCHAIN_100_PERCENT / 2;
+            op.voter = "alice";
+            op.author = "bob";
+            op.permlink = "foo";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            const auto &bob_comment = db.get_comment("bob", string("foo"));
+            itr = vote_idx.find(std::make_tuple(bob_comment.id, alice.id));
+
+            BOOST_REQUIRE(db.get_account("alice").voting_power == old_voting_power -
+                                                                   ((old_voting_power + max_vote_denom - 1) *
+                                                                    BMCHAIN_100_PERCENT /
+                                                                    (2 * max_vote_denom * BMCHAIN_100_PERCENT)));
+            BOOST_REQUIRE(bob_comment.net_rshares.value == alice.rep_shares.amount.value *
+                                                           (old_voting_power - db.get_account("alice").voting_power) /
+                                                           BMCHAIN_100_PERCENT - BMCHAIN_VOTE_DUST_THRESHOLD);
+            BOOST_REQUIRE(bob_comment.cashout_time == bob_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+            BOOST_REQUIRE(itr != vote_idx.end());
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test payout time extension on vote");
+
+            old_voting_power = db.get_account("bob").voting_power;
+            auto old_abs_rshares = db.get_comment("alice", string("foo")).abs_rshares.value;
+
+            generate_blocks(db.head_block_time() + fc::seconds((BMCHAIN_CASHOUT_WINDOW_SECONDS / 2)), true);
+
+            const auto &new_bob = db.get_account("bob");
+            const auto &new_alice_comment = db.get_comment("alice", string("foo"));
+
+            op.weight = BMCHAIN_100_PERCENT;
+            op.voter = "bob";
+            op.author = "alice";
+            op.permlink = "foo";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+            tx.sign(bob_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            itr = vote_idx.find(std::make_tuple(new_alice_comment.id, new_bob.id));
+            uint128_t new_cashout_time = db.head_block_time().sec_since_epoch() + BMCHAIN_CASHOUT_WINDOW_SECONDS;
+
+            BOOST_REQUIRE(new_bob.voting_power ==
+                          BMCHAIN_100_PERCENT - ((BMCHAIN_100_PERCENT + max_vote_denom - 1) / max_vote_denom));
+            BOOST_REQUIRE(new_alice_comment.net_rshares.value == old_abs_rshares + new_bob.rep_shares.amount.value *
+                                                                                   (old_voting_power -
+                                                                                    new_bob.voting_power) /
+                                                                                   BMCHAIN_100_PERCENT -
+                                                                 BMCHAIN_VOTE_DUST_THRESHOLD);
+            BOOST_REQUIRE(new_alice_comment.cashout_time == new_alice_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+            BOOST_REQUIRE(itr != vote_idx.end());
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test negative vote");
+
+            const auto &new_sam = db.get_account("sam");
+            const auto &new_bob_comment = db.get_comment("bob", string("foo"));
+
+            old_abs_rshares = new_bob_comment.abs_rshares.value;
+
+            op.weight = -1 * BMCHAIN_100_PERCENT / 2;
+            op.voter = "sam";
+            op.author = "bob";
+            op.permlink = "foo";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(sam_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            itr = vote_idx.find(std::make_tuple(new_bob_comment.id, new_sam.id));
+            new_cashout_time = db.head_block_time().sec_since_epoch() + BMCHAIN_CASHOUT_WINDOW_SECONDS;
+            auto sam_weight /*= ( ( uint128_t( new_sam.rep_shares.amount.value ) ) / 400 + 1 ).to_uint64();*/
+                    = ((uint128_t(new_sam.rep_shares.amount.value) *
+                        ((BMCHAIN_100_PERCENT + max_vote_denom - 1) / (2 * max_vote_denom))) /
+                       BMCHAIN_100_PERCENT).to_uint64() - BMCHAIN_VOTE_DUST_THRESHOLD;
+
+            BOOST_REQUIRE(new_sam.voting_power ==
+                          BMCHAIN_100_PERCENT - ((BMCHAIN_100_PERCENT + max_vote_denom - 1) / (2 * max_vote_denom)));
+            BOOST_REQUIRE(static_cast<uint64_t>(new_bob_comment.net_rshares.value) == old_abs_rshares - sam_weight);
+            BOOST_REQUIRE(static_cast<uint64_t>(new_bob_comment.abs_rshares.value) == old_abs_rshares + sam_weight);
+            BOOST_REQUIRE(new_bob_comment.cashout_time == new_bob_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+            BOOST_REQUIRE(itr != vote_idx.end());
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test nested voting on nested comments");
+
+            old_abs_rshares = new_alice_comment.children_abs_rshares.value;
+            int64_t regenerated_power = (BMCHAIN_100_PERCENT * (db.head_block_time() -
+                                                              db.get_account("alice").last_vote_time).to_seconds()) /
+                                        BMCHAIN_VOTE_REGENERATION_SECONDS;
+            int64_t used_power =
+                    (db.get_account("alice").voting_power + regenerated_power + max_vote_denom - 1) / max_vote_denom;
+
+            comment_op.author = "sam";
+            comment_op.permlink = "foo";
+            comment_op.title = "bar";
+            comment_op.body = "foo bar";
+            comment_op.parent_author = "alice";
+            comment_op.parent_permlink = "foo";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(comment_op);
+            tx.sign(sam_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            op.weight = BMCHAIN_100_PERCENT;
+            op.voter = "alice";
+            op.author = "sam";
+            op.permlink = "foo";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+
+            auto new_rshares = ((fc::uint128_t(db.get_account("alice").rep_shares.amount.value) * used_power) /
+                                BMCHAIN_100_PERCENT).to_uint64() - BMCHAIN_VOTE_DUST_THRESHOLD;
+
+            BOOST_REQUIRE(db.get_comment("alice", string("foo")).cashout_time ==
+                          db.get_comment("alice", string("foo")).created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test increasing vote rshares");
+
+            generate_blocks(db.head_block_time() + BMCHAIN_MIN_VOTE_INTERVAL_SEC);
+
+            auto new_alice = db.get_account("alice");
+            auto alice_bob_vote = vote_idx.find(std::make_tuple(new_bob_comment.id, new_alice.id));
+            auto old_vote_rshares = alice_bob_vote->rshares;
+            auto old_net_rshares = new_bob_comment.net_rshares.value;
+            old_abs_rshares = new_bob_comment.abs_rshares.value;
+            used_power = ((BMCHAIN_1_PERCENT * 25 * (new_alice.voting_power) / BMCHAIN_100_PERCENT) + max_vote_denom - 1) /
+                         max_vote_denom;
+            auto alice_voting_power = new_alice.voting_power - used_power;
+
+            op.voter = "alice";
+            op.weight = BMCHAIN_1_PERCENT * 25;
+            op.author = "bob";
+            op.permlink = "foo";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            alice_bob_vote = vote_idx.find(std::make_tuple(new_bob_comment.id, new_alice.id));
+
+            new_rshares = ((fc::uint128_t(new_alice.rep_shares.amount.value) * used_power) /
+                           BMCHAIN_100_PERCENT).to_uint64() - BMCHAIN_VOTE_DUST_THRESHOLD;
+
+            BOOST_REQUIRE(new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares + new_rshares);
+            BOOST_REQUIRE(new_bob_comment.abs_rshares == old_abs_rshares + new_rshares);
+            BOOST_REQUIRE(new_bob_comment.cashout_time == new_bob_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+            BOOST_REQUIRE(static_cast<uint64_t>(alice_bob_vote->rshares) == new_rshares);
+            BOOST_REQUIRE(alice_bob_vote->last_update == db.head_block_time());
+            BOOST_REQUIRE(alice_bob_vote->vote_percent == op.weight);
+            BOOST_REQUIRE(db.get_account("alice").voting_power == alice_voting_power);
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test decreasing vote rshares");
+
+            generate_blocks(db.head_block_time() + BMCHAIN_MIN_VOTE_INTERVAL_SEC);
+
+            old_vote_rshares = new_rshares;
+            old_net_rshares = new_bob_comment.net_rshares.value;
+            old_abs_rshares = new_bob_comment.abs_rshares.value;
+            used_power = (uint64_t(BMCHAIN_1_PERCENT) * 75 * uint64_t(alice_voting_power)) / BMCHAIN_100_PERCENT;
+            used_power = (used_power + max_vote_denom - 1) / max_vote_denom;
+            alice_voting_power -= used_power;
+
+            op.weight = BMCHAIN_1_PERCENT * -75;
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            alice_bob_vote = vote_idx.find(std::make_tuple(new_bob_comment.id, new_alice.id));
+
+            new_rshares = ((fc::uint128_t(new_alice.rep_shares.amount.value) * used_power) /
+                           BMCHAIN_100_PERCENT).to_uint64() - BMCHAIN_VOTE_DUST_THRESHOLD;
+
+            BOOST_REQUIRE(new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares - new_rshares);
+            BOOST_REQUIRE(new_bob_comment.abs_rshares == old_abs_rshares + new_rshares);
+            BOOST_REQUIRE(new_bob_comment.cashout_time == new_bob_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+            BOOST_REQUIRE(alice_bob_vote->rshares == -1 * static_cast<int64_t>(new_rshares));
+            BOOST_REQUIRE(alice_bob_vote->last_update == db.head_block_time());
+            BOOST_REQUIRE(alice_bob_vote->vote_percent == op.weight);
+            BOOST_REQUIRE(db.get_account("alice").voting_power == alice_voting_power);
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test changing a vote to 0 weight (aka: removing a vote)");
+
+            generate_blocks(db.head_block_time() + BMCHAIN_MIN_VOTE_INTERVAL_SEC);
+
+            old_vote_rshares = alice_bob_vote->rshares;
+            old_net_rshares = new_bob_comment.net_rshares.value;
+            old_abs_rshares = new_bob_comment.abs_rshares.value;
+
+            op.weight = 0;
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            alice_bob_vote = vote_idx.find(std::make_tuple(new_bob_comment.id, new_alice.id));
+
+            BOOST_REQUIRE(new_bob_comment.net_rshares == old_net_rshares - old_vote_rshares);
+            BOOST_REQUIRE(new_bob_comment.abs_rshares == old_abs_rshares);
+            BOOST_REQUIRE(new_bob_comment.cashout_time == new_bob_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+            BOOST_REQUIRE(alice_bob_vote->rshares == 0);
+            BOOST_REQUIRE(alice_bob_vote->last_update == db.head_block_time());
+            BOOST_REQUIRE(alice_bob_vote->vote_percent == op.weight);
+            BOOST_REQUIRE(db.get_account("alice").voting_power == alice_voting_power);
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test failure when increasing rshares within lockout period");
+
+            generate_blocks(fc::time_point_sec(
+                    (new_bob_comment.cashout_time - BMCHAIN_UPVOTE_LOCKOUT).sec_since_epoch() +
+                    BMCHAIN_BLOCK_INTERVAL), true);
+
+            op.weight = BMCHAIN_100_PERCENT;
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+
+            BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test success when reducing rshares within lockout period");
+
+            op.weight = -1 * BMCHAIN_100_PERCENT;
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(alice_private_key, db.get_chain_id());
+            db.push_transaction(tx, 0);
+            validate_database();
+
+            BOOST_TEST_MESSAGE("--- Test failure with a new vote within lockout period");
+
+            op.weight = BMCHAIN_100_PERCENT;
+            op.voter = "dave";
+            tx.operations.clear();
+            tx.signatures.clear();
+            tx.operations.push_back(op);
+            tx.sign(dave_private_key, db.get_chain_id());
+            BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+            validate_database();
+        }
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+
+
 BOOST_AUTO_TEST_SUITE_END()
 #endif
