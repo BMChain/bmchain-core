@@ -781,10 +781,9 @@ BOOST_AUTO_TEST_CASE( vote_apply )
             BOOST_REQUIRE(alice.voting_power ==
                           old_voting_power - ((old_voting_power + max_vote_denom - 1) / max_vote_denom));
             BOOST_REQUIRE(alice.last_vote_time == db.head_block_time());
-            BOOST_REQUIRE(alice_comment.net_rshares.value == alice.rep_shares.amount.value * (old_voting_power - alice.voting_power) / BMCHAIN_100_PERCENT - BMCHAIN_VOTE_DUST_THRESHOLD);
+            BOOST_REQUIRE(alice_comment.net_rshares.value == alice.rep_shares.amount.value * (old_voting_power - alice.voting_power) / BMCHAIN_100_PERCENT);
             BOOST_REQUIRE(alice_comment.cashout_time == alice_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
-            BOOST_REQUIRE(itr->rshares == alice.rep_shares.amount.value * (old_voting_power - alice.voting_power) /
-                                          BMCHAIN_100_PERCENT - BMCHAIN_VOTE_DUST_THRESHOLD);
+            BOOST_REQUIRE(itr->rshares == alice.rep_shares.amount.value * (old_voting_power - alice.voting_power) / BMCHAIN_100_PERCENT);
             BOOST_REQUIRE(itr != vote_idx.end());
             validate_database();
 
@@ -823,7 +822,7 @@ BOOST_AUTO_TEST_CASE( vote_apply )
                                                                     (2 * max_vote_denom * BMCHAIN_100_PERCENT)));
             BOOST_REQUIRE(bob_comment.net_rshares.value == alice.rep_shares.amount.value *
                                                            (old_voting_power - db.get_account("alice").voting_power) /
-                                                           BMCHAIN_100_PERCENT - BMCHAIN_VOTE_DUST_THRESHOLD);
+                                                           BMCHAIN_100_PERCENT);
             BOOST_REQUIRE(bob_comment.cashout_time == bob_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
             BOOST_REQUIRE(itr != vote_idx.end());
             validate_database();
@@ -857,8 +856,9 @@ BOOST_AUTO_TEST_CASE( vote_apply )
             BOOST_REQUIRE(new_alice_comment.net_rshares.value == old_abs_rshares + new_bob.rep_shares.amount.value *
                                                                                    (old_voting_power -
                                                                                     new_bob.voting_power) /
-                                                                                   BMCHAIN_100_PERCENT -
-                                                                 BMCHAIN_VOTE_DUST_THRESHOLD);
+                                                                                   BMCHAIN_100_PERCENT
+//                                                                 - BMCHAIN_VOTE_DUST_THRESHOLD
+                                                                    );
             BOOST_REQUIRE(new_alice_comment.cashout_time == new_alice_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
             BOOST_REQUIRE(itr != vote_idx.end());
             validate_database();

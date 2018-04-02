@@ -20,9 +20,9 @@
 #define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1451606400))
 #define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*10) /// 1 hr /// bmchain
 #define BMCHAIN_SECOND_CASHOUT_WINDOW           (60*60*24*3) /// 3 days
-#define BMCHAIN_UPVOTE_LOCKOUT             (fc::minutes(5))
+#define BMCHAIN_UPVOTE_LOCKOUT                  (fc::minutes(0))
 
-#define BMCHAIN_MIN_ACCOUNT_CREATION_FEE          0
+#define BMCHAIN_MIN_ACCOUNT_CREATION_FEE        0
 
 #define BMCHAIN_OWNER_AUTH_RECOVERY_PERIOD                  fc::seconds(60)
 #define BMCHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::seconds(12)
