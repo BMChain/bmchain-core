@@ -697,8 +697,7 @@ BOOST_AUTO_TEST_CASE( vote_authorities ) {
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE( vote_apply )
-{
+BOOST_AUTO_TEST_CASE( vote_apply ) {
     try
     {
         BOOST_TEST_MESSAGE("Testing: vote_apply");
@@ -1066,7 +1065,63 @@ BOOST_AUTO_TEST_CASE( vote_apply )
     FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE( transfer_validate )
+{
+   try
+   {
+      BOOST_TEST_MESSAGE( "Testing: transfer_validate" );
 
+      validate_database();
+   }
+   FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( transfer_authorities )
+{
+   try
+   {
+      ACTORS( (alice)(bob) )
+      fund( "alice", 10000 );
+
+      BOOST_TEST_MESSAGE( "Testing: transfer_authorities" );
+
+      transfer_operation op;
+      op.from = "alice";
+      op.to = "bob";
+      op.amount = ASSET( "2.500 TESTS" );
+
+      signed_transaction tx;
+      tx.set_expiration( db->head_block_time() + STEEM_MAX_TIME_UNTIL_EXPIRATION );
+      tx.operations.push_back( op );
+
+      BOOST_TEST_MESSAGE( "--- Test failure when no signatures" );
+      STEEM_REQUIRE_THROW( db->push_transaction( tx, 0 ), tx_missing_active_auth );
+
+      BOOST_TEST_MESSAGE( "--- Test failure when signed by a signature not in the account's authority" );
+      tx.sign( alice_post_key, db->get_chain_id() );
+      STEEM_REQUIRE_THROW( db->push_transaction( tx, 0 ), tx_missing_active_auth );
+
+      BOOST_TEST_MESSAGE( "--- Test failure when duplicate signatures" );
+      tx.signatures.clear();
+      tx.sign( alice_private_key, db->get_chain_id() );
+      tx.sign( alice_private_key, db->get_chain_id() );
+      STEEM_REQUIRE_THROW( db->push_transaction( tx, 0 ), tx_duplicate_sig );
+
+      BOOST_TEST_MESSAGE( "--- Test failure when signed by an additional signature not in the creator's authority" );
+      tx.signatures.clear();
+      tx.sign( alice_private_key, db->get_chain_id() );
+      tx.sign( bob_private_key, db->get_chain_id() );
+      STEEM_REQUIRE_THROW( db->push_transaction( tx, 0 ), tx_irrelevant_sig );
+
+      BOOST_TEST_MESSAGE( "--- Test success with witness signature" );
+      tx.signatures.clear();
+      tx.sign( alice_private_key, db->get_chain_id() );
+      db->push_transaction( tx, 0 );
+
+      validate_database();
+   }
+   FC_LOG_AND_RETHROW()
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 #endif
