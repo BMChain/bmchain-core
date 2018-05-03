@@ -1065,8 +1065,7 @@ BOOST_AUTO_TEST_CASE( vote_apply ) {
     FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE( transfer_validate )
-{
+BOOST_AUTO_TEST_CASE( transfer_validate ) {
    try
    {
       BOOST_TEST_MESSAGE( "Testing: transfer_validate" );
@@ -1076,8 +1075,7 @@ BOOST_AUTO_TEST_CASE( transfer_validate )
    FC_LOG_AND_RETHROW()
 }
 
-BOOST_AUTO_TEST_CASE( transfer_authorities )
-{
+BOOST_AUTO_TEST_CASE( transfer_authorities ) {
    try
    {
       ACTORS( (alice)(bob) )
@@ -1091,37 +1089,159 @@ BOOST_AUTO_TEST_CASE( transfer_authorities )
       op.amount = ASSET( "2.500 TESTS" );
 
       signed_transaction tx;
-      tx.set_expiration( db->head_block_time() + STEEM_MAX_TIME_UNTIL_EXPIRATION );
+      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
       tx.operations.push_back( op );
 
       BOOST_TEST_MESSAGE( "--- Test failure when no signatures" );
-      STEEM_REQUIRE_THROW( db->push_transaction( tx, 0 ), tx_missing_active_auth );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_missing_active_auth );
 
       BOOST_TEST_MESSAGE( "--- Test failure when signed by a signature not in the account's authority" );
-      tx.sign( alice_post_key, db->get_chain_id() );
-      STEEM_REQUIRE_THROW( db->push_transaction( tx, 0 ), tx_missing_active_auth );
+      tx.sign( alice_post_key, db.get_chain_id() );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_missing_active_auth );
 
       BOOST_TEST_MESSAGE( "--- Test failure when duplicate signatures" );
       tx.signatures.clear();
-      tx.sign( alice_private_key, db->get_chain_id() );
-      tx.sign( alice_private_key, db->get_chain_id() );
-      STEEM_REQUIRE_THROW( db->push_transaction( tx, 0 ), tx_duplicate_sig );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_duplicate_sig );
 
       BOOST_TEST_MESSAGE( "--- Test failure when signed by an additional signature not in the creator's authority" );
       tx.signatures.clear();
-      tx.sign( alice_private_key, db->get_chain_id() );
-      tx.sign( bob_private_key, db->get_chain_id() );
-      STEEM_REQUIRE_THROW( db->push_transaction( tx, 0 ), tx_irrelevant_sig );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      tx.sign( bob_private_key, db.get_chain_id() );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_irrelevant_sig );
 
       BOOST_TEST_MESSAGE( "--- Test success with witness signature" );
       tx.signatures.clear();
-      tx.sign( alice_private_key, db->get_chain_id() );
-      db->push_transaction( tx, 0 );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
 
       validate_database();
    }
    FC_LOG_AND_RETHROW()
 }
+    
+BOOST_AUTO_TEST_CASE( signature_stripping )
+{
+    try
+    {
+        // Alice, Bob and Sam all have 2-of-3 multisig on corp.
+        // Legitimate tx signed by (Alice, Bob) goes through.
+        // Sam shouldn't be able to add or remove signatures to get the transaction to process multiple times.
 
+        ACTORS((alice)(bob)(sam)(corp))
+        fund("corp", 10000);
+
+        account_update_operation update_op;
+        update_op.account = "corp";
+        update_op.active = authority(2, "alice", 1, "bob", 1, "sam", 1);
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(update_op);
+
+        tx.sign(corp_private_key, db.get_chain_id());
+        db.push_transaction(tx, 0);
+
+        tx.operations.clear();
+        tx.signatures.clear();
+
+        transfer_operation transfer_op;
+        transfer_op.from = "corp";
+        transfer_op.to = "sam";
+        transfer_op.amount = ASSET("1.000 TESTS");
+
+        tx.operations.push_back(transfer_op);
+
+        tx.sign(alice_private_key, db.get_chain_id());
+        signature_type alice_sig = tx.signatures.back();
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+        tx.sign(bob_private_key, db.get_chain_id());
+        signature_type bob_sig = tx.signatures.back();
+        tx.sign(sam_private_key, db.get_chain_id());
+        signature_type sam_sig = tx.signatures.back();
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+
+        tx.signatures.clear();
+        tx.signatures.push_back(alice_sig);
+        tx.signatures.push_back(bob_sig);
+        db.push_transaction(tx, 0);
+
+        tx.signatures.clear();
+        tx.signatures.push_back(alice_sig);
+        tx.signatures.push_back(sam_sig);
+        BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( transfer_apply )
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: transfer_apply");
+
+        ACTORS((alice)(bob))
+        fund("alice", 10000);
+
+        BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
+        BOOST_REQUIRE(bob.balance.amount.value == ASSET(" 0.000 TESTS").amount.value);
+
+        signed_transaction tx;
+        transfer_operation op;
+
+        op.from = "alice";
+        op.to = "bob";
+        op.amount = ASSET("5.000 TESTS");
+
+        BOOST_TEST_MESSAGE("--- Test normal transaction");
+        tx.operations.push_back(op);
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+        tx.sign(alice_private_key, db.get_chain_id());
+        db.push_transaction(tx, 0);
+
+        BOOST_REQUIRE(alice.balance.amount.value == ASSET("5.000 TESTS").amount.value);
+        BOOST_REQUIRE(bob.balance.amount.value == ASSET("5.000 TESTS").amount.value);
+        validate_database();
+
+        BOOST_TEST_MESSAGE("--- Generating a block");
+        generate_block();
+
+        const auto &new_alice = db.get_account("alice");
+        const auto &new_bob = db.get_account("bob");
+
+        BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("5.000 TESTS").amount.value);
+        BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("5.000 TESTS").amount.value);
+        validate_database();
+
+        BOOST_TEST_MESSAGE("--- Test emptying an account");
+        tx.signatures.clear();
+        tx.operations.clear();
+        tx.operations.push_back(op);
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+        tx.sign(alice_private_key, db.get_chain_id());
+        db.push_transaction(tx, database::skip_transaction_dupe_check);
+
+        BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("0.000 TESTS").amount.value);
+        BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("10.000 TESTS").amount.value);
+        validate_database();
+
+        BOOST_TEST_MESSAGE("--- Test transferring non-existent funds");
+        tx.signatures.clear();
+        tx.operations.clear();
+        tx.operations.push_back(op);
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+        tx.sign(alice_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+
+        BOOST_REQUIRE(new_alice.balance.amount.value == ASSET("0.000 TESTS").amount.value);
+        BOOST_REQUIRE(new_bob.balance.amount.value == ASSET("10.000 TESTS").amount.value);
+        validate_database();
+
+    }
+    FC_LOG_AND_RETHROW()
+}
+    
+    
 BOOST_AUTO_TEST_SUITE_END()
 #endif
