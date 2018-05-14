@@ -1242,6 +1242,69 @@ BOOST_AUTO_TEST_CASE( transfer_apply )
     FC_LOG_AND_RETHROW()
 }
     
+BOOST_AUTO_TEST_CASE( witness_update_validate )
+{
+   try
+   {
+      BOOST_TEST_MESSAGE( "Testing: withness_update_validate" );
+
+      validate_database();
+   }
+   FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( witness_update_authorities )
+{
+   try
+   {
+      BOOST_TEST_MESSAGE( "Testing: witness_update_authorities" );
+
+      ACTORS( (alice)(bob) );
+      fund( "alice", 10000 );
+
+      private_key_type signing_key = generate_private_key( "new_key" );
+
+      witness_update_operation op;
+      op.owner = "alice";
+      op.url = "foo.bar";
+      op.fee = ASSET( "1.000 TESTS" );
+      op.block_signing_key = signing_key.get_public_key();
+
+      signed_transaction tx;
+      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
+      tx.operations.push_back( op );
+
+      BOOST_TEST_MESSAGE( "--- Test failure when no signatures" );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_missing_active_auth );
+
+      BOOST_TEST_MESSAGE( "--- Test failure when signed by a signature not in the account's authority" );
+      tx.sign( alice_post_key, db.get_chain_id() );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_missing_active_auth );
+
+      BOOST_TEST_MESSAGE( "--- Test failure when duplicate signatures" );
+      tx.signatures.clear();
+      tx.sign( alice_private_key, db.get_chain_id() );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_duplicate_sig );
+
+      BOOST_TEST_MESSAGE( "--- Test failure when signed by an additional signature not in the creator's authority" );
+      tx.signatures.clear();
+      tx.sign( alice_private_key, db.get_chain_id() );
+      tx.sign( bob_private_key, db.get_chain_id() );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), tx_irrelevant_sig );
+
+      BOOST_TEST_MESSAGE( "--- Test success with witness signature" );
+      tx.signatures.clear();
+      tx.sign( alice_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
+
+      tx.signatures.clear();
+      tx.sign( signing_key, db.get_chain_id() );
+      BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), tx_missing_active_auth );
+      validate_database();
+   }
+   FC_LOG_AND_RETHROW()
+}
     
 BOOST_AUTO_TEST_SUITE_END()
 #endif
