@@ -1305,6 +1305,95 @@ BOOST_AUTO_TEST_CASE( witness_update_authorities )
    }
    FC_LOG_AND_RETHROW()
 }
+
+BOOST_AUTO_TEST_CASE( witness_update_apply )
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: witness_update_apply");
+
+        ACTORS((alice))
+        fund("alice", 10000);
+
+        private_key_type signing_key = generate_private_key("new_key");
+
+        BOOST_TEST_MESSAGE("--- Test upgrading an account to a witness");
+
+        witness_update_operation op;
+        op.owner = "alice";
+        op.url = "foo.bar";
+        op.fee = ASSET("1.000 TESTS");
+        op.block_signing_key = signing_key.get_public_key();
+        op.props.account_creation_fee = legacy_steem_asset::from_asset(
+                asset(BMCHAIN_MIN_ACCOUNT_CREATION_FEE + 10, BMT_SYMBOL));
+        op.props.maximum_block_size = BMCHAIN_MIN_BLOCK_SIZE_LIMIT + 100;
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_private_key, db.get_chain_id());
+
+        db.push_transaction(tx, 0);
+
+        const witness_object &alice_witness = db.get_witness("alice");
+
+        BOOST_REQUIRE(alice_witness.owner == "alice");
+        BOOST_REQUIRE(alice_witness.created == db.head_block_time());
+        BOOST_REQUIRE(to_string(alice_witness.url) == op.url);
+        BOOST_REQUIRE(alice_witness.signing_key == op.block_signing_key);
+        BOOST_REQUIRE(alice_witness.props.account_creation_fee == op.props.account_creation_fee.to_asset<true>());
+        BOOST_REQUIRE(alice_witness.props.maximum_block_size == op.props.maximum_block_size);
+        BOOST_REQUIRE(alice_witness.total_missed == 0);
+        BOOST_REQUIRE(alice_witness.last_aslot == 0);
+        BOOST_REQUIRE(alice_witness.last_confirmed_block_num == 0);
+        BOOST_REQUIRE(alice_witness.pow_worker == 0);
+        BOOST_REQUIRE(alice_witness.votes.value == 0);
+        BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
+        BOOST_REQUIRE(alice_witness.virtual_position == 0);
+        BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
+        BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value); // No fee
+        validate_database();
+
+        BOOST_TEST_MESSAGE("--- Test updating a witness");
+
+        tx.signatures.clear();
+        tx.operations.clear();
+        op.url = "bar.foo";
+        tx.operations.push_back(op);
+        tx.sign(alice_private_key, db.get_chain_id());
+
+        db.push_transaction(tx, 0);
+
+        BOOST_REQUIRE(alice_witness.owner == "alice");
+        BOOST_REQUIRE(alice_witness.created == db.head_block_time());
+        BOOST_REQUIRE(to_string(alice_witness.url) == "bar.foo");
+        BOOST_REQUIRE(alice_witness.signing_key == op.block_signing_key);
+        BOOST_REQUIRE(alice_witness.props.account_creation_fee == op.props.account_creation_fee.to_asset<true>());
+        BOOST_REQUIRE(alice_witness.props.maximum_block_size == op.props.maximum_block_size);
+        BOOST_REQUIRE(alice_witness.total_missed == 0);
+        BOOST_REQUIRE(alice_witness.last_aslot == 0);
+        BOOST_REQUIRE(alice_witness.last_confirmed_block_num == 0);
+        BOOST_REQUIRE(alice_witness.pow_worker == 0);
+        BOOST_REQUIRE(alice_witness.votes.value == 0);
+        BOOST_REQUIRE(alice_witness.virtual_last_update == 0);
+        BOOST_REQUIRE(alice_witness.virtual_position == 0);
+        BOOST_REQUIRE(alice_witness.virtual_scheduled_time == fc::uint128_t::max_value());
+        BOOST_REQUIRE(alice.balance.amount.value == ASSET("10.000 TESTS").amount.value);
+        validate_database();
+
+        BOOST_TEST_MESSAGE("--- Test failure when upgrading a non-existent account");
+
+        tx.signatures.clear();
+        tx.operations.clear();
+        op.owner = "bob";
+        tx.operations.push_back(op);
+        tx.sign(alice_private_key, db.get_chain_id());
+        STEEM_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}    
+    
     
 BOOST_AUTO_TEST_SUITE_END()
 #endif

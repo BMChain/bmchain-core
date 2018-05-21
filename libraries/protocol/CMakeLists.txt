@@ -16,7 +16,7 @@ add_library( steemit_protocol
              get_config.cpp
 
              ${HEADERS}
-           )
+        include/bmchain/protocol/legacy_asset.hpp)
 
 target_link_libraries( steemit_protocol fc )
 target_include_directories( steemit_protocol
