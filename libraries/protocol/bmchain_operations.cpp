@@ -526,4 +526,34 @@ namespace bmchain { namespace protocol {
       validate_account_name(owner);
    }
 
+   void common_symbol_validation( const asset_symbol_type& symbol )
+   {
+//      symbol.validate();
+//      FC_ASSERT(symbol.space() == asset_symbol_type::smt_nai_space, "legacy symbol used instead of NAI");
+//      FC_ASSERT(symbol.is_vesting() == false, "liquid variant of NAI expected");
+   }
+
+   void smt_base_operation::validate()const
+   {
+      validate_account_name(control_account);
+      common_symbol_validation( symbol );
+   }
+
+   void smt_executor_base_operation::validate()const
+   {
+      validate_account_name(executor);
+      common_symbol_validation( symbol );
+   }
+
+   void smt_create_operation::validate()const
+   {
+      smt_base_operation::validate();
+      FC_ASSERT(smt_creation_fee.amount >= 0, "fee cannot be negative");
+      FC_ASSERT(smt_creation_fee.amount <= BMCHAIN_MAX_SHARE_SUPPLY, "Fee must be smaller than STEEM_MAX_SHARE_SUPPLY");
+      FC_ASSERT(is_asset_type(smt_creation_fee, BMT_SYMBOL) || is_asset_type(smt_creation_fee, BMT_SYMBOL),
+                "Fee must be STEEM or SBD");
+//      FC_ASSERT(symbol.decimals() == precision, "Mismatch between redundantly provided precision ${prec1} vs ${prec2}",
+//                ("prec1", symbol.decimals())("prec2", precision));
+   }
+
 } } // bmchain::protocol

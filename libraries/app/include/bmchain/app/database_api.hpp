@@ -64,6 +64,12 @@ struct best_author
     string        title;
 };
 
+struct best_author_week
+{
+    string name;
+    uint32_t net_votes;
+};
+
 struct statistic
 {
     fc::time_point_sec begin;
@@ -265,6 +271,7 @@ class database_api
       vector< rep_delegation_expiration_api_obj > get_expiring_rep_delegations( string account, time_point_sec from, uint32_t limit = 100 )const;
 
       vector<best_author> get_best_authors(uint32_t limit)const;
+      vector<best_author_week> get_best_authors_week(uint32_t limit)const;
 
       ///////////////
       // Witnesses //
@@ -477,6 +484,7 @@ FC_REFLECT( bmchain::app::withdraw_route, (from_account)(to_account)(percent)(au
 FC_REFLECT( bmchain::app::discussion_query, (tag)(filter_tags)(select_tags)(select_authors)(truncate_body)(start_author)(start_permlink)(parent_author)(parent_permlink)(limit)(owner) );
 
 FC_REFLECT( bmchain::app::best_author, (name)(reputation)(json_metadata)(permlink)(title) );
+FC_REFLECT( bmchain::app::best_author_week, (name)(net_votes) );
 FC_REFLECT( bmchain::app::statistic, (begin)(end)(users)(posts)(comments)(votes)(current_supply) );
 FC_REFLECT( bmchain::app::block_statistic, (transactions)(block_id)(block_size) );
 FC_REFLECT( bmchain::app::total_block_statistic, (head_block_id)(block_amount)(max_transactions)(min_transactions)(average_transactions)(total_transactions)(max_block_size)(min_block_size)(average_block_size)(total_block_size));
@@ -543,6 +551,7 @@ FC_API(bmchain::app::database_api,
    (get_rep_delegations)
    (get_expiring_rep_delegations)
    (get_best_authors)
+   (get_best_authors_week)
 
    // Authority / validation
    (get_transaction_hex)

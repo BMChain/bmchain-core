@@ -2585,7 +2585,7 @@ void wallet_api::test_api() const{
     cout << endl;*/
 
     /// test of api-function for getting comments
-    // by trending
+    /*// by trending
     discussion_query q_trend;
     q_trend.limit = 100;
     q_trend.truncate_body = 1024;
@@ -2617,8 +2617,13 @@ void wallet_api::test_api() const{
     cout << "get_discussions_by_blog    : " << blog_disc.size() << endl;
     cout << "get_discussions_by_created : " << new_disc.size() << endl;
     cout << "get_discussions_by_trending: " << trend_disc.size() << endl;
-    cout << endl;
+    cout << endl;*/
 
+    /// test get_best_authors_week function
+    auto res = my->_remote_db->get_best_authors_week(100);
+    for (auto a : res){
+       cout << a.name << ": " << a.net_votes << endl;
+    }
 }
 
 std::string wallet_api::try_decrypt_content( const extended_encrypted_content& content ) const{

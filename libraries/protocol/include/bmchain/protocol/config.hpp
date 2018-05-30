@@ -234,3 +234,6 @@
 #else
 #define BMCHAIN_REVERSE_AUCTION_TIME (1467295200-(60*60*24*6))
 #endif
+
+/// SMT
+#define BMCHAIN_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)

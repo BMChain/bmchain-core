@@ -236,6 +236,13 @@ namespace bmchain { namespace chain {
             >,
             composite_key_compare< std::less< account_name_type >, std::less< comment_id_type > >
          >,
+         ordered_unique< tag< by_created >,
+            composite_key< comment_object,
+               member< comment_object, time_point_sec, &comment_object::created >,
+               member< comment_object, comment_id_type, &comment_object::id >
+            >,
+            composite_key_compare< std::greater< time_point_sec >, std::less< comment_id_type > >
+         >,
          ordered_unique< tag< by_encrypted >,
             composite_key< comment_object,
                member< comment_object, bool, &comment_object::encrypted >,

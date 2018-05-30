@@ -978,6 +978,52 @@ namespace bmchain { namespace protocol {
        void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
    };
 
+/**
+ * Base of all smt operations issued by token creator, holding what's needed by all of them.
+ */
+        struct smt_base_operation : public base_operation
+        {
+            /// Account that controls the SMT.
+            account_name_type control_account;
+            /// The token's Numerical Asset Identifier (NAI) coupled with token's precision.
+            asset_symbol_type symbol;
+
+            void validate()const;
+            void get_required_active_authorities( flat_set<account_name_type>& a )const
+            { a.insert( control_account ); }
+        };
+
+/**
+ * Base of all smt operations issued any user (aka executor).
+ */
+        struct smt_executor_base_operation : public base_operation
+        {
+            /// Account that executes the operation.
+            account_name_type executor;
+            /// The token's Numerical Asset Identifier (NAI) coupled with token's precision.
+            asset_symbol_type symbol;
+
+            void validate()const;
+            void get_required_active_authorities( flat_set< account_name_type >& a )const
+            { a.insert( executor ); }
+        };
+
+        /**
+        * This operation introduces new SMT into blockchain as identified by
+        * Numerical Asset Identifier (NAI). Also the SMT precision (decimal points)
+        * is explicitly provided.
+        */
+        struct smt_create_operation : public smt_base_operation {
+            /// The amount to be transfered from @account to null account as elevation fee.
+            asset smt_creation_fee;
+            /// Separately provided precision for clarity and redundancy.
+            uint8_t precision;
+
+            extensions_type extensions;
+
+            void validate() const;
+        };
+
 } } // bmchain::protocol
 
 
@@ -1074,3 +1120,13 @@ FC_REFLECT( bmchain::protocol::content_order_cancel_operation, (owner)(order_id)
 
 FC_REFLECT_DERIVED( bmchain::protocol::encrypted_content_operation, (bmchain::protocol::comment_operation),
                    (encrypted_body)(checksum)(price)(owner)(order_id)(apply_order));
+
+FC_REFLECT( bmchain::protocol::smt_base_operation,
+        (control_account)(symbol))
+
+FC_REFLECT( bmchain::protocol::smt_executor_base_operation,
+        (executor)(symbol))
+
+FC_REFLECT_DERIVED( bmchain::protocol::smt_create_operation,
+        (bmchain::protocol::smt_base_operation),
+        (smt_creation_fee)(extensions))

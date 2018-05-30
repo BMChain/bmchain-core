@@ -64,6 +64,8 @@ namespace bmchain {
 
             vector<best_author> get_best_authors(uint32_t limit) const;
 
+            vector<best_author_week> get_best_authors_week(uint32_t limit) const;
+
             // Witnesses
             vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type> &witness_ids) const;
 
@@ -578,6 +580,39 @@ namespace bmchain {
             return result;
         }
 
+        vector<best_author_week> database_api::get_best_authors_week(uint32_t limit) const {
+            return my->_db.with_read_lock([&]() {
+                return my->get_best_authors_week(limit);
+            });
+        }
+
+        vector<best_author_week> database_api_impl::get_best_authors_week(uint32_t limit) const {
+            FC_ASSERT(limit <= 1000);
+            const auto &comments_by_author = _db.get_index<comment_index>().indices().get<by_created>();
+
+            vector<best_author_week> result;
+
+            auto head_block_time = _db.head_block_time();
+            auto time_weed_ago = head_block_time - 604800;
+
+            for (auto itr = comments_by_author.begin();
+                 limit-- && itr->created > time_weed_ago && itr != comments_by_author.end();
+                 ++itr) {
+                best_author_week ba = {itr->author, itr->net_votes};
+                result.push_back(std::move(ba));
+            }
+
+            sort(result.begin(), result.end(),
+                 [](best_author_week &elem1, best_author_week &elem2) {
+                     return elem1.net_votes > elem2.net_votes;
+                 });
+
+//            for (auto a : result){
+//                cout << string(a.name) << ": " << a.net_votes << endl;
+//            }
+
+            return result;
+        }
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
