@@ -201,7 +201,7 @@ class private_message_api : public std::enable_shared_from_this<private_message_
        */
       vector< message_api_obj > get_inbox( string to, time_point newest, uint16_t limit )const;
       vector< message_api_obj > get_outbox( string from, time_point newest, uint16_t limit )const;
-      vector< string > get_accounts_from_messages( string account_name )const;
+      vector< string > get_accounts_from_messages(const string& account_name )const;
 
    private:
       app::application* _app = nullptr;
@@ -209,7 +209,7 @@ class private_message_api : public std::enable_shared_from_this<private_message_
 
 } } //bmchain::private_message
 
-FC_API( bmchain::private_message::private_message_api, (get_inbox)(get_outbox) );
+FC_API( bmchain::private_message::private_message_api, (get_inbox)(get_outbox)(get_accounts_from_messages) );
 
 FC_REFLECT( bmchain::private_message::message_body, (thread_start)(subject)(body)(json_meta)(cc) );
 

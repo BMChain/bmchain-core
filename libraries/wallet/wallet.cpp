@@ -2166,7 +2166,7 @@ annotated_signed_transaction wallet_api::follow( string follower, string followi
    return my->sign_transaction( trx, broadcast );
 }
 
-annotated_signed_transaction      wallet_api::send_private_message( string from, string to, string subject, string body, bool broadcast ) {
+annotated_signed_transaction wallet_api::send_private_message( string from, string to, string subject, string body, bool broadcast ) {
    FC_ASSERT( !is_locked(), "wallet must be unlocked to send a private message" );
    auto from_account = get_account( from );
    auto to_account   = get_account( to );
@@ -2258,7 +2258,7 @@ message_body wallet_api::try_decrypt_message( const message_api_obj& mo ) {
    }
 }
 
-vector<extended_message_object>   wallet_api::get_inbox( string account, fc::time_point newest, uint32_t limit ) {
+vector<extended_message_object> wallet_api::get_inbox( string account, fc::time_point newest, uint32_t limit ) {
    FC_ASSERT( !is_locked() );
    vector<extended_message_object> result;
    my->use_remote_message_api();
@@ -2270,9 +2270,10 @@ vector<extended_message_object>   wallet_api::get_inbox( string account, fc::tim
    return result;
 }
 
-vector<extended_message_object>   wallet_api::get_outbox( string account, fc::time_point newest, uint32_t limit ) {
+vector<extended_message_object> wallet_api::get_outbox( string account, fc::time_point newest, uint32_t limit ) {
    FC_ASSERT( !is_locked() );
    vector<extended_message_object> result;
+   my->use_remote_message_api();
    auto remote_result = (*my->_remote_message_api)->get_outbox( account, newest, limit );
    for( const auto& item : remote_result ) {
       result.emplace_back( item );
@@ -2620,10 +2621,15 @@ void wallet_api::test_api() const{
     cout << endl;*/
 
     /// test get_best_authors_week function
-    auto res = my->_remote_db->get_best_authors_week(100);
+    /*auto res = my->_remote_db->get_best_authors_week(100);
     for (auto a : res){
        cout << a.name << ": " << a.net_votes << endl;
-    }
+    }*/
+
+    string acc = "user001";
+    my->use_remote_message_api();
+    auto result = (*my->_remote_message_api)->get_accounts_from_messages(acc);
+    copy(result.cbegin(), result.cend(), std::ostream_iterator< string >(cout, " <-> "));
 }
 
 std::string wallet_api::try_decrypt_content( const extended_encrypted_content& content ) const{

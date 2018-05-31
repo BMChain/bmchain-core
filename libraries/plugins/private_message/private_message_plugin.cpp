@@ -155,7 +155,6 @@ vector< message_api_obj > private_message_api::get_inbox( string to, time_point 
       ++itr;
       --limit;
    }
-
    return result;
 }
 
@@ -163,7 +162,6 @@ vector< message_api_obj > private_message_api::get_outbox( string from, time_poi
    FC_ASSERT( limit <= 100 );
    vector< message_api_obj > result;
    const auto& idx = _app->chain_database()->get_index< message_index >().indices().get< by_from_date >();
-
    auto itr = idx.lower_bound( std::make_tuple( from, newest ) );
    while( itr != idx.end() && limit && itr->from == from ) {
       result.push_back(*itr);
@@ -173,10 +171,32 @@ vector< message_api_obj > private_message_api::get_outbox( string from, time_poi
    return result;
 }
 
-vector< string > private_message_api::get_accounts_from_messages( string account_name )const {
-   vector< string > result;
+vector< string > private_message_api::get_accounts_from_messages(const string& account_name )const {
+    uint16_t limit = 1000;
+    vector< string > result;
 
-   return result;
+    const auto& idx_to = _app->chain_database()->get_index< message_index >().indices().get< by_to_date >();
+    auto itr_to = idx_to.lower_bound( std::make_tuple( account_name, time_point::now() ) );
+    while( itr_to != idx_to.end() && limit && itr_to->to == account_name ) {
+        result.push_back(itr_to->from);
+        ++itr_to;
+        --limit;
+    }
+
+    limit = 1000;
+    const auto& idx_from = _app->chain_database()->get_index< message_index >().indices().get< by_from_date >();
+    auto itr_from = idx_from.lower_bound( std::make_tuple( account_name, time_point::now() ) );
+    while( itr_from != idx_from.end() && limit && itr_from->from == account_name ) {
+        result.push_back(itr_from->to);
+        ++itr_from;
+        --limit;
+    }
+
+    std::sort(result.begin(), result.end());
+    auto last = std::unique(result.begin(), result.end());
+    result.erase(last, result.end());
+
+    return result;
 }
 
 void private_message_plugin::plugin_startup() {
