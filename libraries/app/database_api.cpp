@@ -591,6 +591,7 @@ namespace bmchain {
             const auto &comments_by_author = _db.get_index<comment_index>().indices().get<by_created>();
 
             vector<best_author_week> result;
+            map< string, uint32_t > tmp_result;
 
             auto head_block_time = _db.head_block_time();
             auto time_weed_ago = head_block_time - 604800;
@@ -598,18 +599,22 @@ namespace bmchain {
             for (auto itr = comments_by_author.begin();
                  limit-- && itr->created > time_weed_ago && itr != comments_by_author.end();
                  ++itr) {
-                best_author_week ba = {itr->author, itr->net_votes};
-                result.push_back(std::move(ba));
+                if (tmp_result.find(itr->author) == tmp_result.end()){
+                    tmp_result[itr->author] = itr->net_votes;
+                }
+                else{
+                    tmp_result[itr->author] = tmp_result[itr->author] + itr->net_votes;
+                }
+            }
+
+            for (auto best_auth : tmp_result){
+                result.emplace_back(best_auth.first, best_auth.second);
             }
 
             sort(result.begin(), result.end(),
                  [](best_author_week &elem1, best_author_week &elem2) {
                      return elem1.net_votes > elem2.net_votes;
                  });
-
-//            for (auto a : result){
-//                cout << string(a.name) << ": " << a.net_votes << endl;
-//            }
 
             return result;
         }

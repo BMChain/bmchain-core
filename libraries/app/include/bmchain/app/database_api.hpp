@@ -66,6 +66,11 @@ struct best_author
 
 struct best_author_week
 {
+    best_author_week(){}
+    best_author_week(const string& _name, uint32_t _net_votes){
+          name = _name;
+          net_votes = _net_votes;
+    }
     string name;
     uint32_t net_votes;
 };

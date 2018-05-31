@@ -134,8 +134,7 @@ void private_message_plugin::plugin_set_program_options(
    cfg.add(cli);
 }
 
-void private_message_plugin::plugin_initialize(const boost::program_options::variables_map& options)
-{
+void private_message_plugin::plugin_initialize(const boost::program_options::variables_map& options){
    ilog("Intializing private message plugin" );
    chain::database& db = database();
    add_plugin_index< message_index >(db);
@@ -174,12 +173,16 @@ vector< message_api_obj > private_message_api::get_outbox( string from, time_poi
    return result;
 }
 
-void private_message_plugin::plugin_startup()
-{
+vector< string > private_message_api::get_accounts_from_messages( string account_name )const {
+   vector< string > result;
+
+   return result;
 }
 
-flat_map<string,string> private_message_plugin::tracked_accounts() const
-{
+void private_message_plugin::plugin_startup() {
+}
+
+flat_map<string,string> private_message_plugin::tracked_accounts() const {
    return my->_tracked_accounts;
 }
 
