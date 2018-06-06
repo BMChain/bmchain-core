@@ -83,7 +83,10 @@ namespace bmchain { namespace protocol {
             producer_reward_operation,
 
             /// SMT operations
-            smt_create_operation
+            smt_create_operation,
+
+            /// private message
+            private_message_operation
 
          > operation;
 

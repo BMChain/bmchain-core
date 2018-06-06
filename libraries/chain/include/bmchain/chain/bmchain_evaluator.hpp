@@ -1,7 +1,7 @@
 #pragma once
 
 #include <bmchain/protocol/bmchain_operations.hpp>
-
+#include <bmchain/private_message/private_message_plugin.hpp>
 #include <bmchain/chain/evaluator.hpp>
 
 namespace bmchain{ namespace chain {
@@ -53,5 +53,6 @@ DEFINE_EVALUATOR( delegate_rep_shares )
 DEFINE_EVALUATOR( encrypted_content )
 DEFINE_EVALUATOR( content_order_create )
 DEFINE_EVALUATOR( content_order_cancel )
+DEFINE_EVALUATOR( private_message )
 
 } } // bmchain::chain

@@ -5,7 +5,7 @@
 #include <bmchain/app/api.hpp>
 #include <bmchain/protocol/base.hpp>
 #include <bmchain/follow/follow_operations.hpp>
-#include <bmchain/private_message/private_message_operations.hpp>
+//#include <bmchain/private_message/private_message_operations.hpp>
 #include <bmchain/wallet/wallet.hpp>
 #include <bmchain/wallet/api_documentation.hpp>
 #include <bmchain/wallet/reflect_util.hpp>
@@ -2171,10 +2171,9 @@ annotated_signed_transaction wallet_api::send_private_message( string from, stri
    auto from_account = get_account( from );
    auto to_account   = get_account( to );
 
-   custom_operation op;
-   op.required_auths.insert(from);
-   op.id = BMCHAIN_PRIVATE_MESSAGE_COP_ID;
-
+//   custom_operation op;
+//   op.required_auths.insert(from);
+//   op.id = BMCHAIN_PRIVATE_MESSAGE_COP_ID;
 
    private_message_operation pmo;
    pmo.from          = from;
@@ -2208,11 +2207,14 @@ annotated_signed_transaction wallet_api::send_private_message( string from, stri
    obj.encrypted_message = pmo.encrypted_message;
    auto decrypted = try_decrypt_message(obj);
 
-   op.data = fc::raw::pack( pmo );
+//   op.data = fc::raw::pack( pmo );
 
-   signed_transaction tx;
-   tx.operations.push_back( op );
-   tx.validate();
+//   signed_transaction tx;
+//   tx.operations.push_back( op );
+//   tx.validate();
+    signed_transaction tx;
+    tx.operations.push_back( pmo );
+    tx.validate();
 
    return my->sign_transaction( tx, broadcast );
 }
