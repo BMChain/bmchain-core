@@ -1036,7 +1036,7 @@ namespace bmchain { namespace protocol {
             uint32_t                     checksum = 0;
             std::vector<char>            encrypted_message;
 
-            //void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(from); }
+            void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(from); }
         };
 
 } } // bmchain::protocol
