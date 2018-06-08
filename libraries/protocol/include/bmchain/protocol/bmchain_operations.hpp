@@ -107,6 +107,8 @@ namespace bmchain { namespace protocol {
        account_name_type owner;
        uint32_t          order_id;
        bool              apply_order;
+
+       void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
    };
 
    struct beneficiary_route_type
@@ -1033,6 +1035,8 @@ namespace bmchain { namespace protocol {
             uint64_t                     sent_time = 0; /// used as seed to secret generation
             uint32_t                     checksum = 0;
             std::vector<char>            encrypted_message;
+
+            void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(from); }
         };
 
 } } // bmchain::protocol
