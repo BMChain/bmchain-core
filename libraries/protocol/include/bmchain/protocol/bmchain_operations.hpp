@@ -1032,11 +1032,12 @@ namespace bmchain { namespace protocol {
             protocol::account_name_type  to;
             protocol::public_key_type    from_memo_key;
             protocol::public_key_type    to_memo_key;
-            uint64_t                     sent_time = 0; /// used as seed to secret generation
+            uint64_t                     sent_time = 0;
             uint32_t                     checksum = 0;
             std::vector<char>            encrypted_message;
 
-            void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(from); }
+            void validate() const;
+//            void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(from); }
         };
 
 } } // bmchain::protocol
@@ -1142,3 +1143,4 @@ FC_REFLECT( bmchain::protocol::smt_executor_base_operation, (executor)(symbol))
 FC_REFLECT_DERIVED( bmchain::protocol::smt_create_operation, (bmchain::protocol::smt_base_operation), (smt_creation_fee)(extensions))
 
 FC_REFLECT( bmchain::protocol::private_message_operation, (from)(to)(from_memo_key)(to_memo_key)(sent_time)(checksum)(encrypted_message) )
+//FC_REFLECT( bmchain::protocol::private_message_operation, (from)(to)(from_memo_key)(to_memo_key)(sent_time) )
