@@ -556,4 +556,10 @@ namespace bmchain { namespace protocol {
 //                ("prec1", symbol.decimals())("prec2", precision));
    }
 
+   void private_message_operation::validate()const
+   {
+      //validate_permlink( permlink );
+      //validate_account_name( author );
+   }
+
 } } // bmchain::protocol
