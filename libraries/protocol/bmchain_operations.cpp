@@ -559,7 +559,7 @@ namespace bmchain { namespace protocol {
    void private_message_operation::validate()const
    {
       //validate_permlink( permlink );
-      //validate_account_name( author );
+      validate_account_name( from );
    }
 
 } } // bmchain::protocol
