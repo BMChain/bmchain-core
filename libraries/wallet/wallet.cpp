@@ -2171,10 +2171,6 @@ annotated_signed_transaction wallet_api::send_private_message( string from, stri
    auto from_account = get_account( from );
    auto to_account   = get_account( to );
 
-//   custom_operation op;
-//   op.required_auths.insert(from);
-//   op.id = BMCHAIN_PRIVATE_MESSAGE_COP_ID;
-
    private_message_operation pmo;
    pmo.from          = from;
    pmo.to            = to;
@@ -2186,6 +2182,8 @@ annotated_signed_transaction wallet_api::send_private_message( string from, stri
    message.subject = subject;
    message.body    = body;
 
+   string json_msg = fc::json::to_string(message);
+
    auto priv_key = wif_to_key( get_private_key( pmo.from_memo_key ) );
    FC_ASSERT( priv_key, "unable to find private key for memo" );
    auto shared_secret = priv_key->get_shared_secret( pmo.to_memo_key );
@@ -2196,25 +2194,26 @@ annotated_signed_transaction wallet_api::send_private_message( string from, stri
    auto hash_encrypt_key = fc::sha256::hash( encrypt_key );
    pmo.checksum = hash_encrypt_key._hash[0];
 
-   vector<char> plain_text = fc::raw::pack( message );
-   pmo.encrypted_message = fc::aes_encrypt( encrypt_key, plain_text );
+   vector< char > plain_text; // = fc::raw::pack( body );
+   plain_text.resize(json_msg.size());
+   copy(json_msg.begin(), json_msg.end(), plain_text.begin());
+
+   vector< char > enc_msg = fc::aes_encrypt( encrypt_key, plain_text );
+   pmo.message_size = enc_msg.size();
+   pmo.encrypted_message = fc::to_hex(enc_msg);
 
    message_api_obj obj;
    obj.to_memo_key   = pmo.to_memo_key;
    obj.from_memo_key = pmo.from_memo_key;
    obj.checksum = pmo.checksum;
    obj.sent_time = pmo.sent_time;
-   obj.encrypted_message = pmo.encrypted_message;
+   obj.encrypted_message.resize(pmo.message_size);
+   fc::from_hex(pmo.encrypted_message, obj.encrypted_message.data(), pmo.message_size);
    auto decrypted = try_decrypt_message(obj);
 
-//   op.data = fc::raw::pack( pmo );
-
-//   signed_transaction tx;
-//   tx.operations.push_back( op );
-//   tx.validate();
-    signed_transaction tx;
-    tx.operations.push_back( pmo );
-    tx.validate();
+   signed_transaction tx;
+   tx.operations.push_back( pmo );
+   tx.validate();
 
    return my->sign_transaction( tx, broadcast );
 }
@@ -2252,9 +2251,23 @@ message_body wallet_api::try_decrypt_message( const message_api_obj& mo ) {
    if( mo.checksum != check )
       return result;
 
-   auto decrypt_data = fc::aes_decrypt( encrypt_key, mo.encrypted_message );
+   vector< char > decrypt_data = fc::aes_decrypt( encrypt_key, mo.encrypted_message );
+   string data;
+   data.resize(decrypt_data.size());
+   copy(decrypt_data.begin(), decrypt_data.end(), data.begin());
+   result.body = data;
    try {
-      return fc::raw::unpack<message_body>( decrypt_data );
+       auto json_data = fc::json::from_string(data);
+       if (json_data.is_object()) {
+           auto json_obj = json_data.get_object();
+           if (json_obj.find("subject") != json_obj.end()) {
+               result.subject = json_obj["subject"].as_string();
+           }
+           if (json_obj.find("body") != json_obj.end()) {
+               result.body = json_obj["body"].as_string();
+           }
+       }
+      return result;
    } catch ( ... ) {
       return result;
    }

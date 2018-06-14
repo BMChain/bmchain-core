@@ -2228,16 +2228,21 @@ void private_message_evaluator::do_apply( const private_message_operation& pm )
 //          std::copy(pm.encrypted_message.begin(), pm.encrypted_message.end(), pmo.encrypted_message.begin());
 //      });
 //   }
-   _db.create<message_object>([&](message_object &pmo) {
-       pmo.from = pm.from;
-       pmo.to = pm.to;
-       pmo.from_memo_key = pm.from_memo_key;
-       pmo.to_memo_key = pm.to_memo_key;
-       pmo.checksum = pm.checksum;
-       pmo.sent_time = pm.sent_time;
-       pmo.receive_time = _db.head_block_time();
-       pmo.encrypted_message.resize(pm.encrypted_message.size());
-       std::copy(pm.encrypted_message.begin(), pm.encrypted_message.end(), pmo.encrypted_message.begin());
+   _db.create<message_object>([&](message_object &obj) {
+       obj.from = pm.from;
+       obj.to = pm.to;
+       obj.from_memo_key = pm.from_memo_key;
+       obj.to_memo_key = pm.to_memo_key;
+       obj.checksum = pm.checksum;
+       obj.sent_time = pm.sent_time;
+       obj.receive_time = _db.head_block_time();
+
+       vector< char > enc_msg;
+       enc_msg.resize(pm.message_size);
+       fc::from_hex(pm.encrypted_message, enc_msg.data(), pm.message_size);
+
+       obj.encrypted_message.resize(pm.message_size);
+       std::copy(enc_msg.begin(), enc_msg.end(), obj.encrypted_message.begin());
    });
 }
 

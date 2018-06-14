@@ -65,6 +65,9 @@ namespace bmchain { namespace protocol {
             content_order_cancel_operation,
             encrypted_content_operation,
 
+            /// private message
+            private_message_operation,
+
             /// virtual operations below this point
             fill_convert_request_operation,
             author_reward_operation,
@@ -83,10 +86,7 @@ namespace bmchain { namespace protocol {
             producer_reward_operation,
 
             /// SMT operations
-            smt_create_operation,
-
-            /// private message
-            private_message_operation
+            smt_create_operation
 
          > operation;
 

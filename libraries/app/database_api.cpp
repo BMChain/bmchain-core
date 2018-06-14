@@ -1792,6 +1792,7 @@ namespace bmchain {
                                     case operation::tag<pow_operation>::value:
                                     case operation::tag<custom_operation>::value:
                                     case operation::tag<producer_reward_operation>::value:
+                                    case operation::tag<private_message_operation>::value:
                                     default:
                                         eacnt.other_history[item.first] = item.second;
                                 }
