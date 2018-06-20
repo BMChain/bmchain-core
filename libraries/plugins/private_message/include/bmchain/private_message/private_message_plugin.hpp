@@ -31,6 +31,8 @@
 #include <fc/thread/future.hpp>
 #include <fc/api.hpp>
 
+#include <bmchain/app/state.hpp>
+
 namespace bmchain { namespace private_message {
 using namespace chain;
 using app::application;
@@ -199,9 +201,9 @@ class private_message_api : public std::enable_shared_from_this<private_message_
       /**
        *
        */
-      vector< message_api_obj > get_inbox( string to, time_point newest, uint16_t limit )const;
-      vector< message_api_obj > get_outbox( string from, time_point newest, uint16_t limit )const;
-      vector< string > get_accounts_from_messages(const string& account_name )const;
+      vector< message_api_obj > get_inbox( string to, uint32_t newest, uint16_t limit )const;
+      vector< message_api_obj > get_outbox( string from, uint32_t newest, uint16_t limit )const;
+      vector< app::extended_account > get_accounts_from_messages(const string& account_name )const;
 
    private:
       app::application* _app = nullptr;
