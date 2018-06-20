@@ -1394,47 +1394,49 @@ namespace bmchain {
         }
 
         vector<discussion> database_api::get_discussions_by_feed(const discussion_query &query) const {
-            return my->_db.with_read_lock([&]() {
-                query.validate();
-                FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
-                auto start_author = query.start_author ? *(query.start_author) : "";
-                auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
+           return my->_db.with_read_lock([&]() {
+               query.validate();
+               FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
+               auto start_author = query.start_author ? *(query.start_author) : "";
+               auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
 
-                const auto &account = my->_db.get_account(query.tag);
+               const auto &account = my->_db.get_account(query.tag);
+               const auto &c_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_comment>();
+               const auto &f_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_feed>();
+               auto feed_itr = f_idx.lower_bound(account.name);
 
-                const auto &c_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_comment>();
-                const auto &f_idx = my->_db.get_index<follow::feed_index>().indices().get<follow::by_feed>();
-                auto feed_itr = f_idx.lower_bound(account.name);
+               if (start_author.size() || start_permlink.size()) {
+                   auto start_c = c_idx.find(
+                           boost::make_tuple(my->_db.get_comment(start_author, start_permlink).id, account.name));
+                   FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's feed");
+                   feed_itr = f_idx.iterator_to(*start_c);
+               }
 
-                if (start_author.size() || start_permlink.size()) {
-                    auto start_c = c_idx.find(
-                            boost::make_tuple(my->_db.get_comment(start_author, start_permlink).id, account.name));
-                    FC_ASSERT(start_c != c_idx.end(), "Comment is not in account's feed");
-                    feed_itr = f_idx.iterator_to(*start_c);
-                }
+               vector<discussion> result;
+               result.reserve(query.limit);
 
-                vector<discussion> result;
-                result.reserve(query.limit);
+               while (result.size() < query.limit && feed_itr != f_idx.end()) {
+                   if (feed_itr->account != account.name)
+                       break;
+                   try {
+                       result.push_back(get_discussion(feed_itr->comment));
+                       if (feed_itr->first_reblogged_by != account_name_type()) {
+                           result.back().reblogged_by = vector<account_name_type>(feed_itr->reblogged_by.begin(),
+                                                                                  feed_itr->reblogged_by.end());
+                           result.back().first_reblogged_by = feed_itr->first_reblogged_by;
+                           result.back().first_reblogged_on = feed_itr->first_reblogged_on;
+                       }
+                   }
+                   catch (const fc::exception &e) {
+                       edump((e.to_detail_string()));
+                   }
 
-                while (result.size() < query.limit && feed_itr != f_idx.end()) {
-                    if (feed_itr->account != account.name)
-                        break;
-                    try {
-                        result.push_back(get_discussion(feed_itr->comment));
-                        if (feed_itr->first_reblogged_by != account_name_type()) {
-                            result.back().reblogged_by = vector<account_name_type>(feed_itr->reblogged_by.begin(),
-                                                                                   feed_itr->reblogged_by.end());
-                            result.back().first_reblogged_by = feed_itr->first_reblogged_by;
-                            result.back().first_reblogged_on = feed_itr->first_reblogged_on;
-                        }
-                    }
-                    catch (const fc::exception &e) {
-                        edump((e.to_detail_string()));
-                    }
+                   ++feed_itr;
+               }
 
-                    ++feed_itr;
-                }
-                return result;
+               set_last_comments(result, 3);
+
+               return result;
             });
         }
 
