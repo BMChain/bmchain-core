@@ -1004,14 +1004,11 @@ string wallet_api::get_wallet_filename() const
    return my->get_wallet_filename();
 }
 
-
-account_api_obj wallet_api::get_account( string account_name ) const
-{
+account_api_obj wallet_api::get_account( string account_name ) const{
    return my->get_account( account_name );
 }
 
-bool wallet_api::import_key(string wif_key)
-{
+bool wallet_api::import_key(string wif_key){
    FC_ASSERT(!is_locked());
    // backup wallet
    fc::optional<fc::ecc::private_key> optional_private_key = wif_to_key(wif_key);
@@ -1029,18 +1026,15 @@ bool wallet_api::import_key(string wif_key)
    return false;
 }
 
-string wallet_api::normalize_brain_key(string s) const
-{
+string wallet_api::normalize_brain_key(string s) const{
    return detail::normalize_brain_key( s );
 }
 
-variant wallet_api::info()
-{
+variant wallet_api::info(){
    return my->info();
 }
 
-variant_object wallet_api::about() const
-{
+variant_object wallet_api::about() const{
     return my->about();
 }
 
@@ -1051,13 +1045,11 @@ fc::ecc::private_key wallet_api::derive_private_key(const std::string& prefix_st
 }
 */
 
-set<account_name_type> wallet_api::list_witnesses(const string& lowerbound, uint32_t limit)
-{
+set<account_name_type> wallet_api::list_witnesses(const string& lowerbound, uint32_t limit){
    return my->_remote_db->lookup_witness_accounts(lowerbound, limit);
 }
 
-optional< witness_api_obj > wallet_api::get_witness(string owner_account)
-{
+optional< witness_api_obj > wallet_api::get_witness(string owner_account){
    return my->get_witness(owner_account);
 }
 
@@ -1066,8 +1058,7 @@ annotated_signed_transaction wallet_api::set_voting_proxy(string account_to_modi
 
 void wallet_api::set_wallet_filename(string wallet_filename) { my->_wallet_filename = wallet_filename; }
 
-annotated_signed_transaction wallet_api::sign_transaction(signed_transaction tx, bool broadcast /* = false */)
-{ try {
+annotated_signed_transaction wallet_api::sign_transaction(signed_transaction tx, bool broadcast /* = false */){ try {
    return my->sign_transaction( tx, broadcast);
 } FC_CAPTURE_AND_RETHROW( (tx) ) }
 
@@ -1083,8 +1074,7 @@ vector< variant > wallet_api::network_get_connected_peers() {
    return my->network_get_connected_peers();
 }
 
-string wallet_api::help()const
-{
+string wallet_api::help()const{
    std::vector<std::string> method_names = my->method_documentation.get_method_names();
    std::stringstream ss;
    for (const std::string method_name : method_names)
@@ -1101,8 +1091,7 @@ string wallet_api::help()const
    return ss.str();
 }
 
-string wallet_api::gethelp(const string& method)const
-{
+string wallet_api::gethelp(const string& method)const{
    fc::api<wallet_api> tmp;
    std::stringstream ss;
    ss << "\n";
@@ -1116,38 +1105,32 @@ string wallet_api::gethelp(const string& method)const
    return ss.str();
 }
 
-bool wallet_api::load_wallet_file( string wallet_filename )
-{
+bool wallet_api::load_wallet_file( string wallet_filename ){
    return my->load_wallet_file( wallet_filename );
 }
 
-void wallet_api::save_wallet_file( string wallet_filename )
-{
+void wallet_api::save_wallet_file( string wallet_filename ){
    my->save_wallet_file( wallet_filename );
 }
 
 std::map<string,std::function<string(fc::variant,const fc::variants&)> >
-wallet_api::get_result_formatters() const
-{
+wallet_api::get_result_formatters() const{
    return my->get_result_formatters();
 }
 
-bool wallet_api::is_locked()const
-{
+bool wallet_api::is_locked()const{
    return my->is_locked();
 }
-bool wallet_api::is_new()const
-{
+
+bool wallet_api::is_new()const{
    return my->_wallet.cipher_keys.size() == 0;
 }
 
-void wallet_api::encrypt_keys()
-{
+void wallet_api::encrypt_keys(){
    my->encrypt_keys();
 }
 
-void wallet_api::lock()
-{ try {
+void wallet_api::lock(){ try {
    FC_ASSERT( !is_locked() );
    encrypt_keys();
    for( auto key : my->_keys )
@@ -1157,8 +1140,7 @@ void wallet_api::lock()
    my->self.lock_changed(true);
 } FC_CAPTURE_AND_RETHROW() }
 
-void wallet_api::unlock(string password)
-{ try {
+void wallet_api::unlock(string password){ try {
    FC_ASSERT(password.size() > 0);
    auto pw = fc::sha512::hash(password.c_str(), password.size());
    vector<char> decrypted = fc::aes_decrypt(pw, my->_wallet.cipher_keys);
@@ -1169,22 +1151,19 @@ void wallet_api::unlock(string password)
    my->self.lock_changed(false);
 } FC_CAPTURE_AND_RETHROW() }
 
-void wallet_api::set_password( string password )
-{
+void wallet_api::set_password( string password ){
    if( !is_new() )
       FC_ASSERT( !is_locked(), "The wallet must be unlocked before the password can be set" );
    my->_checksum = fc::sha512::hash( password.c_str(), password.size() );
    lock();
 }
 
-map<public_key_type, string> wallet_api::list_keys()
-{
+map<public_key_type, string> wallet_api::list_keys(){
    FC_ASSERT(!is_locked());
    return my->_keys;
 }
 
-string wallet_api::get_private_key( public_key_type pubkey )const
-{
+string wallet_api::get_private_key( public_key_type pubkey )const{
    return key_to_wif( my->get_private_key( pubkey ) );
 }
 
@@ -2194,10 +2173,7 @@ annotated_signed_transaction wallet_api::send_private_message( string from, stri
    auto hash_encrypt_key = fc::sha256::hash( encrypt_key );
    pmo.checksum = hash_encrypt_key._hash[0];
 
-   vector< char > plain_text; // = fc::raw::pack( body );
-   plain_text.resize(json_msg.size());
-   copy(json_msg.begin(), json_msg.end(), plain_text.begin());
-
+   vector< char > plain_text = str_to_vec(json_msg);
    vector< char > enc_msg = fc::aes_encrypt( encrypt_key, plain_text );
    pmo.message_size = enc_msg.size();
    pmo.encrypted_message = fc::to_hex(enc_msg);
@@ -2252,9 +2228,7 @@ message_body wallet_api::try_decrypt_message( const message_api_obj& mo ) {
       return result;
 
    vector< char > decrypt_data = fc::aes_decrypt( encrypt_key, mo.encrypted_message );
-   string data;
-   data.resize(decrypt_data.size());
-   copy(decrypt_data.begin(), decrypt_data.end(), data.begin());
+   string data = vec_to_str(decrypt_data);
    result.body = data;
    try {
        auto json_data = fc::json::from_string(data);
@@ -2273,7 +2247,7 @@ message_body wallet_api::try_decrypt_message( const message_api_obj& mo ) {
    }
 }
 
-vector<extended_message_object> wallet_api::get_inbox( string account, fc::time_point newest, uint32_t limit ) {
+vector<extended_message_object> wallet_api::get_inbox( string account, uint32_t newest, uint32_t limit ) {
    FC_ASSERT( !is_locked() );
    vector<extended_message_object> result;
    my->use_remote_message_api();
@@ -2285,7 +2259,7 @@ vector<extended_message_object> wallet_api::get_inbox( string account, fc::time_
    return result;
 }
 
-vector<extended_message_object> wallet_api::get_outbox( string account, fc::time_point newest, uint32_t limit ) {
+vector<extended_message_object> wallet_api::get_outbox( string account, uint32_t newest, uint32_t limit ) {
    FC_ASSERT( !is_locked() );
    vector<extended_message_object> result;
    my->use_remote_message_api();
@@ -2354,6 +2328,15 @@ vector<discussion> wallet_api::get_discussions_by_created(uint32_t limit, string
     return discussions;
 }
 
+vector<discussion> wallet_api::get_discussions_by_feed( string author, uint32_t limit )const {
+   discussion_query q;
+   q.tag = author;
+   q.limit = limit;
+   q.truncate_body = 1024;
+   auto discussions = my->_remote_db->get_discussions_by_feed(q);
+   return discussions;
+}
+      
 statistic wallet_api::get_statistic(const string & begin, const string & end)const{
     auto result = my->_remote_db->get_statistic(begin, end);
     return result;
@@ -2369,45 +2352,49 @@ total_block_statistic wallet_api::get_total_block_statistic(uint32_t limit, uint
     return result;
 }
 
-annotated_signed_transaction wallet_api::post_encrypted_comment( string author, string permlink, string category, string title, string body, string crypto_body, asset price, string json, bool broadcast ){
-    FC_ASSERT( !is_locked() );
+annotated_signed_transaction wallet_api::post_encrypted_comment( string author, string permlink, string category, string title, string body, string enc_msg, asset price, string json, bool broadcast ){
+   FC_ASSERT( !is_locked() );
 
-    auto author_obj = get_account( author );
-    auto priv_key = wif_to_key( get_private_key( author_obj.memo_key ) );
-    FC_ASSERT( priv_key, "unable to find private key for memo" );
-    fc::sha512::encoder enc;
-    fc::raw::pack( enc, priv_key );
-    auto encrypt_key = enc.result();
-    auto hash_encrypt_key = fc::sha256::hash( encrypt_key );
-    auto checksum = hash_encrypt_key._hash[0];
+   auto author_obj = get_account( author );
+   auto priv_key = wif_to_key( get_private_key( author_obj.memo_key ) );
+   FC_ASSERT( priv_key, "unable to find private key for memo" );
+   fc::sha512::encoder enc;
+   fc::raw::pack( enc, priv_key );
+   auto encrypt_key = enc.result();
+   auto hash_encrypt_key = fc::sha256::hash( encrypt_key );
+   auto checksum = hash_encrypt_key._hash[0];
 
-    vector<char> plain_text = fc::raw::pack( crypto_body );
-    auto encrypted_body = fc::aes_encrypt( encrypt_key, plain_text );
+   vector<char> plain_text = str_to_vec( enc_msg );
+   auto encrypted_msg = fc::aes_encrypt( encrypt_key, plain_text );
+   uint32_t sent_time = fc::time_point::now().sec_since_epoch();
 
-    extended_encrypted_content obj;
-    obj.to_memo_key     = author_obj.memo_key;
-    obj.from_memo_key   = author_obj.memo_key;
-    obj.checksum        = checksum;
-    obj.encrypted_body  = encrypted_body;
+   extended_encrypted_content obj;
+   obj.to_memo_key     = author_obj.memo_key;
+   obj.from_memo_key   = author_obj.memo_key;
+   obj.sent_time       = sent_time;
+   obj.checksum        = checksum;
+   obj.encrypted_body  = encrypted_msg;
 
-    auto decrypted = try_decrypt_content(obj);
+   auto decrypted = try_decrypt_content(obj);
 
-    encrypted_content_operation op;
-    op.parent_permlink = category;
-    op.author          = author;
-    op.permlink        = permlink;
-    op.title           = title;
-    op.body            = body;
-    op.json_metadata   = json;
-    op.encrypted_body  = encrypted_body;
-    op.checksum        = checksum;
-    op.price           = price;
+   encrypted_content_operation op;
+   op.parent_permlink   = category;
+   op.author            = author;
+   op.permlink          = permlink;
+   op.title             = title;
+   op.body              = body;
+   op.json_metadata     = json;
+   op.encrypted_message = fc::to_hex(encrypted_msg);
+   op.sent_time         = sent_time;
+   op.message_size      = encrypted_msg.size();
+   op.checksum          = checksum;
+   op.price             = price;
 
-    signed_transaction tx;
-    tx.operations.push_back( op );
-    tx.validate();
+   signed_transaction tx;
+   tx.operations.push_back( op );
+   tx.validate();
 
-    return my->sign_transaction( tx, broadcast );
+   return my->sign_transaction( tx, broadcast );
 }
 
 annotated_signed_transaction wallet_api::create_content_order( string owner, string author, string permlink, asset price, string json_metadata, bool broadcast){
@@ -2438,59 +2425,66 @@ annotated_signed_transaction wallet_api::cancel_content_order(string owner, uint
 }
 
 annotated_signed_transaction wallet_api::apply_content_order(string author, uint32_t id, bool broadcast){
-    FC_ASSERT( !is_locked() );
+   FC_ASSERT( !is_locked() );
 
-    const auto & order = my->_remote_db->get_content_order_by_id(id);
+   const auto & order = my->_remote_db->get_content_order_by_id(id);
 
-    discussion post = my->_remote_db->get_content(author, order->permlink);
-    auto auth = get_account(author);
-    auto owner = get_account(order->owner);
+   discussion post = my->_remote_db->get_content(author, order->permlink);
+   auto auth = get_account(author);
+   auto owner = get_account(order->owner);
 
-    extended_encrypted_content obj_enc;
-    obj_enc.from_memo_key = auth.memo_key;
-    obj_enc.to_memo_key = auth.memo_key;
-    obj_enc.checksum = post.checksum;
-    obj_enc.encrypted_body = post.encrypted_body;
+   extended_encrypted_content obj_enc;
+   obj_enc.from_memo_key = auth.memo_key;
+   obj_enc.to_memo_key = auth.memo_key;
+   obj_enc.sent_time = post.created.sec_since_epoch();
+   obj_enc.checksum = post.checksum;
+   obj_enc.encrypted_body = post.encrypted_body;
 
-    auto crypto_content = try_decrypt_content(obj_enc);
+   auto enc_msg = try_decrypt_content(obj_enc);
 
-    auto priv_key = wif_to_key(get_private_key(auth.memo_key));
-    FC_ASSERT(priv_key, "unable to find private key for memo");
-    auto shared_secret = priv_key->get_shared_secret(owner.memo_key);
-    fc::sha512::encoder enc;
-    fc::raw::pack(enc, shared_secret);
-    auto encrypt_key = enc.result();
-    auto hash_encrypt_key = fc::sha256::hash(encrypt_key);
-    auto checksum = hash_encrypt_key._hash[0];
+   uint32_t sent_time = fc::time_point::now().sec_since_epoch();
 
-    vector<char> plain_text = fc::raw::pack(crypto_content);
-    auto encrypted_body = fc::aes_encrypt(encrypt_key, plain_text);
+   auto priv_key = wif_to_key(get_private_key(auth.memo_key));
+   FC_ASSERT(priv_key, "unable to find private key for memo");
+   auto shared_secret = priv_key->get_shared_secret(owner.memo_key);
+   fc::sha512::encoder enc;
+   fc::raw::pack(enc, shared_secret);
+   fc::raw::pack(enc, sent_time);
+   auto encrypt_key = enc.result();
+   auto hash_encrypt_key = fc::sha256::hash(encrypt_key);
+   auto checksum = hash_encrypt_key._hash[0];
 
-    extended_encrypted_content obj;
-    obj.to_memo_key = owner.memo_key;
-    obj.from_memo_key = auth.memo_key;
-    obj.checksum = checksum;
-    obj.encrypted_body = encrypted_body;
-    auto decrypted = try_decrypt_content(obj);
+   vector<char> plain_text = str_to_vec(enc_msg);
+   auto encrypted_message = fc::aes_encrypt(encrypt_key, plain_text);
 
-    encrypted_content_operation op;
-    op.parent_permlink = post.category;
-    op.author = author;
-    op.permlink = post.permlink + order->owner;
-    op.title = post.title;
-    op.body = post.body;
-    op.json_metadata = post.json_metadata;
-    op.encrypted_body = encrypted_body;
-    op.checksum = checksum;
-    op.owner = order->owner;
-    op.order_id = id;
-    op.apply_order = true;
+   extended_encrypted_content obj;
+   obj.to_memo_key = owner.memo_key;
+   obj.from_memo_key = auth.memo_key;
+   obj.sent_time = sent_time;
+   obj.checksum = checksum;
+   obj.encrypted_body = encrypted_message;
+   auto decrypted = try_decrypt_content(obj);
 
-    signed_transaction tx;
-    tx.operations.push_back(op);
-    tx.validate();
+   encrypted_content_operation op;
+   op.parent_permlink = post.category;
+   op.author = author;
+   op.permlink = post.permlink + order->owner;
+   op.title = post.title;
+   op.body = post.body;
+   op.json_metadata = post.json_metadata;
+   op.encrypted_message = fc::to_hex(encrypted_message);
+   op.sent_time = sent_time;
+   op.message_size = encrypted_message.size();
+   op.checksum = checksum;
+   op.owner = order->owner;
+   op.order_id = id;
+   op.apply_order = true;
 
-    return my->sign_transaction(tx, broadcast);
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
+
+   return my->sign_transaction(tx, broadcast);
 }
 
 vector<content_order_api_obj> wallet_api::get_content_orders(string owner, string author, uint32_t limit) const{
@@ -2503,15 +2497,16 @@ vector< discussion > wallet_api::get_encrypted_discussions(string author, string
 
     if (!author.empty()) {
         for (discussion &disc : discussions) {
-            auto auth = get_account(author);
+           auto auth = get_account(author);
 
-            extended_encrypted_content obj;
-            obj.from_memo_key = auth.memo_key;
-            obj.to_memo_key = auth.memo_key;
-            obj.checksum = disc.checksum;
-            obj.encrypted_body = disc.encrypted_body;
+           extended_encrypted_content obj;
+           obj.from_memo_key = auth.memo_key;
+           obj.to_memo_key = auth.memo_key;
+           obj.sent_time = disc.created.sec_since_epoch();
+           obj.checksum = disc.checksum;
+           obj.encrypted_body = disc.encrypted_body;
 
-            disc.decrypted_content = try_decrypt_content(obj);
+           disc.decrypted_content = try_decrypt_content(obj);
         }
     }
     return discussions;
@@ -2641,25 +2636,19 @@ void wallet_api::test_api() const{
        cout << a.name << ": " << a.net_votes << endl;
     }*/
 
-    string acc = "user001";
-    my->use_remote_message_api();
-    auto result = (*my->_remote_message_api)->get_accounts_from_messages(acc);
-    copy(result.cbegin(), result.cend(), std::ostream_iterator< string >(cout, " <-> "));
+   string acc = "user001";
+   my->use_remote_message_api();
+   auto result = (*my->_remote_message_api)->get_accounts_from_messages(acc);
+   //copy(result.cbegin(), result.cend(), std::ostream_iterator< string >(cout, " <-> "));
+   int f = 1;
 }
 
-std::string wallet_api::try_decrypt_content( const extended_encrypted_content& content ) const{
-   std::string result;
+string wallet_api::try_decrypt_content( const extended_encrypted_content& content ) const{
+   string result;
    fc::sha512 shared_secret;
-   fc::sha512::encoder enc;
 
    auto it = my->_keys.find(content.from_memo_key);
-   if (it != my->_keys.end() && (content.to_memo_key == content.from_memo_key)){
-       auto priv_key = wif_to_key( it->second );
-       if( !priv_key ){
-           return result; }
-       fc::raw::pack( enc, priv_key );
-   }
-   else if ( it == my->_keys.end() )
+   if( it == my->_keys.end() )
    {
       it = my->_keys.find(content.to_memo_key);
       if( it == my->_keys.end() )
@@ -2670,15 +2659,51 @@ std::string wallet_api::try_decrypt_content( const extended_encrypted_content& c
       auto priv_key = wif_to_key( it->second );
       if( !priv_key ) return result;
       shared_secret = priv_key->get_shared_secret( content.from_memo_key );
-      fc::raw::pack( enc, shared_secret );
    } else {
       auto priv_key = wif_to_key( it->second );
       if( !priv_key ) return result;
       shared_secret = priv_key->get_shared_secret( content.to_memo_key );
-      fc::raw::pack( enc, shared_secret );
    }
 
+   std::cout << "from_memo_key: " << string(content.from_memo_key) << std::endl;
+   std::cout << "to_memo_key  : " << string(content.to_memo_key) << std::endl;
+
+   fc::sha512::encoder enc;
+   fc::raw::pack( enc, content.sent_time );
+   fc::raw::pack( enc, shared_secret );
    auto encrypt_key = enc.result();
+
+//   std::string result;
+//   fc::sha512 shared_secret;
+//   fc::sha512::encoder enc;
+//
+//   auto it = my->_keys.find(content.from_memo_key);
+//   if (it != my->_keys.end() && (content.to_memo_key == content.from_memo_key)){
+//       auto priv_key = wif_to_key( it->second );
+//       if( !priv_key ){
+//           return result; }
+//       fc::raw::pack( enc, priv_key );
+//   }
+//   else if ( it == my->_keys.end() )
+//   {
+//      it = my->_keys.find(content.to_memo_key);
+//      if( it == my->_keys.end() )
+//      {
+//         wlog( "unable to find keys" );
+//         return result;
+//      }
+//      auto priv_key = wif_to_key( it->second );
+//      if( !priv_key ) return result;
+//      shared_secret = priv_key->get_shared_secret( content.from_memo_key );
+//      fc::raw::pack( enc, shared_secret );
+//   } else {
+//      auto priv_key = wif_to_key( it->second );
+//      if( !priv_key ) return result;
+//      shared_secret = priv_key->get_shared_secret( content.to_memo_key );
+//      fc::raw::pack( enc, shared_secret );
+//   }
+//
+//   auto encrypt_key = enc.result();
 
    uint32_t check = fc::sha256::hash( encrypt_key )._hash[0];
 
@@ -2687,10 +2712,24 @@ std::string wallet_api::try_decrypt_content( const extended_encrypted_content& c
 
    auto decrypt_data = fc::aes_decrypt( encrypt_key, content.encrypted_body );
    try {
-      return fc::raw::unpack< std::string >( decrypt_data );
+      return vec_to_str( decrypt_data );
    } catch ( ... ) {
       return result;
    }
+}
+
+vector< char > wallet_api::str_to_vec( const string& msg) const {
+   vector< char > vec;
+   vec.resize(msg.size());
+   copy(msg.begin(), msg.end(), vec.begin());
+   return vec;
+}
+
+string wallet_api::vec_to_str(vector< char > vec) const {
+   string msg;
+   msg.resize(vec.size());
+   copy(vec.begin(), vec.end(), msg.begin());
+   return msg;
 }
 
 } } // bmchain::wallet

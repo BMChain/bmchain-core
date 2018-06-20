@@ -756,8 +756,8 @@ class wallet_api
       annotated_signed_transaction post_comment( string author, string permlink, string parent_author, string parent_permlink, string title, string body, string json, bool broadcast );
 
       annotated_signed_transaction      send_private_message( string from, string to, string subject, string body, bool broadcast );
-      vector<extended_message_object>   get_inbox( string account, fc::time_point newest, uint32_t limit );
-      vector<extended_message_object>   get_outbox( string account, fc::time_point newest, uint32_t limit );
+      vector<extended_message_object>   get_inbox( string account, uint32_t newest, uint32_t limit );
+      vector<extended_message_object>   get_outbox( string account, uint32_t newest, uint32_t limit );
       message_body try_decrypt_message( const message_api_obj& mo );
 
       /**
@@ -891,6 +891,8 @@ class wallet_api
 
       vector<discussion> get_discussions_by_created(uint32_t limit, string filter_tags)const;
 
+      vector<discussion> get_discussions_by_feed( string author, uint32_t limit )const;
+
       statistic get_statistic(const string & begin, const string & end)const;
 
       vector<block_statistic> get_block_statistic(uint32_t limit = 0, uint32_t limit_block_size = 0)const;
@@ -911,7 +913,7 @@ class wallet_api
 
       void test_api() const;
 
-      std::string try_decrypt_content( const extended_encrypted_content& content ) const;
+      string try_decrypt_content( const extended_encrypted_content& content ) const;
 
 private:
 
@@ -932,6 +934,10 @@ private:
           }
           return result;
       }
+
+      vector< char > str_to_vec( const string& msg) const;
+
+      string vec_to_str(vector< char > vec) const;
 };
 
 struct plain_keys {
@@ -989,6 +995,7 @@ FC_API( bmchain::wallet::wallet_api,
         (get_discussions_by_hot)
         (get_discussions_by_blog)
         (get_discussions_by_created)
+        (get_discussions_by_feed)
 
         /// transaction api
         (create_account)
