@@ -74,10 +74,11 @@ namespace bmchain { namespace protocol {
 
    struct extended_encrypted_content
    {
-       public_key_type     to_memo_key;
-       public_key_type     from_memo_key;
-       uint32_t            checksum;
-       std::vector< char > encrypted_body;
+      public_key_type to_memo_key;
+      public_key_type from_memo_key;
+      uint32_t        sent_time = 0;
+      uint32_t        checksum;
+      vector< char >  encrypted_body;
    };
 
    struct comment_operation : public base_operation
@@ -98,17 +99,19 @@ namespace bmchain { namespace protocol {
 
    struct encrypted_content_operation : public comment_operation
    {
-       /// encrypted content
-       std::vector< char > encrypted_body;
-       uint32_t            checksum;
-       asset               price;
+      /// encrypted content
+      string   encrypted_message;
+      uint32_t sent_time = 0;
+      uint32_t message_size;
+      uint32_t checksum;
+      asset    price;
 
-       /// for content_order applying
-       account_name_type owner;
-       uint32_t          order_id;
-       bool              apply_order;
+      /// for content_order applying
+      account_name_type owner;
+      uint32_t          order_id;
+      bool              apply_order;
 
-       void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
+      void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(author); }
    };
 
    struct beneficiary_route_type
@@ -1136,7 +1139,7 @@ FC_REFLECT( bmchain::protocol::content_order_create_operation, (author)(permlink
 FC_REFLECT( bmchain::protocol::content_order_cancel_operation, (owner)(order_id) );
 
 FC_REFLECT_DERIVED( bmchain::protocol::encrypted_content_operation, (bmchain::protocol::comment_operation),
-                   (encrypted_body)(checksum)(price)(owner)(order_id)(apply_order));
+                   (encrypted_message)(sent_time)(message_size)(checksum)(price)(owner)(order_id)(apply_order));
 
 FC_REFLECT( bmchain::protocol::smt_base_operation, (control_account)(symbol))
 FC_REFLECT( bmchain::protocol::smt_executor_base_operation, (executor)(symbol))

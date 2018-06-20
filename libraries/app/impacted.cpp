@@ -204,11 +204,16 @@ struct get_impacted_account_visitor
       _impacted.insert( op.delegatee );
    }
 
-    void operator()( const private_message_operation& op )
-    {
-       _impacted.insert( op.from );
-       _impacted.insert( op.to );
-    }
+   void operator()( const private_message_operation& op )
+   {
+      _impacted.insert( op.from );
+      _impacted.insert( op.to );
+   }
+
+   void operator()( const encrypted_content_operation& op )
+   {
+      _impacted.insert( op.author );
+   }
 
    // vops
 
