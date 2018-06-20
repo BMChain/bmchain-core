@@ -201,8 +201,8 @@ class private_message_api : public std::enable_shared_from_this<private_message_
       /**
        *
        */
-      vector< message_api_obj > get_inbox( string to, uint32_t newest, uint16_t limit )const;
-      vector< message_api_obj > get_outbox( string from, uint32_t newest, uint16_t limit )const;
+      vector< message_api_obj > get_inbox( string to, fc::time_point newest, uint16_t limit )const;
+      vector< message_api_obj > get_outbox( string from, fc::time_point newest, uint16_t limit )const;
       vector< app::extended_account > get_accounts_from_messages(const string& account_name )const;
 
    private:

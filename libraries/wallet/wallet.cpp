@@ -2247,7 +2247,7 @@ message_body wallet_api::try_decrypt_message( const message_api_obj& mo ) {
    }
 }
 
-vector<extended_message_object> wallet_api::get_inbox( string account, uint32_t newest, uint32_t limit ) {
+vector<extended_message_object> wallet_api::get_inbox( string account, fc::time_point newest, uint32_t limit ) {
    FC_ASSERT( !is_locked() );
    vector<extended_message_object> result;
    my->use_remote_message_api();
@@ -2259,7 +2259,7 @@ vector<extended_message_object> wallet_api::get_inbox( string account, uint32_t 
    return result;
 }
 
-vector<extended_message_object> wallet_api::get_outbox( string account, uint32_t newest, uint32_t limit ) {
+vector<extended_message_object> wallet_api::get_outbox( string account, fc::time_point newest, uint32_t limit ) {
    FC_ASSERT( !is_locked() );
    vector<extended_message_object> result;
    my->use_remote_message_api();
@@ -2636,11 +2636,15 @@ void wallet_api::test_api() const{
        cout << a.name << ": " << a.net_votes << endl;
     }*/
 
-   string acc = "user001";
+   /// test get_accounts_from_messages
+   /*string acc = "user001";
    my->use_remote_message_api();
-   auto result = (*my->_remote_message_api)->get_accounts_from_messages(acc);
+   auto result = (*my->_remote_message_api)->get_accounts_from_messages(acc);*/
    //copy(result.cbegin(), result.cend(), std::ostream_iterator< string >(cout, " <-> "));
-   int f = 1;
+
+   /// test get_content_replies
+   auto result = my->_remote_db->get_content_replies("maggi", "iyierro-budiet-glavnim-trienierom-sbornoiy-ispanii-na-chm-2018");
+
 }
 
 string wallet_api::try_decrypt_content( const extended_encrypted_content& content ) const{

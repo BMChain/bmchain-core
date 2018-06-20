@@ -1008,9 +1008,10 @@ namespace bmchain {
                 vector<discussion> result;
                 while (itr != by_permlink_idx.end() && itr->parent_author == author &&
                        to_string(itr->parent_permlink) == permlink) {
-                    result.push_back(discussion(*itr));
-                    set_pending_payout(result.back());
-                    ++itr;
+                   result.push_back(discussion(*itr));
+                   set_pending_payout(result.back());
+                   result.back().active_votes = get_active_votes(itr->author, to_string(itr->permlink));
+                   ++itr;
                 }
                 return result;
             });

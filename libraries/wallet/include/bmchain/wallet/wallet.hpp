@@ -756,8 +756,8 @@ class wallet_api
       annotated_signed_transaction post_comment( string author, string permlink, string parent_author, string parent_permlink, string title, string body, string json, bool broadcast );
 
       annotated_signed_transaction      send_private_message( string from, string to, string subject, string body, bool broadcast );
-      vector<extended_message_object>   get_inbox( string account, uint32_t newest, uint32_t limit );
-      vector<extended_message_object>   get_outbox( string account, uint32_t newest, uint32_t limit );
+      vector<extended_message_object>   get_inbox( string account, fc::time_point newest, uint32_t limit );
+      vector<extended_message_object>   get_outbox( string account, fc::time_point newest, uint32_t limit );
       message_body try_decrypt_message( const message_api_obj& mo );
 
       /**

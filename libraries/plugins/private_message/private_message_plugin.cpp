@@ -145,15 +145,11 @@ void private_message_plugin::plugin_initialize(const boost::program_options::var
    LOAD_VALUE_SET(options, "pm-accounts", my->_tracked_accounts, pairstring);
 }
 
-vector< message_api_obj > private_message_api::get_inbox( string to, uint32_t newest, uint16_t limit )const {
+vector< message_api_obj > private_message_api::get_inbox( string to, fc::time_point newest, uint16_t limit )const {
    FC_ASSERT( limit <= 100 );
-   auto newest_tp = time_point::now();
-   if (newest != 0){
-      newest_tp = time_point_sec(newest);
-   }
    vector< message_api_obj > result;
    const auto& idx = _app->chain_database()->get_index< message_index >().indices().get< by_to_date >();
-   auto itr = idx.lower_bound( std::make_tuple( to, newest_tp ) );
+   auto itr = idx.lower_bound( std::make_tuple( to, newest ) );
    while( itr != idx.end() && limit && itr->to == to ) {
       result.push_back(*itr);
       ++itr;
@@ -162,15 +158,11 @@ vector< message_api_obj > private_message_api::get_inbox( string to, uint32_t ne
    return result;
 }
 
-vector< message_api_obj > private_message_api::get_outbox( string from, uint32_t newest, uint16_t limit )const {
+vector< message_api_obj > private_message_api::get_outbox( string from, fc::time_point newest, uint16_t limit )const {
    FC_ASSERT( limit <= 100 );
-   auto newest_tp = time_point::now();
-   if (newest != 0){
-      newest_tp = time_point_sec(newest);
-   }
    vector< message_api_obj > result;
    const auto& idx = _app->chain_database()->get_index< message_index >().indices().get< by_from_date >();
-   auto itr = idx.lower_bound( std::make_tuple( from, newest_tp ) );
+   auto itr = idx.lower_bound( std::make_tuple( from, newest ) );
    while( itr != idx.end() && limit && itr->from == from ) {
       result.push_back(*itr);
       ++itr;
