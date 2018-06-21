@@ -1531,8 +1531,8 @@ namespace bmchain {
                 result.reserve(query.limit);
 
                 while (result.size() < query.limit && comment_itr != t_idx.end()) {
-                    //if( comment_itr->author != start_author )
-                    //   break;
+                    if( comment_itr->author != start_author )
+                       break;
                     if (comment_itr->parent_author.size() > 0) {
                         try {
                             result.push_back(get_discussion(comment_itr->id));

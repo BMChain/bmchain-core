@@ -2398,24 +2398,26 @@ annotated_signed_transaction wallet_api::post_encrypted_comment( string author, 
 }
 
 annotated_signed_transaction wallet_api::create_content_order( string owner, string author, string permlink, asset price, string json_metadata, bool broadcast){
-    FC_ASSERT( !is_locked() );
-    content_order_create_operation op;
-    op.author    = author;
-    op.permlink  = permlink;
-    op.owner     = owner;
-    op.price     = price;
+   FC_ASSERT( !is_locked() );
+   content_order_create_operation op;
+   op.author    = author;
+   op.permlink  = permlink;
+   op.owner     = owner;
+   op.price     = price;
+   op.json_metadata = json_metadata;
 
-    signed_transaction tx;
-    tx.operations.push_back( op );
-    tx.validate();
+   signed_transaction tx;
+   tx.operations.push_back( op );
+   tx.validate();
 
-    return my->sign_transaction( tx, broadcast );
+   return my->sign_transaction( tx, broadcast );
 }
 
 annotated_signed_transaction wallet_api::cancel_content_order(string owner, uint32_t orderid, bool broadcast){
    content_order_cancel_operation op;
    op.owner = owner;
    op.order_id = orderid;
+   op.json_metadata = "";
 
    signed_transaction tx;
    tx.operations.push_back( op );

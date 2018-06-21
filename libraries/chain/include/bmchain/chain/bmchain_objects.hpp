@@ -247,6 +247,7 @@ namespace bmchain { namespace chain {
          account_name_type owner;
          asset             price = asset( 0, BMT_SYMBOL );
          order_status      status = order_status::open;
+         shared_string     json_metadata;
    };
 
 #ifndef STEEM_SMT_TEST_SPACE_ID
@@ -550,7 +551,7 @@ FC_REFLECT( bmchain::chain::reward_fund_object,
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::reward_fund_object, bmchain::chain::reward_fund_index )
 
 FC_REFLECT( bmchain::chain::content_order_object,
-            (id)(author)(permlink)(owner)(price)(status) )
+            (id)(author)(permlink)(owner)(price)(status)(json_metadata) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::content_order_object, bmchain::chain::content_order_index )
 
 FC_REFLECT_ENUM( bmchain::chain::content_order_object::order_status,

@@ -963,24 +963,24 @@ namespace bmchain { namespace protocol {
 
    struct content_order_create_operation : public base_operation
    {
-       account_name_type author;
-       string            permlink;
-       account_name_type owner;
-       asset             price;
+      account_name_type author;
+      string            permlink;
+      account_name_type owner;
+      asset             price;
+      string json_metadata;
 
-       void validate() const;
-
-       void get_required_active_authorities(flat_set<account_name_type> &a) const { a.insert(author); }
+      void validate() const;
+      void get_required_active_authorities(flat_set<account_name_type> &a) const { a.insert(owner); }
    };
 
    struct content_order_cancel_operation : public base_operation
    {
-       account_name_type owner;
-       uint32_t order_id = 0;
+      account_name_type owner;
+      uint32_t order_id = 0;
+      string json_metadata;
 
-       void validate() const;
-
-       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
+      void validate() const;
+      void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
    };
 
 /**
@@ -1135,8 +1135,8 @@ FC_REFLECT( bmchain::protocol::decline_voting_rights_operation, (account)(declin
 FC_REFLECT( bmchain::protocol::claim_reward_balance_operation, (account)(reward_bmt)(reward_vests) )
 FC_REFLECT( bmchain::protocol::delegate_rep_shares_operation, (delegator)(delegatee)(rep_shares) );
 
-FC_REFLECT( bmchain::protocol::content_order_create_operation, (author)(permlink)(owner)(price) )
-FC_REFLECT( bmchain::protocol::content_order_cancel_operation, (owner)(order_id) );
+FC_REFLECT( bmchain::protocol::content_order_create_operation, (author)(permlink)(owner)(price)(json_metadata) )
+FC_REFLECT( bmchain::protocol::content_order_cancel_operation, (owner)(order_id)(json_metadata) );
 
 FC_REFLECT_DERIVED( bmchain::protocol::encrypted_content_operation, (bmchain::protocol::comment_operation),
                    (encrypted_message)(sent_time)(message_size)(checksum)(price)(owner)(order_id)(apply_order));

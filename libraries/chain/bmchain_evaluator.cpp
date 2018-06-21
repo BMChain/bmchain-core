@@ -2175,12 +2175,13 @@ void content_order_create_evaluator::do_apply( const content_order_create_operat
     });
 
    _db.create< content_order_object >( [&]( content_order_object& content_order ){
-       content_order.sent_time = _db.head_block_time();
-       content_order.author    = op.author;
-       from_string(content_order.permlink, op.permlink);
-       content_order.owner     = op.owner;
-       content_order.price     = op.price;
-       content_order.status    = content_order_object::order_status::open;
+      content_order.sent_time = _db.head_block_time();
+      content_order.author    = op.author;
+      from_string(content_order.permlink, op.permlink);
+      content_order.owner     = op.owner;
+      content_order.price     = op.price;
+      content_order.status    = content_order_object::order_status::open;
+      from_string(content_order.json_metadata, op.json_metadata);
    });
 }
 
