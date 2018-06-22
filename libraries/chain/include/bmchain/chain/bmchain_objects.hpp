@@ -232,7 +232,7 @@ namespace bmchain { namespace chain {
          content_order_object() = delete;
 
          template< typename Constructor, typename Allocator >
-         content_order_object( Constructor&& c, allocator< Allocator > a ) : permlink(a),json_metadata(a)
+         content_order_object( Constructor&& c, allocator< Allocator > a ) : permlink(a), json_metadata(a)
          {
             c( *this );
          }
