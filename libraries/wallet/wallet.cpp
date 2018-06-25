@@ -2494,8 +2494,8 @@ vector<content_order_api_obj> wallet_api::get_content_orders(string owner, strin
     return result;
 }
 
-vector< discussion > wallet_api::get_encrypted_discussions(string author, string owner, uint32_t limit) const{
-    auto discussions = my->_remote_db->get_encrypted_discussions(author, owner, limit);
+vector< discussion > wallet_api::get_encrypted_discussions(string owner, string author, uint32_t limit) const{
+    auto discussions = my->_remote_db->get_encrypted_discussions(owner, author, limit);
 
     if (!author.empty()) {
         for (discussion &disc : discussions) {

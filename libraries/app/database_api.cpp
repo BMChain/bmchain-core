@@ -2300,7 +2300,7 @@ namespace bmchain {
             return result;
         };
 
-        vector<discussion> database_api::get_encrypted_discussions(string author, string owner, uint32_t limit) const {
+        vector<discussion> database_api::get_encrypted_discussions(string owner, string author, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 vector<discussion> result;
 

@@ -1386,8 +1386,7 @@ try {
    {
       FC_ASSERT( itr->num_changes < BMCHAIN_MAX_VOTE_CHANGES, "Voter has used the maximum number of vote changes on this comment." );
       if ( itr->vote_percent != o.weight ) {
-          //FC_ASSERT(itr->vote_percent != o.weight, "You have already voted in a similar way.");
-          int point = 1;
+          FC_ASSERT(itr->vote_percent != o.weight, "You have already voted in a similar way.");
       }
 
       /// this is the rshares voting for or against the post
@@ -2167,12 +2166,14 @@ void delegate_rep_shares_evaluator::do_apply( const delegate_rep_shares_operatio
 
 void content_order_create_evaluator::do_apply( const content_order_create_operation& op)
 {
-    const auto& owner = _db.get_account( op.owner );
-    FC_ASSERT( owner.balance > op.price, "Cannot buy the encrypted post because balance doesn't have enough BMT." );
+   const auto& owner = _db.get_account( op.owner );
+   const auto& comment = _db.get_comment( op.author, op.permlink );
+   FC_ASSERT( owner.balance > op.price, "Cannot buy the encrypted post because balance doesn't have enough BMT." );
+   FC_ASSERT( comment.price <= op.price, "Offered price is not enough for buying this content." );
 
-    _db.modify( owner, [&]( account_object& acc ) {
-        acc.balance -= op.price;
-    });
+   _db.modify( owner, [&]( account_object& acc ) {
+       acc.balance -= op.price;
+   });
 
    _db.create< content_order_object >( [&]( content_order_object& content_order ){
       content_order.sent_time = _db.head_block_time();
