@@ -1223,7 +1223,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(tag);
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.net_rshares <= 0; }, exit_default,
+                                       [](const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
@@ -1321,7 +1321,8 @@ namespace bmchain {
                 const auto &tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_active>();
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, fc::time_point_sec::maximum()));
 
-                return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body);
+                return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
+                                       [](const comment_api_obj &c) { return c.private_post; });
             });
         }
 
@@ -1337,7 +1338,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, fc::time_point::now() - fc::minutes(60)));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.net_rshares < 0; });
+                                       [](const comment_api_obj &c) { return c.net_rshares < 0 || c.private_post; });
             });
         }
 
@@ -1370,7 +1371,8 @@ namespace bmchain {
                 const auto &tidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_parent_children>();
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<int32_t>::max()));
 
-                return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body);
+                return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
+                                       [](const comment_api_obj &c) { return c.private_post; });
             });
         }
 
@@ -1420,13 +1422,18 @@ namespace bmchain {
                    if (feed_itr->account != account.name)
                        break;
                    try {
-                       result.push_back(get_discussion(feed_itr->comment));
-                       if (feed_itr->first_reblogged_by != account_name_type()) {
-                           result.back().reblogged_by = vector<account_name_type>(feed_itr->reblogged_by.begin(),
-                                                                                  feed_itr->reblogged_by.end());
-                           result.back().first_reblogged_by = feed_itr->first_reblogged_by;
-                           result.back().first_reblogged_on = feed_itr->first_reblogged_on;
-                       }
+                      auto disc = get_discussion(feed_itr->comment);
+                      if (disc.private_post) {
+                         ++feed_itr;
+                         continue;
+                      }
+                      result.push_back(disc);
+                      if (feed_itr->first_reblogged_by != account_name_type()) {
+                          result.back().reblogged_by = vector<account_name_type>(feed_itr->reblogged_by.begin(),
+                                                                                 feed_itr->reblogged_by.end());
+                          result.back().first_reblogged_by = feed_itr->first_reblogged_by;
+                          result.back().first_reblogged_on = feed_itr->first_reblogged_on;
+                      }
                    }
                    catch (const fc::exception &e) {
                        edump((e.to_detail_string()));
