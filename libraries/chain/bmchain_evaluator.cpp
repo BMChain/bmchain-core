@@ -710,7 +710,7 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
             from_string(com.permlink, o.permlink);
             com.author = o.author;
             com.last_update = _db.head_block_time();
-            com.created = fc::time_point_sec(o.sent_time);
+            com.created  = fc::time_point_sec(o.sent_time);
             com.active = com.last_update;
             com.last_payout = fc::time_point_sec::min();
             com.max_cashout_time = fc::time_point_sec::maximum();
