@@ -78,7 +78,7 @@
 #define BMCHAIN_MIN_VOTE_INTERVAL_SEC           (3)
 #define BMCHAIN_VOTE_DUST_THRESHOLD             (10000) /// bmchain stress-testing, было 50000000
 
-#define BMCHAIN_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
+#define BMCHAIN_MIN_ROOT_COMMENT_INTERVAL       (fc::minutes(5)) // 5 minutes
 #define BMCHAIN_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
 
 #define BMCHAIN_MAX_ACCOUNT_WITNESS_VOTES       30
@@ -220,9 +220,8 @@
 #define BMCHAIN_ROOT_POST_PARENT                (account_name_type())
 ///@}
 
-#define BMCHAIN_ENABLE                          true
 #define BMCHAIN_STRESS_TESTING                  false
-#define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*7)) /// 7 days
+#define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*5)) /// 7 days
 
 #define BMCHAIN_VOTE_EMISSION_RATE              500
 #define BMCHAIN_COMMENT_EMISSION_RATE           2000

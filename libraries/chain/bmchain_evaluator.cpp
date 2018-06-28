@@ -167,16 +167,14 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
    if( o.fee.amount > 0 )
       _db.create_rep( new_account, o.fee );
 
-   if( BMCHAIN_ENABLE ){
-      auto new_bmt = asset(BMCHAIN_USER_EMISSION_RATE, BMT_SYMBOL);
-      _db.create_rep(new_account, new_bmt);
-      _db.modify( props, [&]( dynamic_global_property_object& props )
-      {
-          props.virtual_supply += new_bmt;
-          props.current_supply += new_bmt;
-      } );
-      //_db.process_funds_bmchain(BMCHAIN_USER_EMISSION_RATE);
-   }
+   auto new_bmt = asset(BMCHAIN_USER_EMISSION_RATE, BMT_SYMBOL);
+   _db.create_rep(new_account, new_bmt);
+   _db.modify( props, [&]( dynamic_global_property_object& props )
+   {
+       props.virtual_supply += new_bmt;
+       props.current_supply += new_bmt;
+   } );
+   //_db.process_funds_bmchain(BMCHAIN_USER_EMISSION_RATE);
 }
 
 void account_create_with_delegation_evaluator::do_apply( const account_create_with_delegation_operation& o )
@@ -571,12 +569,10 @@ void comment_evaluator::do_apply( const comment_operation& o )
             parent = nullptr;
       }
 
-      if (BMCHAIN_ENABLE) {
-          if (new_comment.parent_author.length() == 0) {
-              _db.process_funds_bmchain(BMCHAIN_POST_EMISSION_RATE);
-          } else {
-              _db.process_funds_bmchain(BMCHAIN_COMMENT_EMISSION_RATE);
-          }
+      if (new_comment.parent_author.length() == 0) {
+         _db.process_funds_bmchain(BMCHAIN_POST_EMISSION_RATE);
+      } else {
+         _db.process_funds_bmchain(BMCHAIN_COMMENT_EMISSION_RATE);
       }
    }
    else // start edit case
@@ -777,12 +773,10 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
                parent = nullptr;
          }
 
-         if (BMCHAIN_ENABLE) {
-            if (new_comment.parent_author.length() == 0) {
-               _db.process_funds_bmchain(BMCHAIN_POST_EMISSION_RATE);
-            } else {
-               _db.process_funds_bmchain(BMCHAIN_COMMENT_EMISSION_RATE);
-            }
+         if (new_comment.parent_author.length() == 0) {
+            _db.process_funds_bmchain(BMCHAIN_POST_EMISSION_RATE);
+         } else {
+            _db.process_funds_bmchain(BMCHAIN_COMMENT_EMISSION_RATE);
          }
       } else // start edit case
       {
@@ -1456,9 +1450,7 @@ try {
       });
    }
 
-   if (BMCHAIN_ENABLE) {
-       _db.process_funds_bmchain(BMCHAIN_VOTE_EMISSION_RATE);
-   }
+   _db.process_funds_bmchain(BMCHAIN_VOTE_EMISSION_RATE);
 
 } FC_CAPTURE_AND_RETHROW( (o)) }
 

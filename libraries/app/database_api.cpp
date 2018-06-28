@@ -1238,7 +1238,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, true));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.net_rshares <= 0; }, exit_default,
+                                       [](const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
@@ -1253,7 +1253,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, false));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.net_rshares <= 0; }, exit_default,
+                                       [](const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
