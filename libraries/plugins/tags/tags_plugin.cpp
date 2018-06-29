@@ -402,6 +402,11 @@ struct operation_visitor
       update_tags( _db.get_comment( op.author, op.permlink ), true );
    }
 
+   void operator()( const encrypted_content_operation& op )const
+   {
+      update_tags( _db.get_comment( op.author, op.permlink ), true );
+   }
+
    void operator()( const transfer_operation& op )const
    {
       if( op.to == BMCHAIN_NULL_ACCOUNT && op.amount.symbol == BMT_SYMBOL )
