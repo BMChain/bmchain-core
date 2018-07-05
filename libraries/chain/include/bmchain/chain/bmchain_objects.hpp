@@ -4,6 +4,7 @@
 #include <bmchain/protocol/bmchain_operations.hpp>
 
 #include <bmchain/chain/bmchain_object_types.hpp>
+#include <bmchain/chain/comment_object.hpp>
 
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
@@ -459,26 +460,37 @@ namespace bmchain { namespace chain {
       allocator< reward_fund_object >
    > reward_fund_index;
 
+   struct by_sent_time;
    struct by_author;
    struct by_owner;
-   struct by_sent_time;
+   struct by_permlink;
    typedef multi_index_container<
       content_order_object,
       indexed_by<
          ordered_unique< tag< by_id >, member< content_order_object, content_order_id_type, &content_order_object::id > >,
+         ordered_unique< tag< by_sent_time >, member< content_order_object, time_point_sec, &content_order_object::sent_time > >,
          ordered_unique< tag< by_author >,
             composite_key< content_order_object,
                member< content_order_object, account_name_type,  &content_order_object::author >,
                member< content_order_object, content_order_id_type,  &content_order_object::id >
-            >
+            >,
+            composite_key_compare< std::less< account_name_type >, std::greater< content_order_id_type > >
          >,
          ordered_unique< tag< by_owner >,
             composite_key< content_order_object,
                member< content_order_object, account_name_type,  &content_order_object::owner >,
                member< content_order_object, content_order_id_type,  &content_order_object::id >
-            >
+            >,
+            composite_key_compare< std::less< account_name_type >, std::greater< content_order_id_type > >
          >,
-         ordered_unique< tag< by_sent_time >, member< content_order_object, time_point_sec, &content_order_object::sent_time > >
+         ordered_unique< tag< by_permlink >,
+            composite_key< content_order_object,
+               member< content_order_object, account_name_type,  &content_order_object::author >,
+               member< content_order_object, shared_string, &content_order_object::permlink >,
+               member< content_order_object, account_name_type,  &content_order_object::owner >
+            >,
+            composite_key_compare< std::less< account_name_type >, strcmp_less, std::less< account_name_type > >
+         >
       >,
       allocator< content_order_object >
    > content_order_index;

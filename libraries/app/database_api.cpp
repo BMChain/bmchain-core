@@ -2307,99 +2307,121 @@ namespace bmchain {
             return result;
         };
 
-        vector<discussion> database_api::get_encrypted_discussions(string owner, string author, uint32_t limit) const {
-            return my->_db.with_read_lock([&]() {
-                vector<discussion> result;
+        vector<discussion> database_api::get_encrypted_discussions( const discussion_query &query ) const{
+           return my->_db.with_read_lock([&]() {
+              query.validate();
+              auto start_author = query.start_author ? *(query.start_author) : "";
+              auto start_permlink = query.start_permlink ? *(query.start_permlink) : "";
 
-                if (!author.empty()) {
-                    const auto &com_idx = my->_db.get_index<comment_index>().indices().get<by_permlink>();
-                    auto itr = com_idx.lower_bound(boost::make_tuple(author));
+              auto author = query.tag;
+              auto owner = query.owner;
 
-                    if (!owner.empty()){
-                        while (itr != com_idx.end() && itr->author == author && limit--) {
-                            if (itr->owner == owner) {
-                                result.push_back(*itr);
-                            }
-                            ++itr;
-                        }
+              vector<discussion> result;
+              result.reserve(query.limit);
+
+              if (!author.empty() && owner.empty()) {
+                 const auto &com_idx = my->_db.get_index<comment_index>().indices().get<by_author_encrypted>();
+                 auto itr = com_idx.lower_bound(boost::make_tuple(true, author));
+                 if (start_permlink.size()) {
+                    const auto& com = my->_db.get_comment(author, start_permlink);
+                    itr = com_idx.lower_bound(boost::make_tuple(true, author, com.id));
+                 }
+                 while (itr != com_idx.end() && itr->author == author && result.size() < query.limit) {
+                    result.push_back(*itr);
+                    ++itr;
+                 }
+              }
+              else if (!owner.empty()) {
+                 const auto &com_idx = my->_db.get_index<comment_index>().indices().get<by_owner_encrypted>();
+                 auto itr = com_idx.lower_bound(boost::make_tuple(owner));
+                 if (start_author.size() && start_permlink.size()) {
+                    const auto& com = my->_db.get_comment(start_author, start_permlink);
+                    itr = com_idx.lower_bound(boost::make_tuple(owner, com.id));
+                 }
+                 while (itr != com_idx.end() && itr->owner == owner && result.size() < query.limit) {
+                    if (!author.empty() && itr->author == author) {
+                       result.push_back(*itr);
                     }
                     else {
-                        while (itr != com_idx.end() && itr->author == author && limit--) {
-                            if (itr->encrypted && !itr->private_post) {
-                                result.push_back(*itr);
-                            }
-                            ++itr;
-                        }
+                       result.push_back(*itr);
                     }
-                }
-                else if (!owner.empty()) {
-                    const auto &com_idx = my->_db.get_index<comment_index>().indices().get<by_owner>();
-                    auto itr = com_idx.lower_bound(boost::make_tuple(owner));
-
-                    while (itr != com_idx.end() && itr->owner == owner && limit--) {
-                        result.push_back(*itr);
-                        ++itr;
+                    ++itr;
+                 }
+              }
+              else {
+                 const auto &com_idx = my->_db.get_index<comment_index>().indices().get<by_encrypted>();
+                 auto itr = com_idx.lower_bound(boost::make_tuple(true));
+                 if (start_author.size() && start_permlink.size()) {
+                    const auto& com = my->_db.get_comment(start_author, start_permlink);
+                    itr = com_idx.lower_bound(boost::make_tuple(true, com.created));
+                 }
+                 while (itr != com_idx.end() && result.size() < query.limit ) {
+                    if (itr->encrypted && !itr->private_post) {
+                       result.push_back(*itr);
                     }
-                }
-                else {
-                    const auto &com_idx = my->_db.get_index<comment_index>().indices().get<by_encrypted>();
-                    auto itr = com_idx.lower_bound(boost::make_tuple(true));
+                    ++itr;
+                 }
+              }
 
-                    while (itr != com_idx.end() && limit-- ) {
-                        if (itr->encrypted && !itr->private_post) {
-                            result.push_back(*itr);
-                        }
-                        ++itr;
-                    }
-                }
-
-                return result;
-            });
+              return result;
+           });
         }
 
         vector<content_order_api_obj> database_api::get_content_orders(string owner, string author, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 vector<content_order_api_obj> result;
-
                 if (!owner.empty()) {
                     const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_owner>();
                     auto itr = order_idx.lower_bound(boost::make_tuple(owner));
-
-                    if (author.empty()) {
-                        while (itr != order_idx.end() && itr->owner == owner && limit--) {
-                            result.push_back(*itr);
-                            ++itr;
-                        }
-                    }
-                    else {
-                        while (itr != order_idx.end() && itr->owner == owner && limit--) {
-                            if (itr->author == author) {
-                                result.push_back(*itr);
-                            }
-                            ++itr;
-                        }
+                    while (itr != order_idx.end() && itr->owner == owner && limit--) {
+                       if (!author.empty() && itr->author == author) {
+                          result.push_back(*itr);
+                       }
+                       else{
+                          result.push_back(*itr);
+                       }
+                       ++itr;
                     }
                 }
                 else if (!author.empty()){
                     const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_author>();
                     auto itr = order_idx.lower_bound(boost::make_tuple(author));
-
                     while (itr != order_idx.end() && itr->author == author && limit--) {
-                        result.push_back(*itr);
-                        ++itr;
-                    }
-                }
-                else {
-                    const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_owner>();
-                    auto itr = order_idx.cbegin();
-
-                    while (itr != order_idx.cend() && limit--){
                         result.push_back(*itr);
                         ++itr;
                     }
                 }
                 return result;
             });
+        }
+
+        vector<content_order_api_obj> database_api::get_content_orders_by_comment( string author, string permlink, string owner,
+                                                                                   uint32_t limit )const{
+           return my->_db.with_read_lock([&]() {
+              FC_ASSERT(!author.empty() && !permlink.empty(), "author and permlink can't be empty.");
+              vector<content_order_api_obj> result;
+
+              const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_permlink>();
+
+              if (!owner.empty()) {
+                 auto itr = order_idx.lower_bound(boost::make_tuple(author, permlink, owner));
+                 while (itr != order_idx.end() && itr->author == author && to_string(itr->permlink) == permlink && limit--) {
+                    if (result.size() == 0 && itr->owner != owner){
+                       return result;
+                    }
+                    result.push_back(*itr);
+                    ++itr;
+                 }
+              }
+              else {
+                 auto itr = order_idx.lower_bound(boost::make_tuple(author, permlink));
+                 while (itr != order_idx.end() && itr->author == author && to_string(itr->permlink) == permlink && limit--) {
+                    result.push_back(*itr);
+                    ++itr;
+                 }
+              }
+              return result;
+           });
         }
 
         optional<content_order_api_obj> database_api::get_content_order_by_id(uint32_t id) const {

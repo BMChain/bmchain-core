@@ -268,7 +268,6 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
       _db.create_rep( new_account, o.fee );
 }
 
-
 void account_update_evaluator::do_apply( const account_update_operation& o )
 {
    FC_ASSERT( o.account != BMCHAIN_TEMP_ACCOUNT, "Cannot update temp account." );
@@ -345,7 +344,6 @@ void account_update_evaluator::do_apply( const account_update_operation& o )
    }
 
 }
-
 
 /**
  *  Because net_rshares is 0 there is no need to update any pending payout calculations or parent posts.
@@ -659,7 +657,7 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
       }
 
       /// apply content order
-      if (o.apply_order) {
+      if (_db.get_dynamic_global_properties().head_block_number >= BMCHAIN_USING_CLOSE_CONTENT && o.apply_order) {
          const auto &co = _db.get_content_order_by_id(o.order_id);
 
          FC_ASSERT(co.status == content_order_object::open, "This order is completed or canceled.");
@@ -679,13 +677,9 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
          if (o.parent_author != BMCHAIN_ROOT_POST_PARENT) {
             FC_ASSERT(_db.get(parent->root_comment).allow_replies, "The parent comment has disabled replies.");
          }
-         if (o.parent_author == BMCHAIN_ROOT_POST_PARENT) {
+         if (!o.apply_order && o.parent_author == BMCHAIN_ROOT_POST_PARENT) {
             FC_ASSERT((now - auth.last_root_post) >= BMCHAIN_MIN_ROOT_COMMENT_INTERVAL,
                       "You may only post once every 5 minutes.", ("now", now)("last_root_post", auth.last_root_post));
-         } else {
-            FC_ASSERT((now - auth.last_post) >= BMCHAIN_MIN_REPLY_INTERVAL,
-                      "You may only comment once every 20 seconds.",
-                      ("now", now)("auth.last_post", auth.last_post));
          }
          uint16_t reward_weight = BMCHAIN_100_PERCENT;
          uint64_t post_bandwidth = auth.post_bandwidth;
@@ -738,7 +732,7 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
                com.price = o.price;
                com.encrypted_body.resize(o.message_size);
                std::copy(enc_msg.begin(), enc_msg.end(), com.encrypted_body.begin());
-               if (o.apply_order) {
+               if (_db.get_dynamic_global_properties().head_block_number >= BMCHAIN_USING_CLOSE_CONTENT && o.apply_order) {
                   com.private_post = true;
                   com.owner = o.owner;
                }
@@ -2158,40 +2152,62 @@ void delegate_rep_shares_evaluator::do_apply( const delegate_rep_shares_operatio
 
 void content_order_create_evaluator::do_apply( const content_order_create_operation& op)
 {
+   if (_db.get_dynamic_global_properties().head_block_number < BMCHAIN_USING_CLOSE_CONTENT){
+      return;
+   }
    const auto& owner = _db.get_account( op.owner );
    const auto& comment = _db.get_comment( op.author, op.permlink );
    FC_ASSERT( owner.balance > op.price, "Cannot buy the encrypted post because balance doesn't have enough BMT." );
    FC_ASSERT( comment.price <= op.price, "Offered price is not enough for buying this content." );
 
-   _db.modify( owner, [&]( account_object& acc ) {
-       acc.balance -= op.price;
-   });
+   const auto& by_permlink_idx = _db.get_index< content_order_index >().indices().get< by_permlink >();
+   auto itr = by_permlink_idx.find( boost::make_tuple( op.author, op.permlink, op.owner ) );
 
-   _db.create< content_order_object >( [&]( content_order_object& content_order ){
-      content_order.sent_time = _db.head_block_time();
-      content_order.author    = op.author;
-      from_string(content_order.permlink, op.permlink);
-      content_order.owner     = op.owner;
-      content_order.price     = op.price;
-      content_order.status    = content_order_object::order_status::open;
-      from_string(content_order.json_metadata, op.json_metadata);
-   });
+   if ( itr == by_permlink_idx.end() )
+   {
+      _db.modify(owner, [&](account_object &acc) {
+         acc.balance -= op.price;
+      });
+
+      _db.create<content_order_object>([&](content_order_object &content_order) {
+         content_order.sent_time = _db.head_block_time();
+         content_order.author = op.author;
+         from_string(content_order.permlink, op.permlink);
+         content_order.owner = op.owner;
+         content_order.price = op.price;
+         content_order.status = content_order_object::order_status::open;
+         from_string(content_order.json_metadata, op.json_metadata);
+      });
+   }
+   else // start edit case
+   {
+      if ( itr->status == content_order_object::order_status::open && itr->price != op.price ){
+         const auto& order = *itr;
+         _db.modify( order, [&]( content_order_object& order )
+         {
+            order.price = op.price;
+         });
+      }
+   }
 }
 
 void content_order_cancel_evaluator::do_apply( const content_order_cancel_operation& op)
 {
-    const auto &order = _db.get_content_order_by_id(op.order_id);
-    const auto &owner = _db.get_account(op.owner);
+   if (_db.get_dynamic_global_properties().head_block_number < BMCHAIN_USING_CLOSE_CONTENT){
+      return;
+   }
+   const auto &order = _db.get_content_order_by_id(op.order_id);
+   const auto &owner = _db.get_account(op.owner);
 
-    FC_ASSERT(order.status == content_order_object::open, "This order is completed or canceled.");
+   FC_ASSERT(order.status == content_order_object::open, "This order is completed or canceled.");
 
-    _db.modify(owner, [&](account_object &a) {
-        a.balance += order.price;
-    });
+   _db.modify(owner, [&](account_object &a) {
+      a.balance += order.price;
+   });
 
-    _db.modify(order, [&](content_order_object &o) {
-        o.status = content_order_object::order_status::canceled;
-    });
+   _db.modify(order, [&](content_order_object &o) {
+      o.status = content_order_object::order_status::canceled;
+   });
 }
 
 void private_message_evaluator::do_apply( const private_message_operation& pm )

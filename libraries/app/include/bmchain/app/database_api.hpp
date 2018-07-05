@@ -135,7 +135,7 @@ struct discussion_query {
    optional<string> start_permlink;
    optional<string> parent_author;
    optional<string> parent_permlink;
-   string           owner; /// for getting private-posts
+   string           owner;    /// for getting private-posts
 };
 
 /**
@@ -447,11 +447,14 @@ class database_api
       total_block_statistic get_total_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
 
       /// Encrypted content
-      vector<discussion> get_encrypted_discussions( string author, string owner, uint32_t limit )const;
+      vector<discussion> get_encrypted_discussions( const discussion_query &query )const;
 
-      vector<content_order_api_obj> get_content_orders(string owner, string author, uint32_t limit)const;
+      vector<content_order_api_obj> get_content_orders( string owner, string author, uint32_t limit )const;
 
-      optional<content_order_api_obj> get_content_order_by_id(uint32_t id)const;
+      vector<content_order_api_obj> get_content_orders_by_comment( string author, string permlink, string owner,
+                                                                   uint32_t limit )const;
+
+      optional<content_order_api_obj> get_content_order_by_id( uint32_t id )const;
 
    private:
       void set_pending_payout( discussion& d )const;
@@ -598,5 +601,6 @@ FC_API(bmchain::app::database_api,
    // Encrypted content
    (get_encrypted_discussions)
    (get_content_orders)
+   (get_content_orders_by_comment)
    (get_content_order_by_id)
 )

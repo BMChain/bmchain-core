@@ -2009,7 +2009,7 @@ void database::init_genesis( uint64_t init_supply )
        //perform_rep_share_split(1000000);
        const auto &gpo = get_dynamic_global_properties();
 
-       auto post_rf = create<reward_fund_object>([&](reward_fund_object &rfo) {
+       create<reward_fund_object>([&](reward_fund_object &rfo) {
            rfo.name = BMCHAIN_POST_REWARD_FUND_NAME;
            rfo.last_update = head_block_time();
            rfo.content_constant = BMCHAIN_CONTENT_CONSTANT;
