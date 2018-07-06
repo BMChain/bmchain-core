@@ -449,7 +449,7 @@ class database_api
       /// Encrypted content
       vector<discussion> get_encrypted_discussions( const discussion_query &query )const;
 
-      vector<content_order_api_obj> get_content_orders( string owner, string author, uint32_t limit )const;
+      vector<content_order_api_obj> get_content_orders( string owner, string author, int32_t start_id, uint32_t limit )const;
 
       vector<content_order_api_obj> get_content_orders_by_comment( string author, string permlink, string owner,
                                                                    uint32_t limit )const;

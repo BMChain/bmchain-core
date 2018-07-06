@@ -2367,29 +2367,35 @@ namespace bmchain {
            });
         }
 
-        vector<content_order_api_obj> database_api::get_content_orders(string owner, string author, uint32_t limit) const {
+        vector<content_order_api_obj> database_api::get_content_orders(string owner, string author, int32_t start_id, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 vector<content_order_api_obj> result;
                 if (!owner.empty()) {
-                    const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_owner>();
-                    auto itr = order_idx.lower_bound(boost::make_tuple(owner));
-                    while (itr != order_idx.end() && itr->owner == owner && limit--) {
-                       if (!author.empty() && itr->author == author) {
-                          result.push_back(*itr);
-                       }
-                       else{
-                          result.push_back(*itr);
-                       }
-                       ++itr;
-                    }
+                   const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_owner>();
+                   auto itr = order_idx.lower_bound(boost::make_tuple(owner));
+                   if (start_id >= 0){
+                      itr = order_idx.lower_bound(boost::make_tuple(owner, start_id));
+                   }
+                   while (itr != order_idx.end() && itr->owner == owner && result.size() <= limit) {
+                      if (author.empty()) {
+                         result.push_back(*itr);
+                      }
+                      else if (itr->author == author){
+                         result.push_back(*itr);
+                      }
+                      ++itr;
+                   }
                 }
                 else if (!author.empty()){
-                    const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_author>();
-                    auto itr = order_idx.lower_bound(boost::make_tuple(author));
-                    while (itr != order_idx.end() && itr->author == author && limit--) {
-                        result.push_back(*itr);
-                        ++itr;
-                    }
+                   const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_author>();
+                   auto itr = order_idx.lower_bound(boost::make_tuple(author));
+                   if (start_id >= 0){
+                      itr = order_idx.lower_bound(boost::make_tuple(author, start_id));
+                   }
+                   while (itr != order_idx.end() && itr->author == author && result.size() <= limit) {
+                      result.push_back(*itr);
+                      ++itr;
+                   }
                 }
                 return result;
             });
@@ -2400,25 +2406,24 @@ namespace bmchain {
            return my->_db.with_read_lock([&]() {
               FC_ASSERT(!author.empty() && !permlink.empty(), "author and permlink can't be empty.");
               vector<content_order_api_obj> result;
-
               const auto &order_idx = my->_db.get_index<content_order_index>().indices().get<by_permlink>();
-
-              if (!owner.empty()) {
-                 auto itr = order_idx.lower_bound(boost::make_tuple(author, permlink, owner));
-                 while (itr != order_idx.end() && itr->author == author && to_string(itr->permlink) == permlink && limit--) {
+              auto itr = order_idx.lower_bound(boost::make_tuple(author, permlink, owner));
+              if (owner.empty()){
+                 itr = order_idx.lower_bound(boost::make_tuple(author, permlink));
+              }
+              while (itr != order_idx.end() && itr->author == author && to_string(itr->permlink) == permlink && result.size() <= limit) {
+                 if (owner.empty()){
+                    result.push_back(*itr);
+                 }
+                 else {
                     if (result.size() == 0 && itr->owner != owner){
                        return result;
                     }
-                    result.push_back(*itr);
-                    ++itr;
+                    else {
+                       result.push_back(*itr);
+                    }
                  }
-              }
-              else {
-                 auto itr = order_idx.lower_bound(boost::make_tuple(author, permlink));
-                 while (itr != order_idx.end() && itr->author == author && to_string(itr->permlink) == permlink && limit--) {
-                    result.push_back(*itr);
-                    ++itr;
-                 }
+                 ++itr;
               }
               return result;
            });

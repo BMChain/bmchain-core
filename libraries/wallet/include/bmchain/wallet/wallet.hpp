@@ -907,7 +907,7 @@ class wallet_api
 
       annotated_signed_transaction apply_content_order(string author, uint32_t id, bool broadcast);
 
-      vector<content_order_api_obj> get_content_orders(string owner, string author, uint32_t limit) const;
+      vector<content_order_api_obj> get_content_orders(string owner, string author, uint32_t start_id, uint32_t limit) const;
 
       vector< discussion > get_encrypted_discussions(string author, string owner, uint32_t limit) const;
 

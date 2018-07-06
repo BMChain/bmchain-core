@@ -2489,8 +2489,8 @@ annotated_signed_transaction wallet_api::apply_content_order(string author, uint
    return my->sign_transaction(tx, broadcast);
 }
 
-vector<content_order_api_obj> wallet_api::get_content_orders(string owner, string author, uint32_t limit) const{
-    auto result = my->_remote_db->get_content_orders(owner, author, limit);
+vector<content_order_api_obj> wallet_api::get_content_orders(string owner, string author, uint32_t start_id, uint32_t limit) const{
+    auto result = my->_remote_db->get_content_orders(owner, author, start_id, limit);
     return result;
 }
 
