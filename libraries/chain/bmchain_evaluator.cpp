@@ -2186,6 +2186,9 @@ void content_order_create_evaluator::do_apply( const content_order_create_operat
          _db.modify( order, [&]( content_order_object& order )
          {
             order.price = op.price;
+            if (order.status == content_order_object::order_status::canceled){
+               order.status = content_order_object::order_status::open;
+            }
          });
       }
    }
