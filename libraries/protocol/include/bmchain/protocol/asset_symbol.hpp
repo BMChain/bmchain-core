@@ -123,7 +123,7 @@ namespace steem { namespace protocol {
             uint32_t asset_num = 0;
         };
 
-    } } // steem::protocol
+    } }  // steem::protocol
 
 FC_REFLECT(steem::protocol::asset_symbol_type, (asset_num))
 
