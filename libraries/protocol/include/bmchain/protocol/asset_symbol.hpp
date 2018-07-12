@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fc/io/raw.hpp>
-#include <steem/protocol/types_fwd.hpp>
+#include <bmchain/protocol/types_fwd.hpp>
 
 #define STEEM_ASSET_SYMBOL_PRECISION_BITS    4
 #define SMT_MAX_NAI                          99999999
@@ -13,12 +13,16 @@
 #define STEEM_PRECISION_SBD   (3)
 #define STEEM_PRECISION_STEEM (3)
 #define STEEM_PRECISION_VESTS (6)
+#define STEEM_PRECISION_BMT   (3)
+#define STEEM_PRESICION_REP   (6)
 
 // One's place is used for check digit, which means NAI 0-9 all have NAI data of 0 which is invalid
 // This space is safe to use because it would alwasys result in failure to convert from NAI
 #define STEEM_NAI_SBD   (1)
 #define STEEM_NAI_STEEM (2)
 #define STEEM_NAI_VESTS (3)
+#define STEEM_NAI_BMT   (4)
+#define STEEM_NAI_REP   (5)
 
 #define STEEM_ASSET_NUM_SBD \
   (((SMT_MAX_NAI + STEEM_NAI_SBD)   << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_SBD)
@@ -26,6 +30,10 @@
   (((SMT_MAX_NAI + STEEM_NAI_STEEM) << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_STEEM)
 #define STEEM_ASSET_NUM_VESTS \
   (((SMT_MAX_NAI + STEEM_NAI_VESTS) << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_VESTS)
+#define STEEM_ASSET_NUM_BMT \
+  (((SMT_MAX_NAI + STEEM_NAI_BMT)   << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_BMT)
+#define STEEM_ASSET_NUM_REP \
+  (((SMT_MAX_NAI + STEEM_NAI_REP)   << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_REP)
 
 #ifdef IS_TEST_NET
 
@@ -38,12 +46,16 @@
 #define VESTS_SYMBOL_U64  (uint64_t('V') | (uint64_t('E') << 8) | (uint64_t('S') << 16) | (uint64_t('T') << 24) | (uint64_t('S') << 32))
 #define STEEM_SYMBOL_U64  (uint64_t('S') | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('E') << 24) | (uint64_t('M') << 32))
 #define SBD_SYMBOL_U64    (uint64_t('S') | (uint64_t('B') << 8) | (uint64_t('D') << 16))
+#define BMT_SYMBOL_U64    (uint64_t('B') | (uint64_t('M') << 8) | (uint64_t('T') << 16))
+#define REP_SYMBOL_U64    (uint64_t('R') | (uint64_t('E') << 8) | (uint64_t('P') << 16))
 
 #endif
 
 #define VESTS_SYMBOL_SER  (uint64_t(6) | (VESTS_SYMBOL_U64 << 8)) ///< VESTS|VESTS with 6 digits of precision
 #define STEEM_SYMBOL_SER  (uint64_t(3) | (STEEM_SYMBOL_U64 << 8)) ///< STEEM|TESTS with 3 digits of precision
 #define SBD_SYMBOL_SER    (uint64_t(3) |   (SBD_SYMBOL_U64 << 8)) ///< SBD|TBD with 3 digits of precision
+#define BMT_SYMBOL_SER    (uint64_t(3) |   (BMT_SYMBOL_U64 << 8))
+#define REP_SYMBOL_SER    (uint64_t(3) |   (REP_SYMBOL_U64 << 8))
 
 #define STEEM_ASSET_MAX_DECIMALS 12
 
@@ -51,7 +63,7 @@
 #define SMT_ASSET_NUM_CONTROL_MASK     0x10
 #define SMT_ASSET_NUM_VESTING_MASK     0x20
 
-namespace steem { namespace protocol {
+namespace bmchain { namespace protocol {
 
         class asset_symbol_type
         {
@@ -123,9 +135,9 @@ namespace steem { namespace protocol {
             uint32_t asset_num = 0;
         };
 
-    } }  // steem::protocol
+    } } // steem::protocol
 
-FC_REFLECT(steem::protocol::asset_symbol_type, (asset_num))
+FC_REFLECT(bmchain::protocol::asset_symbol_type, (asset_num))
 
 namespace fc { namespace raw {
 
@@ -144,7 +156,7 @@ namespace fc { namespace raw {
         {
             switch( sym.space() )
             {
-                case steem::protocol::asset_symbol_type::legacy_space:
+                case bmchain::protocol::asset_symbol_type::legacy_space:
                 {
                     uint64_t ser = 0;
                     switch( sym.asset_num )
@@ -164,7 +176,7 @@ namespace fc { namespace raw {
                     pack( s, ser );
                     break;
                 }
-                case steem::protocol::asset_symbol_type::smt_nai_space:
+                case bmchain::protocol::asset_symbol_type::smt_nai_space:
                     pack( s, sym.asset_num );
                     break;
                 default:
@@ -173,7 +185,7 @@ namespace fc { namespace raw {
         }
 
         template< typename Stream >
-        inline void unpack( Stream& s, steem::protocol::asset_symbol_type& sym )
+        inline void unpack( Stream& s, bmchain::protocol::asset_symbol_type& sym )
         {
             uint64_t ser = 0;
             s.read( (char*) &ser, 4 );
@@ -195,6 +207,16 @@ namespace fc { namespace raw {
                     FC_ASSERT( ser == VESTS_SYMBOL_SER, "invalid asset bits" );
                     sym.asset_num = STEEM_ASSET_NUM_VESTS;
                     break;
+                case BMT_SYMBOL_SER & 0xFFFFFFFF:
+                    s.read( ((char*) &ser)+4, 4 );
+                    FC_ASSERT( ser == BMT_SYMBOL_SER, "invalid asset bits" );
+                    sym.asset_num = STEEM_ASSET_NUM_VESTS;
+                    break;
+                case REP_SYMBOL_SER & 0xFFFFFFFF:
+                    s.read( ((char*) &ser)+4, 4 );
+                    FC_ASSERT( ser == REP_SYMBOL_SER, "invalid asset bits" );
+                    sym.asset_num = STEEM_ASSET_NUM_VESTS;
+                    break;
                 default:
                     sym.asset_num = uint32_t( ser );
             }
@@ -203,7 +225,7 @@ namespace fc { namespace raw {
 
     } // fc::raw
 
-    inline void to_variant( const steem::protocol::asset_symbol_type& sym, fc::variant& var )
+    inline void to_variant( const bmchain::protocol::asset_symbol_type& sym, fc::variant& var )
     {
         try
         {
@@ -213,14 +235,14 @@ namespace fc { namespace raw {
         } FC_CAPTURE_AND_RETHROW()
     }
 
-    inline void from_variant( const fc::variant& var, steem::protocol::asset_symbol_type& sym )
+    inline void from_variant( const fc::variant& var, bmchain::protocol::asset_symbol_type& sym )
     {
         try
         {
             auto v = var.as< std::vector< variant > >();
             FC_ASSERT( v.size() == 2, "Expected tuple of length 2." );
 
-            sym = steem::protocol::asset_symbol_type::from_nai_string( v[1].as< std::string >().c_str(), v[0].as< uint8_t >() );
+            sym = bmchain::protocol::asset_symbol_type::from_nai_string( v[1].as< std::string >().c_str(), v[0].as< uint8_t >() );
         } FC_CAPTURE_AND_RETHROW()
     }
 
