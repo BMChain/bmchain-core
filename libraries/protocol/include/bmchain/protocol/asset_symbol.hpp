@@ -14,7 +14,7 @@
 #define STEEM_PRECISION_STEEM (3)
 #define STEEM_PRECISION_VESTS (6)
 #define STEEM_PRECISION_BMT   (3)
-#define STEEM_PRESICION_REP   (6)
+#define STEEM_PRECISION_REP   (6)
 
 // One's place is used for check digit, which means NAI 0-9 all have NAI data of 0 which is invalid
 // This space is safe to use because it would alwasys result in failure to convert from NAI
@@ -135,7 +135,7 @@ namespace bmchain { namespace protocol {
             uint32_t asset_num = 0;
         };
 
-    } } // steem::protocol
+    } } // bmchain::protocol
 
 FC_REFLECT(bmchain::protocol::asset_symbol_type, (asset_num))
 
@@ -152,7 +152,7 @@ namespace fc { namespace raw {
 // NAI internal storage of legacy assets
 
         template< typename Stream >
-        inline void pack( Stream& s, const steem::protocol::asset_symbol_type& sym )
+        inline void pack( Stream& s, const bmchain::protocol::asset_symbol_type& sym )
         {
             switch( sym.space() )
             {
@@ -169,6 +169,12 @@ namespace fc { namespace raw {
                             break;
                         case STEEM_ASSET_NUM_VESTS:
                             ser = VESTS_SYMBOL_SER;
+                            break;
+                        case STEEM_ASSET_NUM_BMT:
+                            ser = BMT_SYMBOL_SER;
+                            break;
+                        case STEEM_ASSET_NUM_REP:
+                            ser = REP_SYMBOL_SER;
                             break;
                         default:
                             FC_ASSERT( false, "Cannot serialize unknown asset symbol" );
