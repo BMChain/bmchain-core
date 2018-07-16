@@ -1,10 +1,11 @@
 #pragma once
 #include <bmchain/protocol/types.hpp>
 #include <bmchain/protocol/config.hpp>
+#include <bmchain/protocol/asset_symbol.hpp>
 
 namespace bmchain { namespace protocol {
 
-   typedef uint64_t asset_symbol_type;
+   //typedef uint64_t asset_symbol_type;
 
    struct asset
    {
@@ -13,6 +14,8 @@ namespace bmchain { namespace protocol {
 
       share_type        amount;
       asset_symbol_type symbol;
+
+      void validate()const;
 
       double to_real()const {
          return double(amount.value) / precision();
@@ -118,8 +121,8 @@ namespace bmchain { namespace protocol {
 } } // bmchain::protocol
 
 namespace fc {
-    inline void to_variant( const bmchain::protocol::asset& var,  fc::variant& vo ) { vo = var.to_string(); }
-    inline void from_variant( const fc::variant& var,  bmchain::protocol::asset& vo ) { vo = bmchain::protocol::asset::from_string( var.as_string() ); }
+    void to_variant( const bmchain::protocol::asset& var,  fc::variant& vo );
+    void from_variant( const fc::variant& var,  bmchain::protocol::asset& vo );
 }
 
 FC_REFLECT( bmchain::protocol::asset, (amount)(symbol) )
