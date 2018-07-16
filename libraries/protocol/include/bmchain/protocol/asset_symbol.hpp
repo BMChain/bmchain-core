@@ -216,12 +216,12 @@ namespace fc { namespace raw {
                 case BMT_SYMBOL_SER & 0xFFFFFFFF:
                     s.read( ((char*) &ser)+4, 4 );
                     FC_ASSERT( ser == BMT_SYMBOL_SER, "invalid asset bits" );
-                    sym.asset_num = STEEM_ASSET_NUM_VESTS;
+                    sym.asset_num = STEEM_ASSET_NUM_BMT;
                     break;
                 case REP_SYMBOL_SER & 0xFFFFFFFF:
                     s.read( ((char*) &ser)+4, 4 );
                     FC_ASSERT( ser == REP_SYMBOL_SER, "invalid asset bits" );
-                    sym.asset_num = STEEM_ASSET_NUM_VESTS;
+                    sym.asset_num = STEEM_ASSET_NUM_REP;
                     break;
                 default:
                     sym.asset_num = uint32_t( ser );
