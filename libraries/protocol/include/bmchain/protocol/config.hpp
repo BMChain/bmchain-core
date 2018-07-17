@@ -32,16 +32,16 @@
 
 #define BMCHAIN_INIT_PUBLIC_KEY_STR             "BMT76G5486bhLKXkXgN1nSkeDbpWEaiavF7i6tDULdpvyr69CLbHC"
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain"))
-//#define REP_SYMBOL  (uint64_t(6) | (uint64_t('R') << 8) | (uint64_t('E') << 16) | (uint64_t('P') << 24) ) ///< RPT with 6 digits of precision
-//#define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precisionDollars with 3 digits of precision
+#define REP_SYMBOL  (uint64_t(6) | (uint64_t('R') << 8) | (uint64_t('E') << 16) | (uint64_t('P') << 24) ) ///< RPT with 6 digits of precision
+#define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precisionDollars with 3 digits of precision
 #define BMCHAIN_SYMBOL                          "BMT"
 #define BMCHAIN_ADDRESS_PREFIX                  "BMT"
 
-#define VESTS_SYMBOL  (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_VESTS ) )
-#define STEEM_SYMBOL  (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_STEEM ) )
-#define SBD_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_SBD ) )
-#define BMT_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_BMT ) )
-#define REP_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_REP ) )
+//#define VESTS_SYMBOL  (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_VESTS ) )
+//#define STEEM_SYMBOL  (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_STEEM ) )
+//#define SBD_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_SBD ) )
+//#define BMT_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_BMT ) )
+//#define REP_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_REP ) )
 
 #define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1510655500)) /// 11/14/2017
 #define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
