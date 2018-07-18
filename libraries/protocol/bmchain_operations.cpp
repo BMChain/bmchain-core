@@ -526,6 +526,11 @@ namespace bmchain { namespace protocol {
       validate_account_name(owner);
    }
 
+   void content_order_cancel_by_author_operation::validate()const
+   {
+      validate_account_name(author);
+   }
+
    void common_symbol_validation( const asset_symbol_type& symbol )
    {
 //      symbol.validate();

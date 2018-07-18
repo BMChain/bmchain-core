@@ -86,7 +86,10 @@ namespace bmchain { namespace protocol {
             producer_reward_operation,
 
             /// SMT operations
-            smt_create_operation
+            smt_create_operation,
+
+           /// encrypted_content
+           content_order_cancel_by_author_operation
 
          > operation;
 

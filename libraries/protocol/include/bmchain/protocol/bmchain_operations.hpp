@@ -983,6 +983,17 @@ namespace bmchain { namespace protocol {
       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
    };
 
+   struct content_order_cancel_by_author_operation : public base_operation
+   {
+       account_name_type author;
+       uint32_t order_id = 0;
+       string json_metadata;
+
+       void validate() const;
+
+       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(author); }
+   };
+
 /**
  * Base of all smt operations issued by token creator, holding what's needed by all of them.
  */
@@ -1137,6 +1148,7 @@ FC_REFLECT( bmchain::protocol::delegate_rep_shares_operation, (delegator)(delega
 
 FC_REFLECT( bmchain::protocol::content_order_create_operation, (author)(permlink)(owner)(price)(json_metadata) )
 FC_REFLECT( bmchain::protocol::content_order_cancel_operation, (owner)(order_id)(json_metadata) );
+FC_REFLECT( bmchain::protocol::content_order_cancel_by_author_operation, (author)(order_id)(json_metadata) );
 
 FC_REFLECT_DERIVED( bmchain::protocol::encrypted_content_operation, (bmchain::protocol::comment_operation),
                    (encrypted_message)(sent_time)(message_size)(checksum)(price)(owner)(order_id)(apply_order));
