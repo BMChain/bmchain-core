@@ -1777,6 +1777,7 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< encrypted_content_evaluator              >();
    _my->_evaluator_registry.register_evaluator< content_order_create_evaluator           >();
    _my->_evaluator_registry.register_evaluator< content_order_cancel_evaluator           >();
+   _my->_evaluator_registry.register_evaluator< content_order_cancel_by_author_evaluator >();
    _my->_evaluator_registry.register_evaluator< private_message_evaluator                >();
 }
 

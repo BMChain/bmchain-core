@@ -53,6 +53,7 @@ DEFINE_EVALUATOR( delegate_rep_shares )
 DEFINE_EVALUATOR( encrypted_content )
 DEFINE_EVALUATOR( content_order_create )
 DEFINE_EVALUATOR( content_order_cancel )
+DEFINE_EVALUATOR( content_order_cancel_by_author )
 DEFINE_EVALUATOR( private_message )
 
 } } // bmchain::chain

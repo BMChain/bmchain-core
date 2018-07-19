@@ -225,6 +225,11 @@ struct get_impacted_account_visitor
       _impacted.insert( op.owner );
    }
 
+   void operator()( const content_order_cancel_by_author_operation& op )
+   {
+      _impacted.insert( op.author );
+   }
+
    // vops
 
    void operator()( const author_reward_operation& op )
