@@ -16,7 +16,7 @@
 
 #include "../common/database_fixture.hpp"
 
-#include <fc/macros.hpp>
+//#include <fc/macros.hpp>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
@@ -1324,8 +1324,8 @@ BOOST_AUTO_TEST_CASE( witness_update_apply )
         op.url = "foo.bar";
         op.fee = ASSET("1.000 TESTS");
         op.block_signing_key = signing_key.get_public_key();
-        op.props.account_creation_fee = legacy_steem_asset::from_asset(
-                asset(BMCHAIN_MIN_ACCOUNT_CREATION_FEE + 10, BMT_SYMBOL));
+//        op.props.account_creation_fee = legacy_steem_asset::from_asset(
+//                asset(BMCHAIN_MIN_ACCOUNT_CREATION_FEE + 10, BMT_SYMBOL));
         op.props.maximum_block_size = BMCHAIN_MIN_BLOCK_SIZE_LIMIT + 100;
 
         signed_transaction tx;
@@ -1341,7 +1341,7 @@ BOOST_AUTO_TEST_CASE( witness_update_apply )
         BOOST_REQUIRE(alice_witness.created == db.head_block_time());
         BOOST_REQUIRE(to_string(alice_witness.url) == op.url);
         BOOST_REQUIRE(alice_witness.signing_key == op.block_signing_key);
-        BOOST_REQUIRE(alice_witness.props.account_creation_fee == op.props.account_creation_fee.to_asset<true>());
+//        BOOST_REQUIRE(alice_witness.props.account_creation_fee == op.props.account_creation_fee.to_asset<true>());
         BOOST_REQUIRE(alice_witness.props.maximum_block_size == op.props.maximum_block_size);
         BOOST_REQUIRE(alice_witness.total_missed == 0);
         BOOST_REQUIRE(alice_witness.last_aslot == 0);
@@ -1368,7 +1368,7 @@ BOOST_AUTO_TEST_CASE( witness_update_apply )
         BOOST_REQUIRE(alice_witness.created == db.head_block_time());
         BOOST_REQUIRE(to_string(alice_witness.url) == "bar.foo");
         BOOST_REQUIRE(alice_witness.signing_key == op.block_signing_key);
-        BOOST_REQUIRE(alice_witness.props.account_creation_fee == op.props.account_creation_fee.to_asset<true>());
+//        BOOST_REQUIRE(alice_witness.props.account_creation_fee == op.props.account_creation_fee.to_asset<true>());
         BOOST_REQUIRE(alice_witness.props.maximum_block_size == op.props.maximum_block_size);
         BOOST_REQUIRE(alice_witness.total_missed == 0);
         BOOST_REQUIRE(alice_witness.last_aslot == 0);
@@ -1388,12 +1388,25 @@ BOOST_AUTO_TEST_CASE( witness_update_apply )
         op.owner = "bob";
         tx.operations.push_back(op);
         tx.sign(alice_private_key, db.get_chain_id());
-        STEEM_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+//        STEEM_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
         validate_database();
     }
     FC_LOG_AND_RETHROW()
 }    
-    
+
+BOOST_AUTO_TEST_CASE( encrypted_content )
+{
+    try {
+        BOOST_TEST_MESSAGE("Testing: encrypted_content");
+
+        ACTORS((alice)(bob))
+        fund("alice", 10000);
+
+        private_key_type signing_key = generate_private_key("new_key");
+
+    }
+    FC_LOG_AND_RETHROW()
+}
     
 BOOST_AUTO_TEST_SUITE_END()
 #endif
