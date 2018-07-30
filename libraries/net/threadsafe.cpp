@@ -203,8 +203,42 @@ namespace threadsafe {
                     data.erase(found_entry);
                 }
             }
+
         };
 
+        std::vector<std::unique_ptr<bucket_type>> buckets;
+        Hash hasher;
+
+        bucket_type& get_bucket(Key const& key) const{
+            std::size_t const bucket_index = hasher(key)%buckets.size();
+            return *buckets[bucket_index];
+        }
+
+    public:
+        typedef Key key_type;
+        typedef Value mapped_type;
+        typedef Hash hash_type;
+
+        threadsafe_lookup_table(unsigned num_buckets = 19, Hash const& hasher_ = Hash()) : buckets(num_buckets), hasher(hasher_){
+            for (unsigned i = 0; i < num_buckets; ++i){
+                buckets[i].reset(new bucket_type);
+            }
+        }
+
+        threadsafe_lookup_table(threadsafe_lookup_table const& other) = delete;
+        threadsafe_lookup_table operator=(threadsafe_lookup_table const& other) = delete;
+
+        Value value_for(Key const& key, Value const& default_value = Value()) const{
+            return get_bucket(key).value_for(key, default_value);
+        }
+
+        void add_or_update_mapping(Key const& key, Value const& value){
+            get_bucket(key).add_or_update_mapping(key, value);
+        }
+
+        void remove_mapping(Key const& key){
+            get_bucket(key).remove_mapping(key);
+        }
 
     };
 
