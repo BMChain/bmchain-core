@@ -240,6 +240,51 @@ namespace threadsafe {
             get_bucket(key).remove_mapping(key);
         }
 
+        std::map<Key, Value> get_map() const{
+            std::vector<std::unique_lock<boost::shared_mutex>> locks;
+            for (size_t i = 0; i < buckets.size(); ++i){
+                locks.push_back(std::unique_lock<boost::shared_mutex>(buckets[i].mutex));
+            }
+
+            std::map<Key, Value> res;
+            for (size_t i = 0; i < buckets.size(); ++i){
+                for (auto it = buckets[i].data.begin(); it != buckets[i].data.end(); ++it){
+                    res.insert(*it);
+                }
+            }
+
+            return res;
+        };
+    };
+
+    template<typename T>
+    class threadsafe_list{
+    private:
+        struct node{
+            std::mutex m;
+            std::shared_ptr<T> data;
+            std::unique_ptr<node> next;
+
+            node(): next(){}
+
+            node(T const& value): data(std::make_shared<T>(value)){}
+        };
+        node head;
+    public:
+        threadsafe_list(){}
+        ~threadsafe_list(){
+            //std::remove_if([](node const&){return true;});
+        }
+
+        threadsafe_list(threadsafe_list const& other) = delete;
+        threadsafe_list&operator=(threadsafe_list const& other) = delete;
+
+        void push_front(T const& value){
+            std::unique_ptr<node> new_node(new node(value));
+            std::lock_guard<std::mutex> lock(head.m);
+            new_node->next = std::move(head.next);
+            head.next = std::move(new_node);
+        }
     };
 
 }

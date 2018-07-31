@@ -58,12 +58,12 @@ int main(int argc, char** argv) {
       std::cerr << "------------------------------------------------------\n";
 #else
 
-       auto priv_key = fc::ecc::private_key::regenerate(fc::sha256::hash(std::string("it does not do to dwell on dreams and forget to live")));
-       auto priv_key_wif = graphene::utilities::key_to_wif(priv_key);
-       auto publ_key = std::string( bmchain::protocol::public_key_type(priv_key.get_public_key()));
+      auto priv_key = fc::ecc::private_key::regenerate(fc::sha256::hash(std::string("it does not do to dwell on dreams and forget to live")));
+      auto priv_key_wif = graphene::utilities::key_to_wif(priv_key);
+      auto publ_key = std::string( bmchain::protocol::public_key_type(priv_key.get_public_key()));
 
-       std::cerr << "priv_key: " << priv_key_wif << std::endl;
-       std::cerr << "publ_key: " << publ_key << std::endl;
+      std::cerr << "priv_key: " << priv_key_wif << std::endl;
+      std::cerr << "publ_key: " << publ_key << std::endl;
 
       std::cerr << "------------------------------------------------------\n\n";
       std::cerr << "            STARTING BMT NETWORK\n\n";
