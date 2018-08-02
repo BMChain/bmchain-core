@@ -310,7 +310,27 @@ namespace threadsafe {
                     return next->data;
                 }
                 current = next;
+                lk = std::move(next_lk);
+            }
+            return std::shared_ptr<T>();
+        }
 
+        template<typename Predicate>
+        void remove_if(Predicate p){
+            node* current = &head;
+            std::unique_lock<std::mutex> lk(head.m);
+            while (node* const next = current->next.get()){
+                std::unique_lock<std::mutex> next_lk(next->m);
+                if (p(*next->data)){
+                    std::unique_ptr<node> old_next = std::move(current->next);
+                    current->next = std::move(next->next);
+                    next_lk.unlock();
+                }
+                else{
+                    lk.unlock();
+                    current = next;
+                    lk = std::move(next_lk);
+                }
             }
         }
     };
