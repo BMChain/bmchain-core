@@ -1392,7 +1392,75 @@ BOOST_AUTO_TEST_CASE( witness_update_apply )
         validate_database();
     }
     FC_LOG_AND_RETHROW()
-}    
+}
+
+
+BOOST_AUTO_TEST_CASE( account_witness_vote_validate )
+{
+   try
+   {
+       BOOST_TEST_MESSAGE( "Testing: account_witness_vote_validate" );
+
+       validate_database();
+   }
+   FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( account_witness_vote_authorities )
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: account_witness_vote_authorities");
+
+        ACTORS((alice)(bob)(sam))
+
+        fund("alice", 1000);
+        private_key_type alice_witness_key = generate_private_key("alice_witness");
+        witness_create("alice", alice_private_key, "foo.bar", alice_witness_key.get_public_key(), 1000);
+
+        account_witness_vote_operation op;
+        op.account = "bob";
+        op.witness = "alice";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+
+        BOOST_TEST_MESSAGE("--- Test failure when no signatures");
+        BMCHAIN_REQUIRE_THROW(db->push_transaction(tx, 0), tx_missing_active_auth);
+
+        BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
+        tx.sign(bob_post_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db->push_transaction(tx, 0), tx_missing_active_auth);
+
+        BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        tx.sign(bob_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db->push_transaction(tx, 0), tx_duplicate_sig);
+
+        BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        tx.sign(alice_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+
+        BOOST_TEST_MESSAGE("--- Test success with witness signature");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        db.push_transaction(tx, 0);
+
+        BOOST_TEST_MESSAGE("--- Test failure with proxy signature");
+        proxy("bob", "sam");
+        tx.signatures.clear();
+        tx.sign(sam_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
 
 BOOST_AUTO_TEST_CASE( encrypted_content )
 {
