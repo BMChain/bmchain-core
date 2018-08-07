@@ -1461,122 +1461,183 @@ BOOST_AUTO_TEST_CASE( account_witness_vote_authorities )
     FC_LOG_AND_RETHROW()
 }
 
-    BOOST_AUTO_TEST_CASE( account_witness_vote_apply )
+BOOST_AUTO_TEST_CASE( account_witness_vote_apply )
+{
+    try
     {
-        try
-        {
-            BOOST_TEST_MESSAGE( "Testing: account_witness_vote_apply" );
+        BOOST_TEST_MESSAGE("Testing: account_witness_vote_apply");
 
-            ACTORS( (alice)(bob)(sam) )
-            fund( "alice" , 5000 );
-            vest( "alice", 5000 );
-            fund( "sam", 1000 );
+        ACTORS((alice)(bob)(sam))
+        fund("alice", 5000);
+        vest("alice", 5000);
+        fund("sam", 1000);
 
-            private_key_type sam_witness_key = generate_private_key( "sam_key" );
-            witness_create( "sam", sam_private_key, "foo.bar", sam_witness_key.get_public_key(), 1000 );
-            const witness_object& sam_witness = db.get_witness( "sam" );
+        private_key_type sam_witness_key = generate_private_key("sam_key");
+        witness_create("sam", sam_private_key, "foo.bar", sam_witness_key.get_public_key(), 1000);
+        const witness_object &sam_witness = db.get_witness("sam");
 
-            const auto& witness_vote_idx = db.get_index< witness_vote_index >().indices().get< by_witness_account >();
+        const auto &witness_vote_idx = db.get_index<witness_vote_index>().indices().get<by_witness_account>();
 
-            BOOST_TEST_MESSAGE( "--- Test normal vote" );
-            account_witness_vote_operation op;
-            op.account = "alice";
-            op.witness = "sam";
-            op.approve = true;
+        BOOST_TEST_MESSAGE("--- Test normal vote");
+        account_witness_vote_operation op;
+        op.account = "alice";
+        op.witness = "sam";
+        op.approve = true;
 
-            signed_transaction tx;
-            tx.set_expiration( db.head_block_time() + STEEM_MAX_TIME_UNTIL_EXPIRATION );
-            tx.operations.push_back( op );
-            tx.sign( alice_private_key, db.get_chain_id() );
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+        tx.sign(alice_private_key, db.get_chain_id());
 
-            db.push_transaction( tx, 0 );
+        db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE( sam_witness.votes == alice.vesting_shares.amount );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, alice.name ) ) != witness_vote_idx.end() );
-            validate_database();
+        BOOST_REQUIRE(sam_witness.votes == alice.rep_shares.amount);
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, alice.name)) != witness_vote_idx.end());
+        validate_database();
 
-            BOOST_TEST_MESSAGE( "--- Test revoke vote" );
-            op.approve = false;
-            tx.operations.clear();
-            tx.signatures.clear();
-            tx.operations.push_back( op );
-            tx.sign( alice_private_key, db.get_chain_id() );
+        BOOST_TEST_MESSAGE("--- Test revoke vote");
+        op.approve = false;
+        tx.operations.clear();
+        tx.signatures.clear();
+        tx.operations.push_back(op);
+        tx.sign(alice_private_key, db.get_chain_id());
 
-            db.push_transaction( tx, 0 );
-            BOOST_REQUIRE( sam_witness.votes.value == 0 );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, alice.name ) ) == witness_vote_idx.end() );
+        db.push_transaction(tx, 0);
+        BOOST_REQUIRE(sam_witness.votes.value == 0);
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, alice.name)) == witness_vote_idx.end());
 
-            BOOST_TEST_MESSAGE( "--- Test failure when attempting to revoke a non-existent vote" );
+        BOOST_TEST_MESSAGE("--- Test failure when attempting to revoke a non-existent vote");
 
-            BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
-            BOOST_REQUIRE( sam_witness.votes.value == 0 );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, alice.name ) ) == witness_vote_idx.end() );
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
+        BOOST_REQUIRE(sam_witness.votes.value == 0);
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, alice.name)) == witness_vote_idx.end());
 
-            BOOST_TEST_MESSAGE( "--- Test proxied vote" );
-            proxy( "alice", "bob" );
-            tx.operations.clear();
-            tx.signatures.clear();
-            op.approve = true;
-            op.account = "bob";
-            tx.operations.push_back( op );
-            tx.sign( bob_private_key, db.get_chain_id() );
+        BOOST_TEST_MESSAGE("--- Test proxied vote");
+        proxy("alice", "bob");
+        tx.operations.clear();
+        tx.signatures.clear();
+        op.approve = true;
+        op.account = "bob";
+        tx.operations.push_back(op);
+        tx.sign(bob_private_key, db.get_chain_id());
 
-            db.push_transaction( tx, 0 );
+        db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE( sam_witness.votes == ( bob.proxied_vsf_votes_total() + bob.vesting_shares.amount ) );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, bob.name ) ) != witness_vote_idx.end() );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, alice.name ) ) == witness_vote_idx.end() );
+        BOOST_REQUIRE(sam_witness.votes == (bob.proxied_vsf_votes_total() + bob.vesting_shares.amount));
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, bob.name)) != witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, alice.name)) == witness_vote_idx.end());
 
-            BOOST_TEST_MESSAGE( "--- Test vote from a proxied account" );
-            tx.operations.clear();
-            tx.signatures.clear();
-            op.account = "alice";
-            tx.operations.push_back( op );
-            tx.sign( alice_private_key, db.get_chain_id() );
-            BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
+        BOOST_TEST_MESSAGE("--- Test vote from a proxied account");
+        tx.operations.clear();
+        tx.signatures.clear();
+        op.account = "alice";
+        tx.operations.push_back(op);
+        tx.sign(alice_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), fc::exception);
 
-            BOOST_REQUIRE( sam_witness.votes == ( bob.proxied_vsf_votes_total() + bob.vesting_shares.amount ) );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, bob.name ) ) != witness_vote_idx.end() );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, alice.name ) ) == witness_vote_idx.end() );
+        BOOST_REQUIRE(sam_witness.votes == (bob.proxied_vsf_votes_total() + bob.vesting_shares.amount));
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, bob.name)) != witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, alice.name)) == witness_vote_idx.end());
 
-            BOOST_TEST_MESSAGE( "--- Test revoke proxied vote" );
-            tx.operations.clear();
-            tx.signatures.clear();
-            op.account = "bob";
-            op.approve = false;
-            tx.operations.push_back( op );
-            tx.sign( bob_private_key, db.get_chain_id() );
+        BOOST_TEST_MESSAGE("--- Test revoke proxied vote");
+        tx.operations.clear();
+        tx.signatures.clear();
+        op.account = "bob";
+        op.approve = false;
+        tx.operations.push_back(op);
+        tx.sign(bob_private_key, db.get_chain_id());
 
-            db.push_transaction( tx, 0 );
+        db.push_transaction(tx, 0);
 
-            BOOST_REQUIRE( sam_witness.votes.value == 0 );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, bob.name ) ) == witness_vote_idx.end() );
-            BOOST_REQUIRE( witness_vote_idx.find( std::make_tuple( sam_witness.owner, alice.name ) ) == witness_vote_idx.end() );
+        BOOST_REQUIRE(sam_witness.votes.value == 0);
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, bob.name)) == witness_vote_idx.end());
+        BOOST_REQUIRE(witness_vote_idx.find(std::make_tuple(sam_witness.owner, alice.name)) == witness_vote_idx.end());
 
-            BOOST_TEST_MESSAGE( "--- Test failure when voting for a non-existent account" );
-            tx.operations.clear();
-            tx.signatures.clear();
-            op.witness = "dave";
-            op.approve = true;
-            tx.operations.push_back( op );
-            tx.sign( bob_private_key, db.get_chain_id() );
+        BOOST_TEST_MESSAGE("--- Test failure when voting for a non-existent account");
+        tx.operations.clear();
+        tx.signatures.clear();
+        op.witness = "dave";
+        op.approve = true;
+        tx.operations.push_back(op);
+        tx.sign(bob_private_key, db.get_chain_id());
 
-            BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
-            validate_database();
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+        validate_database();
 
-            BOOST_TEST_MESSAGE( "--- Test failure when voting for an account that is not a witness" );
-            tx.operations.clear();
-            tx.signatures.clear();
-            op.witness = "alice";
-            tx.operations.push_back( op );
-            tx.sign( bob_private_key, db.get_chain_id() );
+        BOOST_TEST_MESSAGE("--- Test failure when voting for an account that is not a witness");
+        tx.operations.clear();
+        tx.signatures.clear();
+        op.witness = "alice";
+        tx.operations.push_back(op);
+        tx.sign(bob_private_key, db.get_chain_id());
 
-            BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
-            validate_database();
-        }
-        FC_LOG_AND_RETHROW()
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+        validate_database();
     }
+    FC_LOG_AND_RETHROW()
+}
 
+BOOST_AUTO_TEST_CASE( account_witness_proxy_validate )
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: account_witness_proxy_validate");
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}
+
+BOOST_AUTO_TEST_CASE( account_witness_proxy_authorities )
+{
+    try
+    {
+        BOOST_TEST_MESSAGE("Testing: account_witness_proxy_authorities");
+
+        ACTORS((alice)(bob))
+
+        account_witness_proxy_operation op;
+        op.account = "bob";
+        op.proxy = "alice";
+
+        signed_transaction tx;
+        tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+        tx.operations.push_back(op);
+
+        BOOST_TEST_MESSAGE("--- Test failure when no signatures");
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+
+        BOOST_TEST_MESSAGE("--- Test failure when signed by a signature not in the account's authority");
+        tx.sign(bob_post_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_missing_active_auth);
+
+        BOOST_TEST_MESSAGE("--- Test failure when duplicate signatures");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        tx.sign(bob_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_duplicate_sig);
+
+        BOOST_TEST_MESSAGE("--- Test failure when signed by an additional signature not in the creator's authority");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        tx.sign(alice_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), tx_irrelevant_sig);
+
+        BOOST_TEST_MESSAGE("--- Test success with witness signature");
+        tx.signatures.clear();
+        tx.sign(bob_private_key, db.get_chain_id());
+        db.push_transaction(tx, 0);
+
+        BOOST_TEST_MESSAGE("--- Test failure with proxy signature");
+        tx.signatures.clear();
+        tx.sign(alice_private_key, db.get_chain_id());
+        BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, database::skip_transaction_dupe_check), tx_missing_active_auth);
+
+        validate_database();
+    }
+    FC_LOG_AND_RETHROW()
+}    
+    
 BOOST_AUTO_TEST_CASE( encrypted_content )
 {
     try {
