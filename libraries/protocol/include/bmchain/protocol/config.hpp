@@ -30,7 +30,9 @@
 #define BMCHAIN_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
 #else // IS LIVE BMT NETWORK
 
-#define BMCHAIN_INIT_PUBLIC_KEY_STR             "BMT76G5486bhLKXkXgN1nSkeDbpWEaiavF7i6tDULdpvyr69CLbHC"
+#define BMCHAIN_INIT_PRIVATE_KEY                (fc::ecc::private_key::regenerate(fc::sha256::hash(std::string("it does not do to dwell on dreams and forget to live"))))
+#define BMCHAIN_INIT_PUBLIC_KEY_STR             (std::string( bmchain::protocol::public_key_type(BMCHAIN_INIT_PRIVATE_KEY.get_public_key()) ))
+//#define BMCHAIN_INIT_PUBLIC_KEY_STR             "BMT76G5486bhLKXkXgN1nSkeDbpWEaiavF7i6tDULdpvyr69CLbHC"
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain"))
 #define REP_SYMBOL  (uint64_t(6) | (uint64_t('R') << 8) | (uint64_t('E') << 16) | (uint64_t('P') << 24) ) ///< RPT with 6 digits of precision
 #define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precisionDollars with 3 digits of precision
