@@ -18,7 +18,7 @@ add_library( steemit_protocol
              ${HEADERS}
         include/bmchain/protocol/legacy_asset.hpp)
 
-target_link_libraries( steemit_protocol fc )
+target_link_libraries( steemit_protocol fc graphene_utilities )
 target_include_directories( steemit_protocol
                             PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_BINARY_DIR}/include" )
 

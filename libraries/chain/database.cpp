@@ -34,6 +34,8 @@
 #include <fstream>
 #include <functional>
 
+#include <graphene/utilities/key_conversion.hpp>
+
 namespace bmchain { namespace chain {
 
 //namespace db2 = graphene::db2;

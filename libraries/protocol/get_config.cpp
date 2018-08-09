@@ -3,6 +3,7 @@
 #include <bmchain/protocol/asset.hpp>
 #include <bmchain/protocol/types.hpp>
 #include <bmchain/protocol/version.hpp>
+#include <graphene/utilities/key_conversion.hpp>
 
 namespace bmchain { namespace protocol {
 
