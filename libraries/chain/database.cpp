@@ -1901,7 +1901,7 @@ void database::init_genesis( uint64_t init_supply )
 {
    try
    {
-      uint64_t init_rep = BMCHAIN_INIT_REP;
+      uint64_t init_rep = BMCHAIN_INIT_SUPPLY_REP;
 
       struct auth_inhibitor
       {
