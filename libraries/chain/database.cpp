@@ -2754,6 +2754,9 @@ void database::adjust_balance( const account_object& a, const asset& delta )
          case BMT_SYMBOL:
             acnt.balance += delta;
             break;
+         case REP_SYMBOL:
+            acnt.rep_shares += delta;
+            break;
          default:
             FC_ASSERT( false, "invalid symbol" );
       }
@@ -2826,6 +2829,8 @@ asset database::get_balance( const account_object& a, asset_symbol_type symbol )
    {
       case BMT_SYMBOL:
          return a.balance;
+      case REP_SYMBOL:
+         return a.rep_shares;
       default:
          FC_ASSERT( false, "invalid symbol" );
    }

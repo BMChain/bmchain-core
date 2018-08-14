@@ -176,7 +176,8 @@
 #define BMCHAIN_MAX_WITNESS_URL_LENGTH          2048
 
 #define BMCHAIN_INIT_SUPPLY                     int64_t(91907667000ll)
-#define BMCHAIN_INIT_SUPPLY_REP                 int64_t(1000000000ll)
+#define BMCHAIN_INIT_SUPPLY_REP                 int64_t(1000001000000ll)
+#define BMCHAIN_TRANSFER_REP_BLOCK              (1000000)
 #define BMCHAIN_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define BMCHAIN_MAX_SATOSHIS                    int64_t(4611686018427387903ll)
 #define BMCHAIN_MAX_SIG_CHECK_DEPTH             2
