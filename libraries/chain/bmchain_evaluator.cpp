@@ -997,10 +997,6 @@ void transfer_evaluator::do_apply( const transfer_operation& o )
    const auto& from_account = _db.get_account(o.from);
    const auto& to_account = _db.get_account(o.to);
 
-   if ( o.amount.symbol != REP_SYMBOL && _db.get_dynamic_global_properties().head_block_number >= BMCHAIN_TRANSFER_REP_BLOCK ) {
-      FC_ASSERT(o.amount.symbol != REP_SYMBOL, "transferring of REP is not allowed.");
-   }
-
    if( from_account.active_challenged )
    {
       _db.modify( from_account, [&]( account_object& a )
