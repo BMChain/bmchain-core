@@ -1806,6 +1806,50 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
    FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE( custom_authorities )
+{
+   custom_operation op;
+   op.required_auths.insert( "alice" );
+   op.required_auths.insert( "bob" );
+
+   flat_set< account_name_type > auths;
+   flat_set< account_name_type > expected;
+
+   op.get_required_owner_authorities( auths );
+   BOOST_REQUIRE( auths == expected );
+
+   op.get_required_posting_authorities( auths );
+   BOOST_REQUIRE( auths == expected );
+
+   expected.insert( "alice" );
+   expected.insert( "bob" );
+   op.get_required_active_authorities( auths );
+   BOOST_REQUIRE( auths == expected );
+}
+
+BOOST_AUTO_TEST_CASE( custom_json_authorities )
+{
+   custom_json_operation op;
+   op.required_auths.insert( "alice" );
+   op.required_posting_auths.insert( "bob" );
+
+   flat_set< account_name_type > auths;
+   flat_set< account_name_type > expected;
+
+   op.get_required_owner_authorities( auths );
+   BOOST_REQUIRE( auths == expected );
+
+   expected.insert( "alice" );
+   op.get_required_active_authorities( auths );
+   BOOST_REQUIRE( auths == expected );
+
+   auths.clear();
+   expected.clear();
+   expected.insert( "bob" );
+   op.get_required_posting_authorities( auths );
+   BOOST_REQUIRE( auths == expected );
+}
+
 BOOST_AUTO_TEST_CASE( encrypted_content )
 {
     try {
