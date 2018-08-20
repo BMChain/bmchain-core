@@ -1663,8 +1663,8 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
 
       signed_transaction tx;
       tx.operations.push_back( op );
-      tx.set_expiration( db->head_block_time() + STEEM_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( bob_private_key, db->get_chain_id() );
+      tx.set_expiration( db.head_block_time() + STEEM_MAX_TIME_UNTIL_EXPIRATION );
+      tx.sign( bob_private_key, db.get_chain_id() );
 
       db->push_transaction( tx, 0 );
 
@@ -1681,7 +1681,7 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
       tx.signatures.clear();
       op.proxy = "sam";
       tx.operations.push_back( op );
-      tx.sign( bob_private_key, db->get_chain_id() );
+      tx.sign( bob_private_key, db.get_chain_id() );
 
       db->push_transaction( tx, 0 );
 
@@ -1694,7 +1694,7 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
 
       BOOST_TEST_MESSAGE( "--- Test failure when changing proxy to existing proxy" );
 
-      STEEM_REQUIRE_THROW( db->push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
+      STEEM_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
 
       BOOST_REQUIRE( bob.proxy == "sam" );
       BOOST_REQUIRE( bob.proxied_vsf_votes_total().value == 0 );
@@ -1710,7 +1710,7 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
       op.proxy = "dave";
       op.account = "sam";
       tx.operations.push_back( op );
-      tx.sign( sam_private_key, db->get_chain_id() );
+      tx.sign( sam_private_key, db.get_chain_id() );
 
       db->push_transaction( tx, 0 );
 
@@ -1732,7 +1732,7 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
       op.proxy = "sam";
       op.account = "alice";
       tx.operations.push_back( op );
-      tx.sign( alice_private_key, db->get_chain_id() );
+      tx.sign( alice_private_key, db.get_chain_id() );
 
       db->push_transaction( tx, 0 );
 
@@ -1742,7 +1742,7 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
       BOOST_REQUIRE( bob.proxied_vsf_votes_total().value == 0 );
       BOOST_REQUIRE( sam.proxy == "dave" );
       BOOST_REQUIRE( sam.proxied_vsf_votes_total() == ( bob.vesting_shares + alice.vesting_shares ).amount );
-      BOOST_REQUIRE( dave.proxy == STEEM_PROXY_TO_SELF_ACCOUNT );
+      BOOST_REQUIRE( dave.proxy == BMCHAIN_PROXY_TO_SELF_ACCOUNT );
       BOOST_REQUIRE( dave.proxied_vsf_votes_total() == ( sam.vesting_shares + bob.vesting_shares + alice.vesting_shares ).amount );
       validate_database();
 
@@ -1751,20 +1751,20 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
 
       tx.operations.clear();
       tx.signatures.clear();
-      op.proxy = STEEM_PROXY_TO_SELF_ACCOUNT;
+      op.proxy = BMCHAIN_PROXY_TO_SELF_ACCOUNT;
       op.account = "bob";
       tx.operations.push_back( op );
-      tx.sign( bob_private_key, db->get_chain_id() );
+      tx.sign( bob_private_key, db.get_chain_id() );
 
       db->push_transaction( tx, 0 );
 
       BOOST_REQUIRE( alice.proxy == "sam" );
       BOOST_REQUIRE( alice.proxied_vsf_votes_total().value == 0 );
-      BOOST_REQUIRE( bob.proxy == STEEM_PROXY_TO_SELF_ACCOUNT );
+      BOOST_REQUIRE( bob.proxy == BMCHAIN_PROXY_TO_SELF_ACCOUNT );
       BOOST_REQUIRE( bob.proxied_vsf_votes_total().value == 0 );
       BOOST_REQUIRE( sam.proxy == "dave" );
       BOOST_REQUIRE( sam.proxied_vsf_votes_total() == alice.vesting_shares.amount );
-      BOOST_REQUIRE( dave.proxy == STEEM_PROXY_TO_SELF_ACCOUNT );
+      BOOST_REQUIRE( dave.proxy == BMCHAIN_PROXY_TO_SELF_ACCOUNT );
       BOOST_REQUIRE( dave.proxied_vsf_votes_total() == ( sam.vesting_shares + alice.vesting_shares ).amount );
       validate_database();
 
@@ -1775,20 +1775,20 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
       tx.operations.clear();
       tx.signatures.clear();
       tx.operations.push_back( vote );
-      tx.sign( bob_private_key, db->get_chain_id() );
+      tx.sign( bob_private_key, db.get_chain_id() );
 
-      db->push_transaction( tx, 0 );
+      db.push_transaction( tx, 0 );
 
       tx.operations.clear();
       tx.signatures.clear();
       op.account = "alice";
       op.proxy = "bob";
       tx.operations.push_back( op );
-      tx.sign( alice_private_key, db->get_chain_id() );
+      tx.sign( alice_private_key, db.get_chain_id() );
 
       db->push_transaction( tx, 0 );
 
-      BOOST_REQUIRE( db->get_witness( STEEM_INIT_MINER_NAME ).votes == ( alice.vesting_shares + bob.vesting_shares ).amount );
+      BOOST_REQUIRE( db.get_witness( BMCHAIN_INIT_MINER_NAME ).votes == ( alice.vesting_shares + bob.vesting_shares ).amount );
       validate_database();
 
       BOOST_TEST_MESSAGE( "--- Test votes are removed when a proxy is removed" );
@@ -1796,11 +1796,11 @@ BOOST_AUTO_TEST_CASE( account_witness_proxy_apply )
       tx.signatures.clear();
       tx.operations.clear();
       tx.operations.push_back( op );
-      tx.sign( alice_private_key, db->get_chain_id() );
+      tx.sign( alice_private_key, db.get_chain_id() );
 
       db->push_transaction( tx, 0 );
 
-      BOOST_REQUIRE( db->get_witness( STEEM_INIT_MINER_NAME ).votes == bob.vesting_shares.amount );
+      BOOST_REQUIRE( db.get_witness( BMCHAIN_INIT_MINER_NAME ).votes == bob.vesting_shares.amount );
       validate_database();
    }
    FC_LOG_AND_RETHROW()
@@ -1848,6 +1848,51 @@ BOOST_AUTO_TEST_CASE( custom_json_authorities )
    expected.insert( "bob" );
    op.get_required_posting_authorities( auths );
    BOOST_REQUIRE( auths == expected );
+}
+
+BOOST_AUTO_TEST_CASE( custom_binary_authorities )
+{
+   ACTORS( (alice) )
+
+   custom_binary_operation op;
+   op.required_owner_auths.insert( "alice" );
+   op.required_active_auths.insert( "bob" );
+   op.required_posting_auths.insert( "sam" );
+   op.required_auths.push_back( db->get< account_authority_object, by_account >( "alice" ).posting );
+
+   flat_set< account_name_type > acc_auths;
+   flat_set< account_name_type > acc_expected;
+   vector< authority > auths;
+   vector< authority > expected;
+
+   acc_expected.insert( "alice" );
+   op.get_required_owner_authorities( acc_auths );
+   BOOST_REQUIRE( acc_auths == acc_expected );
+
+   acc_auths.clear();
+   acc_expected.clear();
+   acc_expected.insert( "bob" );
+   op.get_required_active_authorities( acc_auths );
+   BOOST_REQUIRE( acc_auths == acc_expected );
+
+   acc_auths.clear();
+   acc_expected.clear();
+   acc_expected.insert( "sam" );
+   op.get_required_posting_authorities( acc_auths );
+   BOOST_REQUIRE( acc_auths == acc_expected );
+
+   expected.push_back( db->get< account_authority_object, by_account >( "alice" ).posting );
+   op.get_required_authorities( auths );
+   BOOST_REQUIRE( auths == expected );
+}
+
+BOOST_AUTO_TEST_CASE( feed_publish_validate )
+{
+   try
+   {
+      BOOST_TEST_MESSAGE( "Testing: feed_publish_validate" );
+   }
+   FC_LOG_AND_RETHROW()
 }
 
 BOOST_AUTO_TEST_CASE( encrypted_content )
