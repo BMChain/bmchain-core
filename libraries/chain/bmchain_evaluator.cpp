@@ -1025,7 +1025,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 {
    const auto &account = _db.get_account(o.account);
 
-   FC_ASSERT(account.rep_shares >= asset(0, PWR_SYMBOL),
+   FC_ASSERT(account.rep_shares >= asset(0, REP_SYMBOL),
              "Account does not have sufficient Steem Power for withdraw.");
    FC_ASSERT(account.rep_shares - account.delegated_rep_shares >= o.rep_shares,
              "Account does not have sufficient Steem Power for withdraw.");
@@ -1046,7 +1046,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
                 "This operation would not change the vesting withdraw rate.");
 
       _db.modify(account, [&](account_object &a) {
-         a.rep_withdraw_rate = asset(0, PWR_SYMBOL);
+         a.rep_withdraw_rate = asset(0, REP_SYMBOL);
          a.next_rep_withdrawal = time_point_sec::maximum();
          a.to_withdraw = 0;
          a.withdrawn = 0;
@@ -1056,7 +1056,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
       vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
       _db.modify(account, [&](account_object &a) {
-         auto new_rep_withdraw_rate = asset(o.rep_shares.amount / vesting_withdraw_intervals, PWR_SYMBOL);
+         auto new_rep_withdraw_rate = asset(o.rep_shares.amount / vesting_withdraw_intervals, REP_SYMBOL);
 
          if (new_rep_withdraw_rate.amount == 0)
             new_rep_withdraw_rate.amount = 1;

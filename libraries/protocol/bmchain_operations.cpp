@@ -173,7 +173,7 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( amount > asset( 0, BMT_SYMBOL ), "Must transfer a nonzero amount" );
    }
 
-   void withdraw_rep_operation::validate() const
+   void withdraw_vesting_operation::validate() const
    {
       validate_account_name( account );
       FC_ASSERT( is_asset_type( rep_shares, REP_SYMBOL), "Amount must be VESTS"  );

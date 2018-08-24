@@ -15,7 +15,7 @@ namespace bmchain { namespace protocol {
 
             transfer_operation,
             transfer_to_rep_operation,
-            withdraw_rep_operation,
+            withdraw_vesting_operation,
 
             limit_order_create_operation,
             limit_order_cancel_operation,

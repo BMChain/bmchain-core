@@ -1765,7 +1765,7 @@ namespace bmchain {
                             for (auto &item : history) {
                                 switch (item.second.op.which()) {
                                     case operation::tag<transfer_to_rep_operation>::value:
-                                    case operation::tag<withdraw_rep_operation>::value:
+                                    case operation::tag<withdraw_vesting_operation>::value:
                                     case operation::tag<interest_operation>::value:
                                     case operation::tag<transfer_operation>::value:
                                     case operation::tag<liquidity_reward_operation>::value:

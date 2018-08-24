@@ -1275,7 +1275,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 
            BOOST_TEST_MESSAGE( "Testing: transfer_to_vesting_authorities" );
 
-           transfer_to_vesting_operation op;
+           transfer_to_rep_operation op;
            op.from = "alice";
            op.to = "bob";
            op.amount = ASSET( "2.500 TESTS" );
@@ -1326,12 +1326,12 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 
            BOOST_REQUIRE( alice.balance == ASSET( "10.000 TESTS" ) );
 
-           auto shares = asset( gpo.total_rep_shares.amount, PWR_SYMBOL );
+           auto shares = asset( gpo.total_rep_shares.amount, REP_SYMBOL );
            auto vests = asset( gpo.total_rep_fund_bmt.amount, BMT_SYMBOL );
            auto alice_shares = alice.rep_shares;
            auto bob_shares = bob.rep_shares;
 
-           transfer_to_vesting_operation op;
+           transfer_to_rep_operation op;
            op.from = "alice";
            op.to = "";
            op.amount = ASSET( "7.500 TESTS" );
@@ -1362,7 +1362,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
            tx.sign( alice_private_key, db.get_chain_id() );
            db.push_transaction( tx, 0 );
 
-           new_vest = asset( ( op.amount * ( shares / vests ) ).amount, PWR_SYMBOL );
+           new_vest = asset( ( op.amount * ( shares / vests ) ).amount, REP_SYMBOL );
            shares += new_vest;
            vests += op.amount;
            bob_shares += new_vest;
@@ -1463,7 +1463,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 
                withdraw_vesting_operation op;
                op.account = "alice";
-               op.rep_shares = asset( alice.rep_shares.amount / 2, PWR_SYMBOL );
+               op.rep_shares = asset( alice.rep_shares.amount / 2, REP_SYMBOL );
 
                auto old_rep_shares = alice.rep_shares;
 
@@ -1483,7 +1483,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
                tx.operations.clear();
                tx.signatures.clear();
 
-               op.rep_shares = asset( alice.rep_shares.amount / 3, PWR_SYMBOL );
+               op.rep_shares = asset( alice.rep_shares.amount / 3, REP_SYMBOL );
                tx.operations.push_back( op );
                tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
                tx.sign( alice_private_key, db.get_chain_id() );
@@ -1500,7 +1500,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
                tx.operations.clear();
                tx.signatures.clear();
 
-               op.rep_shares = asset( alice.rep_shares.amount * 2, PWR_SYMBOL );
+               op.rep_shares = asset( alice.rep_shares.amount * 2, REP_SYMBOL );
                tx.operations.push_back( op );
                tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
                tx.sign( alice_private_key, db.get_chain_id() );
@@ -1515,7 +1515,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
                tx.operations.clear();
                tx.signatures.clear();
 
-               op.rep_shares = asset( 0, PWR_SYMBOL );
+               op.rep_shares = asset( 0, REP_SYMBOL );
                tx.operations.push_back( op );
                tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
                tx.sign( alice_private_key, db.get_chain_id() );
@@ -3678,7 +3678,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //
 //           BOOST_TEST_MESSAGE( "--- failure when fee symbol != SBD and fee symbol != STEEM" );
 //           op.steem_amount.symbol = BMT_SYMBOL;
-//           op.fee.symbol = PWR_SYMBOL;
+//           op.fee.symbol = REP_SYMBOL;
 //           BMCHAIN_REQUIRE_THROW( op.validate(), fc::exception );
 //
 //           BOOST_TEST_MESSAGE( "--- failure when sbd == 0 and steem == 0" );
@@ -5886,7 +5886,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //
 //           account_create_with_delegation_operation op;
 //           op.fee = ASSET("0.000 TESTS");
-//           op.delegation = asset(100, PWR_SYMBOL);
+//           op.delegation = asset(100, REP_SYMBOL);
 //           op.creator = "alice";
 //           op.new_account_name = "bob";
 //           op.owner = authority( 1, priv_key.get_public_key(), 1 );
@@ -6006,7 +6006,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //
 //           tx.clear();
 //           op.fee=asset( db.get_witness_schedule_object().median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL );
-//           op.delegation = asset(0, PWR_SYMBOL);
+//           op.delegation = asset(0, REP_SYMBOL);
 //           op.new_account_name = "sam";
 //           tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
 //           tx.operations.push_back( op );
@@ -6159,7 +6159,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //
 //           op.delegator = "alice";
 //           op.delegatee = "bob";
-//           op.rep_shares = asset( -1, PWR_SYMBOL );
+//           op.rep_shares = asset( -1, REP_SYMBOL );
 //           BMCHAIN_REQUIRE_THROW( op.validate(), fc::assert_exception );
 //       }
 //       FC_LOG_AND_RETHROW()
@@ -6332,7 +6332,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //
 //           BOOST_TEST_MESSAGE( "--- Testing failure delegating more vesting shares than account has." );
 //           tx.clear();
-//           op.rep_shares = asset( sam_vest.amount + 1, PWR_SYMBOL );
+//           op.rep_shares = asset( sam_vest.amount + 1, REP_SYMBOL );
 //           tx.operations.push_back( op );
 //           tx.sign( sam_private_key, db.get_chain_id() );
 //           BMCHAIN_REQUIRE_THROW( db.push_transaction( tx ), fc::assert_exception );
@@ -6340,7 +6340,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //
 //           BOOST_TEST_MESSAGE( "--- Test failure delegating vesting shares that are part of a power down" );
 //           tx.clear();
-//           sam_vest = asset( sam_vest.amount / 2, PWR_SYMBOL );
+//           sam_vest = asset( sam_vest.amount / 2, REP_SYMBOL );
 //           withdraw_vesting_operation withdraw;
 //           withdraw.account = "sam";
 //           withdraw.rep_shares = sam_vest;
@@ -6349,7 +6349,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //           db.push_transaction( tx, 0 );
 //
 //           tx.clear();
-//           op.rep_shares = asset( sam_vest.amount + 2, PWR_SYMBOL );
+//           op.rep_shares = asset( sam_vest.amount + 2, REP_SYMBOL );
 //           tx.operations.push_back( op );
 //           tx.sign( sam_private_key, db.get_chain_id() );
 //           BMCHAIN_REQUIRE_THROW( db.push_transaction( tx ), fc::assert_exception );
@@ -6370,7 +6370,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //           db.push_transaction( tx, 0 );
 //
 //           tx.clear();
-//           withdraw.rep_shares = asset( sam_vest.amount, PWR_SYMBOL );
+//           withdraw.rep_shares = asset( sam_vest.amount, REP_SYMBOL );
 //           tx.operations.push_back( withdraw );
 //           tx.sign( sam_private_key, db.get_chain_id() );
 //           BMCHAIN_REQUIRE_THROW( db.push_transaction( tx ), fc::assert_exception );

@@ -351,8 +351,7 @@ namespace bmchain { namespace protocol {
       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(from); }
    };
 
-
-   /**
+      /**
     * At any given point in time an account can be withdrawing from their
     * vesting shares. A user may change the number of shares they wish to
     * cash out at any time between 0 and their total vesting stake.
@@ -363,7 +362,7 @@ namespace bmchain { namespace protocol {
     *
     * This operation is not valid if the user has no vesting shares.
     */
-   struct withdraw_rep_operation : public base_operation
+   struct withdraw_vesting_operation : public base_operation
    {
       account_name_type account;
       asset             rep_shares;
@@ -1111,7 +1110,7 @@ FC_REFLECT( bmchain::protocol::account_update_operation,
 
 FC_REFLECT( bmchain::protocol::transfer_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( bmchain::protocol::transfer_to_rep_operation, (from)(to)(amount) )
-FC_REFLECT( bmchain::protocol::withdraw_rep_operation, (account)(rep_shares) )
+FC_REFLECT( bmchain::protocol::withdraw_vesting_operation, (account)(rep_shares) )
 FC_REFLECT( bmchain::protocol::set_withdraw_rep_route_operation, (from_account)(to_account)(percent)(auto_vest) )
 FC_REFLECT( bmchain::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( bmchain::protocol::account_witness_vote_operation, (account)(witness)(approve) )
