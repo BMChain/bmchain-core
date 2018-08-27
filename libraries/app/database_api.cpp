@@ -1709,7 +1709,7 @@ namespace bmchain {
                 vector<rep_delegation_expiration_api_obj> result;
                 result.reserve(limit);
 
-                const auto &exp_idx = my->_db.get_index<rep_delegation_expiration_index, by_account_expiration>();
+                const auto &exp_idx = my->_db.get_index<vesting_delegation_expiration_index, by_account_expiration>();
                 auto itr = exp_idx.lower_bound(boost::make_tuple(account, from));
                 while (result.size() < limit && itr != exp_idx.end() && itr->delegator == account) {
                     result.push_back(*itr);

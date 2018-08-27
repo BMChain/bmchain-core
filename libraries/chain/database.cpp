@@ -1826,7 +1826,7 @@ void database::initialize_indexes()
    add_core_index< decline_voting_rights_request_index     >(*this);
    add_core_index< reward_fund_index                       >(*this);
    add_core_index< rep_delegation_index                >(*this);
-   add_core_index< rep_delegation_expiration_index     >(*this);
+   add_core_index< vesting_delegation_expiration_index     >(*this);
    add_core_index< content_order_index                     >(*this);
 
    _plugin_index_signal();
@@ -2730,7 +2730,7 @@ void database::clear_expired_orders()
 void database::clear_expired_delegations()
 {
    auto now = head_block_time();
-   const auto& delegations_by_exp = get_index< rep_delegation_expiration_index, by_expiration >();
+   const auto& delegations_by_exp = get_index< vesting_delegation_expiration_index, by_expiration >();
    auto itr = delegations_by_exp.begin();
    while( itr != delegations_by_exp.end() && itr->expiration < now )
    {

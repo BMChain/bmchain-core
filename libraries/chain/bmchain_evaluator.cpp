@@ -255,7 +255,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
 
    if( o.delegation.amount > 0 )
    {
-      _db.create< rep_delegation_object >( [&]( rep_delegation_object& vdo )
+      _db.create< vesting_delegation_object >( [&]( vesting_delegation_object& vdo )
       {
          vdo.delegator = o.creator;
          vdo.delegatee = o.new_account_name;
@@ -2104,7 +2104,7 @@ void delegate_rep_shares_evaluator::do_apply( const delegate_rep_shares_operatio
 {
    const auto& delegator = _db.get_account( op.delegator );
    const auto& delegatee = _db.get_account( op.delegatee );
-   auto delegation = _db.find< rep_delegation_object, by_delegation >( boost::make_tuple( op.delegator, op.delegatee ) );
+   auto delegation = _db.find< vesting_delegation_object, by_delegation >( boost::make_tuple( op.delegator, op.delegatee ) );
 
    auto available_shares = delegator.rep_shares - delegator.delegated_rep_shares - asset( delegator.to_withdraw - delegator.withdrawn, REP_SYMBOL );
 
@@ -2119,7 +2119,7 @@ void delegate_rep_shares_evaluator::do_apply( const delegate_rep_shares_operatio
       FC_ASSERT( available_shares >= op.rep_shares, "Account does not have enough vesting shares to delegate." );
       FC_ASSERT( op.rep_shares >= min_delegation, "Account must delegate a minimum of ${v}", ("v", min_delegation) );
 
-      _db.create< rep_delegation_object >( [&]( rep_delegation_object& obj )
+      _db.create< vesting_delegation_object >( [&]( vesting_delegation_object& obj )
       {
          obj.delegator = op.delegator;
          obj.delegatee = op.delegatee;
@@ -2155,7 +2155,7 @@ void delegate_rep_shares_evaluator::do_apply( const delegate_rep_shares_operatio
          a.received_rep_shares += delta;
       });
 
-      _db.modify( *delegation, [&]( rep_delegation_object& obj )
+      _db.modify( *delegation, [&]( vesting_delegation_object& obj )
       {
          obj.rep_shares = op.rep_shares;
       });
@@ -2189,7 +2189,7 @@ void delegate_rep_shares_evaluator::do_apply( const delegate_rep_shares_operatio
 
       if( op.rep_shares.amount > 0 )
       {
-         _db.modify( *delegation, [&]( rep_delegation_object& obj )
+         _db.modify( *delegation, [&]( vesting_delegation_object& obj )
          {
             obj.rep_shares = op.rep_shares;
          });

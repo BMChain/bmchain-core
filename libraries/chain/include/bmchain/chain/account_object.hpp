@@ -124,16 +124,16 @@ namespace bmchain { namespace chain {
          time_point_sec    last_owner_update;
    };
 
-   class rep_delegation_object : public object< rep_delegation_object_type, rep_delegation_object >
+   class vesting_delegation_object : public object< vesting_delegation_object_type, vesting_delegation_object >
    {
       public:
          template< typename Constructor, typename Allocator >
-         rep_delegation_object( Constructor&& c, allocator< Allocator > a )
+         vesting_delegation_object( Constructor&& c, allocator< Allocator > a )
          {
             c( *this );
          }
 
-         rep_delegation_object() {}
+         vesting_delegation_object() {}
 
          id_type           id;
          account_name_type delegator;
@@ -346,19 +346,19 @@ namespace bmchain { namespace chain {
    struct by_delegation;
 
    typedef multi_index_container <
-      rep_delegation_object,
+      vesting_delegation_object,
       indexed_by <
          ordered_unique< tag< by_id >,
-            member< rep_delegation_object, rep_delegation_id_type, &rep_delegation_object::id > >,
+            member< vesting_delegation_object, rep_delegation_id_type, &vesting_delegation_object::id > >,
          ordered_unique< tag< by_delegation >,
-            composite_key< rep_delegation_object,
-               member< rep_delegation_object, account_name_type, &rep_delegation_object::delegator >,
-               member< rep_delegation_object, account_name_type, &rep_delegation_object::delegatee >
+            composite_key< vesting_delegation_object,
+               member< vesting_delegation_object, account_name_type, &vesting_delegation_object::delegator >,
+               member< vesting_delegation_object, account_name_type, &vesting_delegation_object::delegatee >
             >,
             composite_key_compare< std::less< account_name_type >, std::less< account_name_type > >
          >
       >,
-      allocator< rep_delegation_object >
+      allocator< vesting_delegation_object >
    > rep_delegation_index;
 
    struct by_expiration;
@@ -386,7 +386,7 @@ namespace bmchain { namespace chain {
          >
       >,
       allocator< rep_delegation_expiration_object >
-   > rep_delegation_expiration_index;
+   > vesting_delegation_expiration_index;
 
    struct by_expiration;
 
@@ -462,13 +462,13 @@ FC_REFLECT( bmchain::chain::account_authority_object,
 )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::account_authority_object, bmchain::chain::account_authority_index )
 
-FC_REFLECT( bmchain::chain::rep_delegation_object,
+FC_REFLECT( bmchain::chain::vesting_delegation_object,
             (id)(delegator)(delegatee)(rep_shares)(min_delegation_time) )
-CHAINBASE_SET_INDEX_TYPE( bmchain::chain::rep_delegation_object, bmchain::chain::rep_delegation_index )
+CHAINBASE_SET_INDEX_TYPE( bmchain::chain::vesting_delegation_object, bmchain::chain::rep_delegation_index )
 
 FC_REFLECT( bmchain::chain::rep_delegation_expiration_object,
             (id)(delegator)(rep_shares)(expiration) )
-CHAINBASE_SET_INDEX_TYPE( bmchain::chain::rep_delegation_expiration_object, bmchain::chain::rep_delegation_expiration_index )
+CHAINBASE_SET_INDEX_TYPE( bmchain::chain::rep_delegation_expiration_object, bmchain::chain::vesting_delegation_expiration_index )
 
 FC_REFLECT( bmchain::chain::owner_authority_history_object,
              (id)(account)(previous_owner_authority)(last_valid_time)

@@ -63,7 +63,7 @@ enum object_type
    decline_voting_rights_request_object_type,
    block_stats_object_type,
    reward_fund_object_type,
-   rep_delegation_object_type,
+   vesting_delegation_object_type,
    rep_delegation_expiration_object_type,
    content_order_object_type
 };
@@ -93,7 +93,7 @@ class savings_withdraw_object;
 class decline_voting_rights_request_object;
 class block_stats_object;
 class reward_fund_object;
-class rep_delegation_object;
+class vesting_delegation_object;
 class rep_delegation_expiration_object;
 class content_order_object;        
 
@@ -122,7 +122,7 @@ typedef oid< savings_withdraw_object                > savings_withdraw_id_type;
 typedef oid< decline_voting_rights_request_object   > decline_voting_rights_request_id_type;
 typedef oid< block_stats_object                     > block_stats_id_type;
 typedef oid< reward_fund_object                     > reward_fund_id_type;
-typedef oid< rep_delegation_object              > rep_delegation_id_type;
+typedef oid< vesting_delegation_object              > rep_delegation_id_type;
 typedef oid< rep_delegation_expiration_object   > rep_delegation_expiration_id_type;
 typedef oid< content_order_object                   > content_order_id_type;        
 
@@ -232,7 +232,7 @@ FC_REFLECT_ENUM( bmchain::chain::object_type,
                  (decline_voting_rights_request_object_type)
                  (block_stats_object_type)
                  (reward_fund_object_type)
-                 (rep_delegation_object_type)
+                 (vesting_delegation_object_type)
                  (rep_delegation_expiration_object_type)
                  (content_order_object_type)
                )

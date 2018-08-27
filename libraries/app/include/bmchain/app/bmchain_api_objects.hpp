@@ -49,7 +49,7 @@ typedef chain::withdraw_rep_route_object           withdraw_rep_route_api_obj;
 typedef chain::decline_voting_rights_request_object    decline_voting_rights_request_api_obj;
 typedef chain::witness_vote_object                     witness_vote_api_obj;
 typedef chain::witness_schedule_object                 witness_schedule_api_obj;
-typedef chain::rep_delegation_object               rep_delegation_api_obj;
+typedef chain::vesting_delegation_object               rep_delegation_api_obj;
 typedef chain::rep_delegation_expiration_object    rep_delegation_expiration_api_obj;
 typedef chain::reward_fund_object                      reward_fund_api_obj;
 typedef witness::account_bandwidth_object       account_bandwidth_api_obj;
