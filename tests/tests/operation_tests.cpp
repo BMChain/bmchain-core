@@ -6033,7 +6033,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //
 //           BOOST_TEST_MESSAGE( "--- Test removing delegation from new account" );
 //           tx.clear();
-//           delegate_rep_shares_operation delegate;
+//           delegate_vesting_shares_operation delegate;
 //           delegate.delegator = "alice";
 //           delegate.delegatee = "bob";
 //           delegate.rep_shares = ASSET( "0.000000 VESTS" );
@@ -6155,7 +6155,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //   {
 //       try
 //       {
-//           delegate_rep_shares_operation op;
+//           delegate_vesting_shares_operation op;
 //
 //           op.delegator = "alice";
 //           op.delegatee = "bob";
@@ -6174,7 +6174,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //           ACTORS( (alice)(bob) )
 //           vest( "alice", ASSET( "10000.000000 VESTS" ) );
 //
-//           delegate_rep_shares_operation op;
+//           delegate_vesting_shares_operation op;
 //           op.rep_shares = ASSET( "300.000000 VESTS");
 //           op.delegator = "alice";
 //           op.delegatee = "bob";
@@ -6236,7 +6236,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //
 //           generate_block();
 //
-//           delegate_rep_shares_operation op;
+//           delegate_vesting_shares_operation op;
 //           op.rep_shares = ASSET( "10000000.000000 VESTS");
 //           op.delegator = "alice";
 //           op.delegatee = "bob";
@@ -6430,7 +6430,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 //           generate_block();
 //
 //           signed_transaction tx;
-//           delegate_rep_shares_operation op;
+//           delegate_vesting_shares_operation op;
 //           op.rep_shares = ASSET( "10000000.000000 VESTS");
 //           op.delegator = "alice";
 //           op.delegatee = "bob";

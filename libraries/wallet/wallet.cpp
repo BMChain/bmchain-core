@@ -1567,7 +1567,7 @@ annotated_signed_transaction wallet_api::delegate_rep_shares( string delegator, 
    FC_ASSERT( delegator == accounts[0].name, "Delegator account is not right?" );
    FC_ASSERT( delegatee == accounts[1].name, "Delegator account is not right?" );
 
-   delegate_rep_shares_operation op;
+   delegate_vesting_shares_operation op;
    op.delegator = delegator;
    op.delegatee = delegatee;
    op.rep_shares = rep_shares;

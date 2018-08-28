@@ -505,7 +505,7 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( reward_bmt.amount > 0 || reward_vests.amount > 0, "Must claim something." );
    }
 
-   void delegate_rep_shares_operation::validate()const
+   void delegate_vesting_shares_operation::validate()const
    {
       validate_account_name( delegator );
       validate_account_name( delegatee );

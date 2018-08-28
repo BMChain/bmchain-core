@@ -1776,7 +1776,7 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< set_reset_account_evaluator              >();
    _my->_evaluator_registry.register_evaluator< claim_reward_balance_evaluator           >();
    _my->_evaluator_registry.register_evaluator< account_create_with_delegation_evaluator >();
-   _my->_evaluator_registry.register_evaluator< delegate_rep_shares_evaluator            >();
+   _my->_evaluator_registry.register_evaluator< delegate_vesting_shares_evaluator        >();
    _my->_evaluator_registry.register_evaluator< encrypted_content_evaluator              >();
    _my->_evaluator_registry.register_evaluator< content_order_create_evaluator           >();
    _my->_evaluator_registry.register_evaluator< content_order_cancel_evaluator           >();

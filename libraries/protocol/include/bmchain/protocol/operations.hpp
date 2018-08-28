@@ -59,7 +59,7 @@ namespace bmchain { namespace protocol {
             reset_account_operation,
             set_reset_account_operation,
             claim_reward_balance_operation,
-            delegate_rep_shares_operation,
+            delegate_vesting_shares_operation,
             account_create_with_delegation_operation,
             content_order_create_operation,
             content_order_cancel_operation,

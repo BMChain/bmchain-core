@@ -950,7 +950,7 @@ namespace bmchain { namespace protocol {
     * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi
     * of VESTS from voting on the same content twice.
     */
-   struct delegate_rep_shares_operation : public base_operation
+   struct delegate_vesting_shares_operation : public base_operation
    {
       account_name_type delegator;        ///< The account delegating vesting shares
       account_name_type delegatee;        ///< The account receiving vesting shares
@@ -1143,7 +1143,7 @@ FC_REFLECT( bmchain::protocol::recover_account_operation, (account_to_recover)(n
 FC_REFLECT( bmchain::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) );
 FC_REFLECT( bmchain::protocol::decline_voting_rights_operation, (account)(decline) );
 FC_REFLECT( bmchain::protocol::claim_reward_balance_operation, (account)(reward_bmt)(reward_vests) )
-FC_REFLECT( bmchain::protocol::delegate_rep_shares_operation, (delegator)(delegatee)(rep_shares) );
+FC_REFLECT( bmchain::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(rep_shares) );
 
 FC_REFLECT( bmchain::protocol::content_order_create_operation, (author)(permlink)(owner)(price)(json_metadata) )
 FC_REFLECT( bmchain::protocol::content_order_cancel_operation, (owner)(order_id)(json_metadata) );

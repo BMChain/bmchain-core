@@ -2100,7 +2100,7 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
    _db.adjust_proxied_witness_votes( acnt, op.reward_vests.amount );
 }
 
-void delegate_rep_shares_evaluator::do_apply( const delegate_rep_shares_operation& op )
+void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_operation& op )
 {
    const auto& delegator = _db.get_account( op.delegator );
    const auto& delegatee = _db.get_account( op.delegatee );
