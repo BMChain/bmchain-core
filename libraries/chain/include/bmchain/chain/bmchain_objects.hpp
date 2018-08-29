@@ -251,34 +251,61 @@ namespace bmchain { namespace chain {
          shared_string     json_metadata;
    };
 
+      class test_object : public object< test_object_type, test_object >
+      {
+      public:
+         test_object() = delete;
+
+         template< typename Constructor, typename Allocator >
+         test_object( Constructor&& c, allocator< Allocator > a ) : symbol(a)
+         {
+            c( *this );
+         }
+
+         id_type           id;
+         account_name_type control_account;
+         shared_string     symbol;
+         share_type        current_supply = 0;
+         time_point_sec    generation_time;
+      };
+
 #ifndef STEEM_SMT_TEST_SPACE_ID
 #define STEEM_SMT_TEST_SPACE_ID 13
 #endif
 
-   enum smt_test_object_types {
-      smt_token_object_type = (STEEM_SMT_TEST_SPACE_ID << 8)
-   };
-
-   class smt_token_object : public object<smt_token_object_type, smt_token_object> {
+      class custom_token_object : public object< custom_token_object_type, custom_token_object >
+      {
       public:
-         template<typename Constructor, typename Allocator>
-         smt_token_object(Constructor &&c, allocator<Allocator> a) {
-            c(*this);
+         custom_token_object() = delete;
+         template< typename Constructor, typename Allocator >
+         custom_token_object( Constructor&& c, allocator< Allocator > a )
+                 :symbol( a )
+         {
+            c( *this );
          }
 
-         id_type id;
-
+         id_type           id;
          account_name_type control_account;
-         uint8_t decimal_places = 0;
-         int64_t max_supply = BMCHAIN_MAX_SHARE_SUPPLY;
+         shared_string     symbol;
+         share_type        current_supply = 0;
+         time_point_sec    generation_time;
+      };
 
-         time_point_sec generation_begin_time;
-         time_point_sec generation_end_time;
-         time_point_sec announced_launch_time;
-         time_point_sec launch_expiration_time;
-   };
-
-   typedef smt_token_object::id_type smt_token_id_type;
+      //struct by_id;
+//      struct by_symbol;
+//      struct by_control_account;
+//      typedef multi_index_container<
+//              custom_token_object,
+//              indexed_by<
+//                      ordered_unique< tag< by_id >, member< custom_token_object, custom_token_id_type, &custom_token_object::id > >,
+//                      ordered_unique< tag< by_symbol >,
+//                              composite_key< custom_token_object,
+//                                      member< custom_token_object, account_name_type, &custom_token_object::control_account >
+//                              >
+//                      >
+//              >,
+//              allocator< custom_token_object >
+//      > custom_token_index;
 
    struct by_price;
    struct by_expiration;
@@ -495,19 +522,30 @@ namespace bmchain { namespace chain {
       allocator< content_order_object >
    > content_order_index;
 
+   struct by_symbol;
    struct by_control_account;
-   typedef multi_index_container<
-      smt_token_object,
-      indexed_by<
-          ordered_unique< tag< by_id >, member< smt_token_object, smt_token_id_type, &smt_token_object::id > >,
-          ordered_unique< tag< by_control_account >,
-             composite_key< smt_token_object,
-                member< smt_token_object, account_name_type, &smt_token_object::control_account >
-             >
-          >
-      >,
-      allocator< smt_token_object >
-   > smt_token_index;
+      typedef multi_index_container<
+              test_object,
+              indexed_by<
+                      ordered_unique< tag< by_id >, member< test_object, test_id_type, &test_object::id > >,
+                      ordered_unique< tag< by_control_account >,
+                              composite_key< test_object,
+                                      member< test_object, account_name_type,  &test_object::control_account >,
+                                      member< test_object, test_id_type,  &test_object::id >
+                              >,
+                              composite_key_compare< std::less< account_name_type >, std::greater< test_id_type > >
+                      >,
+                      ordered_unique< tag< by_symbol >,
+                              composite_key< test_object,
+                                      member< test_object, account_name_type,  &test_object::control_account >,
+                                      member< test_object, shared_string, &test_object::symbol >
+                              >,
+                              composite_key_compare< std::less< account_name_type >, strcmp_less >
+                      >
+              >,
+              allocator< test_object >
+      > test_index;
+
 
 } } // bmchain::chain
 
@@ -569,7 +607,9 @@ CHAINBASE_SET_INDEX_TYPE( bmchain::chain::content_order_object, bmchain::chain::
 FC_REFLECT_ENUM( bmchain::chain::content_order_object::order_status,
                  (open)(completed)(canceled))
 
-FC_REFLECT( bmchain::chain::smt_token_object,
-            (id)(control_account)(decimal_places)(max_supply)(generation_begin_time)(generation_end_time)
-                    (announced_launch_time)(launch_expiration_time))
-CHAINBASE_SET_INDEX_TYPE( bmchain::chain::smt_token_object, bmchain::chain::smt_token_index )
+FC_REFLECT( bmchain::chain::custom_token_object, (id)(control_account)(symbol)(current_supply)(generation_time))
+
+//CHAINBASE_SET_INDEX_TYPE( bmchain::chain::custom_token_object, bmchain::chain::custom_token_index )
+
+FC_REFLECT( bmchain::chain::test_object,(id)(control_account)(symbol)(current_supply)(generation_time) )
+CHAINBASE_SET_INDEX_TYPE( bmchain::chain::test_object, bmchain::chain::test_index )
