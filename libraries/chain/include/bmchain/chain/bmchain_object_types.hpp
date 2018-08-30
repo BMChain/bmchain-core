@@ -65,7 +65,8 @@ enum object_type
    reward_fund_object_type,
    vesting_delegation_object_type,
    rep_delegation_expiration_object_type,
-   content_order_object_type
+   content_order_object_type,
+   custom_token_object_type,
 };
 
 class dynamic_global_property_object;
@@ -95,7 +96,8 @@ class block_stats_object;
 class reward_fund_object;
 class vesting_delegation_object;
 class rep_delegation_expiration_object;
-class content_order_object;        
+class content_order_object;
+class custom_token_object;
 
 typedef oid< dynamic_global_property_object         > dynamic_global_property_id_type;
 typedef oid< account_object                         > account_id_type;
@@ -113,7 +115,7 @@ typedef oid< convert_request_object                 > convert_request_id_type;
 typedef oid< operation_object                       > operation_id_type;
 typedef oid< account_history_object                 > account_history_id_type;
 typedef oid< hardfork_property_object               > hardfork_property_id_type;
-typedef oid< withdraw_rep_route_object          > withdraw_rep_route_id_type;
+typedef oid< withdraw_rep_route_object              > withdraw_rep_route_id_type;
 typedef oid< owner_authority_history_object         > owner_authority_history_id_type;
 typedef oid< account_recovery_request_object        > account_recovery_request_id_type;
 typedef oid< change_recovery_account_request_object > change_recovery_account_request_id_type;
@@ -123,8 +125,9 @@ typedef oid< decline_voting_rights_request_object   > decline_voting_rights_requ
 typedef oid< block_stats_object                     > block_stats_id_type;
 typedef oid< reward_fund_object                     > reward_fund_id_type;
 typedef oid< vesting_delegation_object              > rep_delegation_id_type;
-typedef oid< rep_delegation_expiration_object   > rep_delegation_expiration_id_type;
-typedef oid< content_order_object                   > content_order_id_type;        
+typedef oid< rep_delegation_expiration_object       > rep_delegation_expiration_id_type;
+typedef oid< content_order_object                   > content_order_id_type;
+typedef oid< custom_token_object                    > custom_token_id_type;
 
 enum bandwidth_type
 {
@@ -235,6 +238,7 @@ FC_REFLECT_ENUM( bmchain::chain::object_type,
                  (vesting_delegation_object_type)
                  (rep_delegation_expiration_object_type)
                  (content_order_object_type)
+                 (custom_token_object_type)
                )
 
 FC_REFLECT_TYPENAME( bmchain::chain::shared_string )

@@ -16,6 +16,7 @@
 #include <bmchain/chain/shared_db_merkle.hpp>
 #include <bmchain/chain/operation_notification.hpp>
 #include <bmchain/chain/witness_schedule.hpp>
+#include <bmchain/chain/custom_token_object.hpp>
 
 #include <bmchain/chain/util/asset.hpp>
 #include <bmchain/chain/util/reward.hpp>
@@ -1782,6 +1783,7 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< content_order_cancel_evaluator           >();
    _my->_evaluator_registry.register_evaluator< content_order_cancel_by_author_evaluator >();
    _my->_evaluator_registry.register_evaluator< private_message_evaluator                >();
+   _my->_evaluator_registry.register_evaluator< custom_token_create_evaluator            >();
 }
 
 void database::set_custom_operation_interpreter( const std::string& id, std::shared_ptr< custom_operation_interpreter > registry )
@@ -1817,7 +1819,7 @@ void database::initialize_indexes()
    add_core_index< operation_index                         >(*this);
    add_core_index< account_history_index                   >(*this);
    add_core_index< hardfork_property_index                 >(*this);
-   add_core_index< withdraw_rep_route_index            >(*this);
+   add_core_index< withdraw_rep_route_index                >(*this);
    add_core_index< owner_authority_history_index           >(*this);
    add_core_index< account_recovery_request_index          >(*this);
    add_core_index< change_recovery_account_request_index   >(*this);
@@ -1825,9 +1827,10 @@ void database::initialize_indexes()
    add_core_index< savings_withdraw_index                  >(*this);
    add_core_index< decline_voting_rights_request_index     >(*this);
    add_core_index< reward_fund_index                       >(*this);
-   add_core_index< rep_delegation_index                >(*this);
+   add_core_index< rep_delegation_index                    >(*this);
    add_core_index< vesting_delegation_expiration_index     >(*this);
    add_core_index< content_order_index                     >(*this);
+   add_core_index< custom_token_index                              >(*this);
 
    _plugin_index_signal();
 }

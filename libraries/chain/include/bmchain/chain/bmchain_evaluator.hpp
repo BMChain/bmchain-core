@@ -3,6 +3,7 @@
 #include <bmchain/protocol/bmchain_operations.hpp>
 #include <bmchain/private_message/private_message_plugin.hpp>
 #include <bmchain/chain/evaluator.hpp>
+#include <bmchain/protocol/custom_token_operations.hpp>
 
 namespace bmchain{ namespace chain {
 
@@ -55,5 +56,6 @@ DEFINE_EVALUATOR( content_order_create )
 DEFINE_EVALUATOR( content_order_cancel )
 DEFINE_EVALUATOR( content_order_cancel_by_author )
 DEFINE_EVALUATOR( private_message )
+DEFINE_EVALUATOR( custom_token_create )
 
 } } // bmchain::chain

@@ -3,6 +3,7 @@
 #include <bmchain/protocol/operation_util.hpp>
 #include <bmchain/protocol/bmchain_operations.hpp>
 #include <bmchain/protocol/bmchain_virtual_operations.hpp>
+#include <bmchain/protocol/custom_token_operations.hpp>
 
 namespace bmchain { namespace protocol {
 
@@ -85,11 +86,11 @@ namespace bmchain { namespace protocol {
             comment_benefactor_reward_operation,
             producer_reward_operation,
 
-            /// SMT operations
-            smt_create_operation,
+            /// encrypted_content
+            content_order_cancel_by_author_operation,
 
-           /// encrypted_content
-           content_order_cancel_by_author_operation
+            /// custom token operations
+            custom_token_create_operation
 
          > operation;
 

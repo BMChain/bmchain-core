@@ -16,7 +16,7 @@ add_library( steemit_protocol
              get_config.cpp
 
              ${HEADERS}
-        include/bmchain/protocol/legacy_asset.hpp)
+        include/bmchain/protocol/legacy_asset.hpp include/bmchain/protocol/custom_token_operations.hpp custom_token_operations.cpp)
 
 target_link_libraries( steemit_protocol fc graphene_utilities )
 target_include_directories( steemit_protocol
