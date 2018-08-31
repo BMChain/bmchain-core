@@ -6,6 +6,7 @@
 #include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/bmchain_object_types.hpp>
 #include <bmchain/chain/history_object.hpp>
+#include <bmchain/chain/custom_token_object.hpp>
 
 #include <bmchain/tags/tags_plugin.hpp>
 
@@ -157,16 +158,16 @@ class database_api
 
       void set_block_applied_callback( std::function<void(const variant& block_header)> cb );
 
-      vector<tag_api_obj> get_trending_tags( string after_tag, uint32_t limit )const;
+      vector<tag_api_obj> get_trending_tags( string after_tag, uint32_t limit ) const;
 
       /**
        *  This API is a short-cut for returning all of the state required for a particular URL
        *  with a single query.
        */
-      state get_state( string path )const;
+      state get_state( string path ) const;
 
-      vector< account_name_type > get_active_witnesses()const;
-      vector< account_name_type > get_miner_queue()const;
+      vector< account_name_type > get_active_witnesses() const;
+      vector< account_name_type > get_miner_queue() const;
 
       /////////////////////////////
       // Blocks and transactions //
@@ -177,14 +178,14 @@ class database_api
        * @param block_num Height of the block whose header should be returned
        * @return header of the referenced block, or null if no matching block was found
        */
-      optional<block_header> get_block_header(uint32_t block_num)const;
+      optional<block_header> get_block_header(uint32_t block_num) const;
 
       /**
        * @brief Retrieve a full, signed block
        * @param block_num Height of the block to be returned
        * @return the referenced block, or null if no matching block was found
        */
-      optional<signed_block_api_obj> get_block(uint32_t block_num)const;
+      optional<signed_block_api_obj> get_block(uint32_t block_num) const;
 
       /**
        *  @brief Get sequence of operations included/generated within a particular block
@@ -192,7 +193,7 @@ class database_api
        *  @param only_virtual Whether to only include virtual operations in returned results (default: true)
        *  @return sequence of operations included/generated within the block
        */
-      vector<applied_operation> get_ops_in_block(uint32_t block_num, bool only_virtual = true)const;
+      vector<applied_operation> get_ops_in_block(uint32_t block_num, bool only_virtual = true) const;
 
       /////////////
       // Globals //
@@ -201,30 +202,30 @@ class database_api
       /**
        * @brief Retrieve compile-time constants
        */
-      fc::variant_object get_config()const;
+      fc::variant_object get_config() const;
 
       /**
        * @brief Return a JSON description of object representations
        */
-      std::string get_schema()const;
+      std::string get_schema() const;
 
       /**
        * @brief Retrieve the current @ref dynamic_global_property_object
        */
-      dynamic_global_property_api_obj  get_dynamic_global_properties()const;
-      chain_properties                 get_chain_properties()const;
-      price                            get_current_median_history_price()const;
-      feed_history_api_obj             get_feed_history()const;
-      witness_schedule_api_obj         get_witness_schedule()const;
-      hardfork_version                 get_hardfork_version()const;
-      scheduled_hardfork               get_next_scheduled_hardfork()const;
-      reward_fund_api_obj              get_reward_fund( string name )const;
+      dynamic_global_property_api_obj  get_dynamic_global_properties() const;
+      chain_properties                 get_chain_properties() const;
+      price                            get_current_median_history_price() const;
+      feed_history_api_obj             get_feed_history() const;
+      witness_schedule_api_obj         get_witness_schedule() const;
+      hardfork_version                 get_hardfork_version() const;
+      scheduled_hardfork               get_next_scheduled_hardfork() const;
+      reward_fund_api_obj              get_reward_fund( string name ) const;
 
       //////////
       // Keys //
       //////////
 
-      vector<set<string>> get_key_references( vector<public_key_type> key )const;
+      vector<set<string>> get_key_references( vector<public_key_type> key ) const;
 
       //////////////
       // Accounts //
@@ -235,7 +236,7 @@ class database_api
       /**
        *  @return all accounts that referr to the key or account id in their owner or active authorities.
        */
-      vector<account_id_type> get_account_references( account_id_type account_id )const;
+      vector<account_id_type> get_account_references( account_id_type account_id ) const;
 
       /**
        * @brief Get a list of accounts by name
@@ -244,7 +245,7 @@ class database_api
        *
        * This function has semantics identical to @ref get_objects
        */
-      vector<optional<account_api_obj>> lookup_account_names(const vector<string>& account_names)const;
+      vector<optional<account_api_obj>> lookup_account_names(const vector<string>& account_names) const;
 
       /**
        * @brief Get names and IDs for registered accounts
@@ -252,31 +253,31 @@ class database_api
        * @param limit Maximum number of results to return -- must not exceed 1000
        * @return Map of account names to corresponding IDs
        */
-      set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit)const;
+      set<string> lookup_accounts(const string& lower_bound_name, uint32_t limit) const;
 
       /**
        * @brief Get the total number of accounts registered with the blockchain
        */
-      uint64_t get_account_count()const;
+      uint64_t get_account_count() const;
 
-      vector< owner_authority_history_api_obj > get_owner_history( string account )const;
+      vector< owner_authority_history_api_obj > get_owner_history( string account ) const;
 
       optional< account_recovery_request_api_obj > get_recovery_request( string account ) const;
 
-      optional< escrow_api_obj > get_escrow( string from, uint32_t escrow_id )const;
+      optional< escrow_api_obj > get_escrow( string from, uint32_t escrow_id ) const;
 
-      vector< withdraw_route > get_withdraw_routes( string account, withdraw_route_type type = outgoing )const;
+      vector< withdraw_route > get_withdraw_routes( string account, withdraw_route_type type = outgoing ) const;
 
-      optional< account_bandwidth_api_obj > get_account_bandwidth( string account, witness::bandwidth_type type )const;
+      optional< account_bandwidth_api_obj > get_account_bandwidth( string account, witness::bandwidth_type type ) const;
 
-      vector< savings_withdraw_api_obj > get_savings_withdraw_from( string account )const;
-      vector< savings_withdraw_api_obj > get_savings_withdraw_to( string account )const;
+      vector< savings_withdraw_api_obj > get_savings_withdraw_from( string account ) const;
+      vector< savings_withdraw_api_obj > get_savings_withdraw_to( string account ) const;
 
-      vector< rep_delegation_api_obj > get_rep_delegations( string account, string from, uint32_t limit = 100 )const;
-      vector< rep_delegation_expiration_api_obj > get_expiring_rep_delegations( string account, time_point_sec from, uint32_t limit = 100 )const;
+      vector< rep_delegation_api_obj > get_rep_delegations( string account, string from, uint32_t limit = 100 ) const;
+      vector< rep_delegation_expiration_api_obj > get_expiring_rep_delegations( string account, time_point_sec from, uint32_t limit = 100 ) const;
 
-      vector<best_author> get_best_authors(uint32_t limit)const;
-      vector<best_author_week> get_best_authors_week(uint32_t limit)const;
+      vector<best_author> get_best_authors(uint32_t limit) const;
+      vector<best_author_week> get_best_authors_week(uint32_t limit) const;
 
       ///////////////
       // Witnesses //
@@ -289,23 +290,23 @@ class database_api
        *
        * This function has semantics identical to @ref get_objects
        */
-      vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids)const;
+      vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids) const;
 
-      vector<convert_request_api_obj> get_conversion_requests( const string& account_name )const;
+      vector<convert_request_api_obj> get_conversion_requests( const string& account_name ) const;
 
       /**
        * @brief Get the witness owned by a given account
        * @param account The name of the account whose witness should be retrieved
        * @return The witness object, or null if the account does not have a witness
        */
-      fc::optional< witness_api_obj > get_witness_by_account( string account_name )const;
+      fc::optional< witness_api_obj > get_witness_by_account( string account_name ) const;
 
       /**
        *  This method is used to fetch witnesses with pagination.
        *
        *  @return an array of `count` witnesses sorted by total votes after witness `from` with at most `limit' results.
        */
-      vector< witness_api_obj > get_witnesses_by_vote( string from, uint32_t limit )const;
+      vector< witness_api_obj > get_witnesses_by_vote( string from, uint32_t limit ) const;
 
       /**
        * @brief Get names and IDs for registered witnesses
@@ -313,71 +314,71 @@ class database_api
        * @param limit Maximum number of results to return -- must not exceed 1000
        * @return Map of witness names to corresponding IDs
        */
-      set<account_name_type> lookup_witness_accounts(const string& lower_bound_name, uint32_t limit)const;
+      set<account_name_type> lookup_witness_accounts(const string& lower_bound_name, uint32_t limit) const;
 
       /**
        * @brief Get the total number of witnesses registered with the blockchain
        */
-      uint64_t get_witness_count()const;
+      uint64_t get_witness_count() const;
 
       ////////////////////////////
       // Authority / validation //
       ////////////////////////////
 
       /// @brief Get a hexdump of the serialized binary form of a transaction
-      std::string                   get_transaction_hex(const signed_transaction& trx)const;
-      annotated_signed_transaction  get_transaction( transaction_id_type trx_id )const;
+      std::string                   get_transaction_hex(const signed_transaction& trx) const;
+      annotated_signed_transaction  get_transaction( transaction_id_type trx_id ) const;
 
       /**
        *  This API will take a partially signed transaction and a set of public keys that the owner has the ability to sign for
        *  and return the minimal subset of public keys that should add signatures to the transaction.
        */
-      set<public_key_type> get_required_signatures( const signed_transaction& trx, const flat_set<public_key_type>& available_keys )const;
+      set<public_key_type> get_required_signatures( const signed_transaction& trx, const flat_set<public_key_type>& available_keys ) const;
 
       /**
        *  This method will return the set of all public keys that could possibly sign for a given transaction.  This call can
        *  be used by wallets to filter their set of public keys to just the relevant subset prior to calling @ref get_required_signatures
        *  to get the minimum subset.
        */
-      set<public_key_type> get_potential_signatures( const signed_transaction& trx )const;
+      set<public_key_type> get_potential_signatures( const signed_transaction& trx ) const;
 
       /**
        * @return true of the @ref trx has all of the required signatures, otherwise throws an exception
        */
-      bool           verify_authority( const signed_transaction& trx )const;
+      bool           verify_authority( const signed_transaction& trx ) const;
 
       /*
        * @return true if the signers have enough authority to authorize an account
        */
-      bool           verify_account_authority( const string& name_or_id, const flat_set<public_key_type>& signers )const;
+      bool           verify_account_authority( const string& name_or_id, const flat_set<public_key_type>& signers ) const;
 
       /**
        *  if permlink is "" then it will return all votes for author
        */
-      vector<vote_state> get_active_votes( string author, string permlink )const;
-      vector<account_vote> get_account_votes( string voter )const;
+      vector<vote_state> get_active_votes( string author, string permlink ) const;
+      vector<account_vote> get_account_votes( string voter ) const;
 
 
-      discussion           get_content( string author, string permlink )const;
-      vector<discussion>   get_content_replies( string parent, string parent_permlink )const;
+      discussion           get_content( string author, string permlink ) const;
+      vector<discussion>   get_content_replies( string parent, string parent_permlink ) const;
 
       ///@{ tags API
       /** This API will return the top 1000 tags used by an author sorted by most frequently used */
-      vector<pair<string,uint32_t>> get_tags_used_by_author( const string& author )const;
-      vector<discussion> get_discussions_by_payout(const discussion_query& query )const;
-      vector<discussion> get_post_discussions_by_payout( const discussion_query& query )const;
-      vector<discussion> get_comment_discussions_by_payout( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_trending( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_created( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_active( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_cashout( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_votes( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_children( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_hot( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_feed( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_blog( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_comments( const discussion_query& query )const;
-      vector<discussion> get_discussions_by_promoted( const discussion_query& query )const;
+      vector<pair<string,uint32_t>> get_tags_used_by_author( const string& author ) const;
+      vector<discussion> get_discussions_by_payout(const discussion_query& query ) const;
+      vector<discussion> get_post_discussions_by_payout( const discussion_query& query ) const;
+      vector<discussion> get_comment_discussions_by_payout( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_trending( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_created( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_active( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_cashout( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_votes( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_children( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_hot( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_feed( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_blog( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_comments( const discussion_query& query ) const;
+      vector<discussion> get_discussions_by_promoted( const discussion_query& query ) const;
 
       ///@}
 
@@ -407,7 +408,7 @@ class database_api
        *  Return the active discussions with the highest cumulative pending payouts without respect to category, total
        *  pending payout means the pending payout of all children as well.
        */
-      vector<discussion>   get_replies_by_last_update( account_name_type start_author, string start_permlink, uint32_t limit )const;
+      vector<discussion>   get_replies_by_last_update( account_name_type start_author, string start_permlink, uint32_t limit ) const;
 
 
 
@@ -417,7 +418,7 @@ class database_api
        *  If start_permlink is empty then only before_date will be considered. If both are specified the eariler to the two metrics will be used. This
        *  should allow easy pagination.
        */
-      vector<discussion>   get_discussions_by_author_before_date( string author, string start_permlink, time_point_sec before_date, uint32_t limit )const;
+      vector<discussion>   get_discussions_by_author_before_date( string author, string start_permlink, time_point_sec before_date, uint32_t limit ) const;
 
       /**
        *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
@@ -426,7 +427,7 @@ class database_api
        *  @param from - the absolute sequence number, -1 means most recent, limit is the number of operations before from.
        *  @param limit - the maximum number of items that can be queried (0 to 1000], must be less than from
        */
-      map<uint32_t, applied_operation> get_account_history( string account, uint64_t from, uint32_t limit )const;
+      map<uint32_t, applied_operation> get_account_history( string account, uint64_t from, uint32_t limit ) const;
 
       ////////////////////////////
       // Handlers - not exposed //
@@ -436,30 +437,32 @@ class database_api
       /// Bmchain
       std::map<std::string, int64_t> get_category_reputation() const;
 
-      vector<discussion> get_comments(string author, string permlink)const;
+      vector<discussion> get_comments(string author, string permlink) const;
 
-      void set_last_comments(vector<discussion> & discussions, uint32_t limit)const;
+      void set_last_comments(vector<discussion> & discussions, uint32_t limit) const;
 
-      statistic get_statistic(const string & begin, const string & end)const;
+      statistic get_statistic(const string & begin, const string & end) const;
 
-      vector<block_statistic> get_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
+      vector<block_statistic> get_block_statistic(uint32_t limit, uint32_t limit_block_size) const;
 
-      total_block_statistic get_total_block_statistic(uint32_t limit, uint32_t limit_block_size)const;
+      total_block_statistic get_total_block_statistic(uint32_t limit, uint32_t limit_block_size) const;
 
       /// Encrypted content
-      vector<discussion> get_encrypted_discussions( const discussion_query &query )const;
+      vector<discussion> get_encrypted_discussions( const discussion_query &query ) const;
 
-      vector<content_order_api_obj> get_content_orders( string owner, string author, int32_t start_id, uint32_t limit )const;
+      vector<content_order_api_obj> get_content_orders( string owner, string author, int32_t start_id, uint32_t limit ) const;
 
       vector<content_order_api_obj> get_content_orders_by_comment( string author, string permlink, string owner,
-                                                                   uint32_t limit )const;
+                                                                   uint32_t limit ) const;
 
-      optional<content_order_api_obj> get_content_order_by_id( uint32_t id )const;
+      optional<content_order_api_obj> get_content_order_by_id( uint32_t id ) const;
 
+      vector< string > get_custom_tokens( uint32_t limit ) const;
+      
    private:
-      void set_pending_payout( discussion& d )const;
-      void set_url( discussion& d )const;
-      discussion get_discussion( comment_id_type, uint32_t truncate_body = 0 )const;
+      void set_pending_payout( discussion& d ) const;
+      void set_url( discussion& d ) const;
+      discussion get_discussion( comment_id_type, uint32_t truncate_body = 0 ) const;
 
       static bool filter_default( const comment_api_obj& c ) { return false; }
       static bool exit_default( const comment_api_obj& c )   { return false; }
@@ -475,10 +478,10 @@ class database_api
                                           const std::function< bool( const comment_api_obj& ) >& exit   = &database_api::exit_default,
                                           const std::function< bool( const tags::tag_object& ) >& tag_exit = &database_api::tag_exit_default,
                                           bool ignore_parent = false
-                                          )const;
-      comment_id_type get_parent( const discussion_query& q )const;
+                                          ) const;
+      comment_id_type get_parent( const discussion_query& q ) const;
 
-      void recursively_fetch_content( state& _state, discussion& root, set<string>& referenced_accounts )const;
+      void recursively_fetch_content( state& _state, discussion& root, set<string>& referenced_accounts ) const;
 
       std::shared_ptr< database_api_impl >   my;
 };
@@ -603,4 +606,7 @@ FC_API(bmchain::app::database_api,
    (get_content_orders)
    (get_content_orders_by_comment)
    (get_content_order_by_id)
+
+   /// custom tokens
+   (get_custom_tokens)
 )
