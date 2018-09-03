@@ -2216,7 +2216,7 @@ void database::_apply_block( const signed_block& next_block )
    modify( gprops, [&]( dynamic_global_property_object& dgp ){
       dgp.current_witness = next_block.witness;
    });
-
+///
    /// parse witness version reporting
    process_header_extensions( next_block );
 
