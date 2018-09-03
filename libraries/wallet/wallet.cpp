@@ -2743,5 +2743,25 @@ string wallet_api::vec_to_str(vector< char > vec) const {
    return msg;
 }
 
+annotated_signed_transaction wallet_api::create_custom_token( string control_account, string symbol, uint64_t init_supply, bool broadcast ) {
+   FC_ASSERT( !is_locked() );
+
+   custom_token_create_operation op;
+   op.control_account = control_account;
+   op.symbol = symbol;
+   op.current_supply = init_supply;
+
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
+
+   return my->sign_transaction(tx, broadcast);
+}
+
+vector< string > wallet_api::get_custom_tokens( uint32_t limit ) const {
+   FC_ASSERT( !is_locked() );
+   return my->_remote_db->get_custom_tokens( limit );
+}
+
 } } // bmchain::wallet
 

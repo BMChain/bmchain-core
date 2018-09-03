@@ -29,12 +29,12 @@ namespace bmchain {
 
         class database_api_impl : public std::enable_shared_from_this<database_api_impl> {
         public:
-            database_api_impl(const bmchain::app::api_context &ctx);
+            database_api_impl( const bmchain::app::api_context &ctx);
 
             ~database_api_impl();
 
             // Subscriptions
-            void set_block_applied_callback(std::function<void(const variant &block_id)> cb);
+            void set_block_applied_callback(std::function<void( const variant &block_id)> cb);
 
             // Blocks and transactions
             optional<block_header> get_block_header(uint32_t block_num) const;
@@ -56,9 +56,9 @@ namespace bmchain {
 
             vector<account_id_type> get_account_references(account_id_type account_id) const;
 
-            vector<optional<account_api_obj>> lookup_account_names(const vector<string> &account_names) const;
+            vector<optional<account_api_obj>> lookup_account_names( const vector<string> &account_names) const;
 
-            set<string> lookup_accounts(const string &lower_bound_name, uint32_t limit) const;
+            set<string> lookup_accounts( const string &lower_bound_name, uint32_t limit) const;
 
             uint64_t get_account_count() const;
 
@@ -67,32 +67,32 @@ namespace bmchain {
             vector<best_author_week> get_best_authors_week(uint32_t limit) const;
 
             // Witnesses
-            vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type> &witness_ids) const;
+            vector<optional<witness_api_obj>> get_witnesses( const vector<witness_id_type> &witness_ids) const;
 
             fc::optional<witness_api_obj> get_witness_by_account(string account_name) const;
 
-            set<account_name_type> lookup_witness_accounts(const string &lower_bound_name, uint32_t limit) const;
+            set<account_name_type> lookup_witness_accounts( const string &lower_bound_name, uint32_t limit) const;
 
             uint64_t get_witness_count() const;
 
             // Authority / validation
-            std::string get_transaction_hex(const signed_transaction &trx) const;
+            std::string get_transaction_hex( const signed_transaction &trx) const;
 
-            set<public_key_type> get_required_signatures(const signed_transaction &trx,
+            set<public_key_type> get_required_signatures( const signed_transaction &trx,
                                                          const flat_set<public_key_type> &available_keys) const;
 
-            set<public_key_type> get_potential_signatures(const signed_transaction &trx) const;
+            set<public_key_type> get_potential_signatures( const signed_transaction &trx) const;
 
-            bool verify_authority(const signed_transaction &trx) const;
+            bool verify_authority( const signed_transaction &trx) const;
 
-            bool verify_account_authority(const string &name_or_id, const flat_set<public_key_type> &signers) const;
+            bool verify_account_authority( const string &name_or_id, const flat_set<public_key_type> &signers) const;
 
             // signal handlers
-            void on_applied_block(const chain::signed_block &b);
+            void on_applied_block( const chain::signed_block &b);
 
-            map<string, int32_t> get_reputation_by_categories(const account_object &acc) const;
+            map<string, int32_t> get_reputation_by_categories( const account_object &acc) const;
 
-            std::function<void(const fc::variant &)> _block_applied_callback;
+            std::function<void( const fc::variant &)> _block_applied_callback;
 
             bmchain::chain::database &_db;
             std::shared_ptr<bmchain::follow::follow_api> _follow_api;
@@ -104,7 +104,7 @@ namespace bmchain {
 
         applied_operation::applied_operation() {}
 
-        applied_operation::applied_operation(const operation_object &op_obj)
+        applied_operation::applied_operation( const operation_object &op_obj)
                 : trx_id(op_obj.trx_id),
                   block(op_obj.block),
                   trx_in_block(op_obj.trx_in_block),
@@ -125,13 +125,13 @@ namespace bmchain {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        void database_api::set_block_applied_callback(std::function<void(const variant &block_id)> cb) {
+        void database_api::set_block_applied_callback(std::function<void( const variant &block_id)> cb) {
             my->_db.with_read_lock([&]() {
                 my->set_block_applied_callback(cb);
             });
         }
 
-        void database_api_impl::on_applied_block(const chain::signed_block &b) {
+        void database_api_impl::on_applied_block( const chain::signed_block &b) {
             try {
                 _block_applied_callback(fc::variant(signed_block_header(b)));
             }
@@ -140,7 +140,7 @@ namespace bmchain {
             }
         }
 
-        void database_api_impl::set_block_applied_callback(std::function<void(const variant &block_header)> cb) {
+        void database_api_impl::set_block_applied_callback(std::function<void( const variant &block_header)> cb) {
             _block_applied_callback = cb;
             _block_applied_connection = connect_signal(_db.applied_block, *this, &database_api_impl::on_applied_block);
         }
@@ -151,12 +151,12 @@ namespace bmchain {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        database_api::database_api(const bmchain::app::api_context &ctx)
+        database_api::database_api( const bmchain::app::api_context &ctx)
                 : my(new database_api_impl(ctx)) {}
 
         database_api::~database_api() {}
 
-        database_api_impl::database_api_impl(const bmchain::app::api_context &ctx)
+        database_api_impl::database_api_impl( const bmchain::app::api_context &ctx)
                 : _db(*ctx.app.chain_database()) {
             wlog("creating database api ${x}", ("x", int64_t(this)));
 
@@ -388,14 +388,14 @@ namespace bmchain {
         }
 
         vector<optional<account_api_obj>>
-        database_api::lookup_account_names(const vector<string> &account_names) const {
+        database_api::lookup_account_names( const vector<string> &account_names) const {
             return my->_db.with_read_lock([&]() {
                 return my->lookup_account_names(account_names);
             });
         }
 
         vector<optional<account_api_obj>>
-        database_api_impl::lookup_account_names(const vector<string> &account_names) const {
+        database_api_impl::lookup_account_names( const vector<string> &account_names) const {
             vector<optional<account_api_obj> > result;
             result.reserve(account_names.size());
 
@@ -412,13 +412,13 @@ namespace bmchain {
             return result;
         }
 
-        set<string> database_api::lookup_accounts(const string &lower_bound_name, uint32_t limit) const {
+        set<string> database_api::lookup_accounts( const string &lower_bound_name, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 return my->lookup_accounts(lower_bound_name, limit);
             });
         }
 
-        set<string> database_api_impl::lookup_accounts(const string &lower_bound_name, uint32_t limit) const {
+        set<string> database_api_impl::lookup_accounts( const string &lower_bound_name, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
             const auto &accounts_by_name = _db.get_index<account_index>().indices().get<by_name>();
             set<string> result;
@@ -560,7 +560,7 @@ namespace bmchain {
                  limit-- && itr != accounts_by_rep.end();
                  ++itr) {
                 auto comment_itr = comments_by_author.find(itr->name);
-                auto pred = [&](const comment_object &com_obj) {
+                auto pred = [&]( const comment_object &com_obj) {
                     return (com_obj.author == itr->name) && (com_obj.depth == 0);
                 };
                 auto com_itr = std::find_if(comment_itr, comments_by_author.end(), pred);
@@ -626,14 +626,14 @@ namespace bmchain {
 //////////////////////////////////////////////////////////////////////
 
         vector<optional<witness_api_obj>>
-        database_api::get_witnesses(const vector<witness_id_type> &witness_ids) const {
+        database_api::get_witnesses( const vector<witness_id_type> &witness_ids) const {
             return my->_db.with_read_lock([&]() {
                 return my->get_witnesses(witness_ids);
             });
         }
 
         vector<optional<witness_api_obj>>
-        database_api_impl::get_witnesses(const vector<witness_id_type> &witness_ids) const {
+        database_api_impl::get_witnesses( const vector<witness_id_type> &witness_ids) const {
             vector<optional<witness_api_obj>> result;
             result.reserve(witness_ids.size());
             std::transform(witness_ids.begin(), witness_ids.end(), std::back_inserter(result),
@@ -688,14 +688,14 @@ namespace bmchain {
         }
 
         set<account_name_type>
-        database_api::lookup_witness_accounts(const string &lower_bound_name, uint32_t limit) const {
+        database_api::lookup_witness_accounts( const string &lower_bound_name, uint32_t limit) const {
             return my->_db.with_read_lock([&]() {
                 return my->lookup_witness_accounts(lower_bound_name, limit);
             });
         }
 
         set<account_name_type>
-        database_api_impl::lookup_witness_accounts(const string &lower_bound_name, uint32_t limit) const {
+        database_api_impl::lookup_witness_accounts( const string &lower_bound_name, uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
             const auto &witnesses_by_id = _db.get_index<witness_index>().indices().get<by_id>();
 
@@ -703,7 +703,7 @@ namespace bmchain {
             // records to return.  This could be optimized, but we expect the
             // number of witnesses to be few and the frequency of calls to be rare
             set<account_name_type> witnesses_by_account_name;
-            for (const witness_api_obj &witness : witnesses_by_id)
+            for ( const witness_api_obj &witness : witnesses_by_id)
                 if (witness.owner >= lower_bound_name) // we can ignore anything below lower_bound_name
                     witnesses_by_account_name.insert(witness.owner);
 
@@ -730,24 +730,24 @@ namespace bmchain {
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-        std::string database_api::get_transaction_hex(const signed_transaction &trx) const {
+        std::string database_api::get_transaction_hex( const signed_transaction &trx) const {
             return my->_db.with_read_lock([&]() {
                 return my->get_transaction_hex(trx);
             });
         }
 
-        std::string database_api_impl::get_transaction_hex(const signed_transaction &trx) const {
+        std::string database_api_impl::get_transaction_hex( const signed_transaction &trx) const {
             return fc::to_hex(fc::raw::pack(trx));
         }
 
-        set<public_key_type> database_api::get_required_signatures(const signed_transaction &trx,
+        set<public_key_type> database_api::get_required_signatures( const signed_transaction &trx,
                                                                    const flat_set<public_key_type> &available_keys) const {
             return my->_db.with_read_lock([&]() {
                 return my->get_required_signatures(trx, available_keys);
             });
         }
 
-        set<public_key_type> database_api_impl::get_required_signatures(const signed_transaction &trx,
+        set<public_key_type> database_api_impl::get_required_signatures( const signed_transaction &trx,
                                                                         const flat_set<public_key_type> &available_keys) const {
 //   wdump((trx)(available_keys));
             auto result = trx.get_required_signatures(BMCHAIN_CHAIN_ID,
@@ -772,13 +772,13 @@ namespace bmchain {
             return result;
         }
 
-        set<public_key_type> database_api::get_potential_signatures(const signed_transaction &trx) const {
+        set<public_key_type> database_api::get_potential_signatures( const signed_transaction &trx) const {
             return my->_db.with_read_lock([&]() {
                 return my->get_potential_signatures(trx);
             });
         }
 
-        set<public_key_type> database_api_impl::get_potential_signatures(const signed_transaction &trx) const {
+        set<public_key_type> database_api_impl::get_potential_signatures( const signed_transaction &trx) const {
 //   wdump((trx));
             set<public_key_type> result;
             trx.get_required_signatures(
@@ -786,19 +786,19 @@ namespace bmchain {
                     flat_set<public_key_type>(),
                     [&](account_name_type account_name) {
                         const auto &auth = _db.get<account_authority_object, by_account>(account_name).active;
-                        for (const auto &k : auth.get_keys())
+                        for ( const auto &k : auth.get_keys())
                             result.insert(k);
                         return authority(auth);
                     },
                     [&](account_name_type account_name) {
                         const auto &auth = _db.get<account_authority_object, by_account>(account_name).owner;
-                        for (const auto &k : auth.get_keys())
+                        for ( const auto &k : auth.get_keys())
                             result.insert(k);
                         return authority(auth);
                     },
                     [&](account_name_type account_name) {
                         const auto &auth = _db.get<account_authority_object, by_account>(account_name).posting;
-                        for (const auto &k : auth.get_keys())
+                        for ( const auto &k : auth.get_keys())
                             result.insert(k);
                         return authority(auth);
                     },
@@ -809,13 +809,13 @@ namespace bmchain {
             return result;
         }
 
-        bool database_api::verify_authority(const signed_transaction &trx) const {
+        bool database_api::verify_authority( const signed_transaction &trx) const {
             return my->_db.with_read_lock([&]() {
                 return my->verify_authority(trx);
             });
         }
 
-        bool database_api_impl::verify_authority(const signed_transaction &trx) const {
+        bool database_api_impl::verify_authority( const signed_transaction &trx) const {
             trx.verify_authority(BMCHAIN_CHAIN_ID,
                                  [&](string account_name) {
                                      return authority(
@@ -833,7 +833,7 @@ namespace bmchain {
             return true;
         }
 
-        bool database_api::verify_account_authority(const string &name_or_id,
+        bool database_api::verify_account_authority( const string &name_or_id,
                                                     const flat_set<public_key_type> &signers) const {
             return my->_db.with_read_lock([&]() {
                 return my->verify_account_authority(name_or_id, signers);
@@ -841,7 +841,7 @@ namespace bmchain {
         }
 
         bool
-        database_api_impl::verify_account_authority(const string &name, const flat_set<public_key_type> &keys) const {
+        database_api_impl::verify_account_authority( const string &name, const flat_set<public_key_type> &keys) const {
             FC_ASSERT(name.size() > 0);
             auto account = _db.find<account_object, by_name>(name);
             FC_ASSERT(account, "no such account");
@@ -855,7 +855,7 @@ namespace bmchain {
             return verify_authority(trx);
         }
 
-        vector<convert_request_api_obj> database_api::get_conversion_requests(const string &account) const {
+        vector<convert_request_api_obj> database_api::get_conversion_requests( const string &account) const {
             return my->_db.with_read_lock([&]() {
                 const auto &idx = my->_db.get_index<convert_request_index>().indices().get<by_owner>();
                 vector<convert_request_api_obj> result;
@@ -938,7 +938,7 @@ namespace bmchain {
             });
         }
 
-        u256 to256(const fc::uint128 &t) {
+        u256 to256( const fc::uint128 &t) {
             u256 result(t.high_bits());
             result <<= 65;
             result += t.low_bits();
@@ -1079,7 +1079,7 @@ namespace bmchain {
             });
         }
 
-        vector<pair<string, uint32_t> > database_api::get_tags_used_by_author(const string &author) const {
+        vector<pair<string, uint32_t> > database_api::get_tags_used_by_author( const string &author) const {
             return my->_db.with_read_lock([&]() {
                 const auto *acnt = my->_db.find_account(author);
                 FC_ASSERT(acnt != nullptr);
@@ -1137,14 +1137,14 @@ namespace bmchain {
 
 
         template<typename Index, typename StartItr>
-        vector<discussion> database_api::get_discussions(const discussion_query &query,
+        vector<discussion> database_api::get_discussions( const discussion_query &query,
                                                          const string &tag,
                                                          comment_id_type parent,
                                                          const Index &tidx, StartItr tidx_itr,
                                                          uint32_t truncate_body,
-                                                         const std::function<bool(const comment_api_obj &)> &filter,
-                                                         const std::function<bool(const comment_api_obj &)> &exit,
-                                                         const std::function<bool(const tags::tag_object &)> &tag_exit,
+                                                         const std::function<bool( const comment_api_obj &)> &filter,
+                                                         const std::function<bool( const comment_api_obj &)> &exit,
+                                                         const std::function<bool( const tags::tag_object &)> &tag_exit,
                                                          bool ignore_parent
         ) const {
             // idump((query));
@@ -1194,7 +1194,7 @@ namespace bmchain {
                     } else
                         --count;
                 }
-                catch (const fc::exception &e) {
+                catch ( const fc::exception &e) {
                     ++exc_count;
                     edump((e.to_detail_string()));
                 }
@@ -1203,7 +1203,7 @@ namespace bmchain {
             return result;
         }
 
-        comment_id_type database_api::get_parent(const discussion_query &query) const {
+        comment_id_type database_api::get_parent( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 comment_id_type parent;
                 if (query.parent_author && query.parent_permlink) {
@@ -1213,7 +1213,7 @@ namespace bmchain {
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_payout(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_payout( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1223,12 +1223,12 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(tag);
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
+                                       []( const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
 
-        vector<discussion> database_api::get_post_discussions_by_payout(const discussion_query &query) const {
+        vector<discussion> database_api::get_post_discussions_by_payout( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1238,12 +1238,12 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, true));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
+                                       []( const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
 
-        vector<discussion> database_api::get_comment_discussions_by_payout(const discussion_query &query) const {
+        vector<discussion> database_api::get_comment_discussions_by_payout( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1253,12 +1253,12 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, false));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
+                                       []( const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_promoted(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_promoted( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1268,11 +1268,11 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, share_type(BMCHAIN_MAX_SHARE_SUPPLY)));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body, filter_default,
-                                       exit_default, [](const tags::tag_object &t) { return t.promoted_balance == 0; });
+                                       exit_default, []( const tags::tag_object &t) { return t.promoted_balance == 0; });
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_trending(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_trending( const discussion_query &query) const {
 
             return my->_db.with_read_lock([&]() {
                 query.validate();
@@ -1283,7 +1283,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<double>::max()));
 
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                                   [&query](const comment_api_obj &c) {
+                                                   [&query]( const comment_api_obj &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
                                                        return c.net_rshares < 0 || c.private_post || filter;
                                                    });
@@ -1293,7 +1293,7 @@ namespace bmchain {
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_created(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_created( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1303,7 +1303,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, fc::time_point_sec::maximum()));
 
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                                   [&query](const comment_api_obj &c) {
+                                                   [&query]( const comment_api_obj &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
                                                        return c.private_post || filter; });
                 set_last_comments(discussions, 3);
@@ -1312,7 +1312,7 @@ namespace bmchain {
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_active(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_active( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1322,11 +1322,11 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, fc::time_point_sec::maximum()));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.private_post; });
+                                       []( const comment_api_obj &c) { return c.private_post; });
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_cashout(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_cashout( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 vector<discussion> result;
@@ -1338,11 +1338,11 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, fc::time_point::now() - fc::minutes(60)));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.net_rshares < 0 || c.private_post; });
+                                       []( const comment_api_obj &c) { return c.net_rshares < 0 || c.private_post; });
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_votes(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_votes( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1352,7 +1352,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<int32_t>::max()));
 
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                                   [&query](const comment_api_obj &c) {
+                                                   [&query]( const comment_api_obj &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
                                                        return c.private_post || filter;
                                                    });
@@ -1362,7 +1362,7 @@ namespace bmchain {
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_children(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_children( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1372,11 +1372,11 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<int32_t>::max()));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       [](const comment_api_obj &c) { return c.private_post; });
+                                       []( const comment_api_obj &c) { return c.private_post; });
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_hot(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_hot( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 auto tag = fc::to_lower(query.tag);
@@ -1386,7 +1386,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<double>::max()));
 
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                                   [&query](const comment_api_obj &c) {
+                                                   [&query]( const comment_api_obj &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
                                                        return c.net_rshares < 0 || c.private_post || filter;
                                                    });
@@ -1396,7 +1396,7 @@ namespace bmchain {
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_feed(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_feed( const discussion_query &query) const {
            return my->_db.with_read_lock([&]() {
                query.validate();
                FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
@@ -1435,7 +1435,7 @@ namespace bmchain {
                           result.back().first_reblogged_on = feed_itr->first_reblogged_on;
                       }
                    }
-                   catch (const fc::exception &e) {
+                   catch ( const fc::exception &e) {
                        edump((e.to_detail_string()));
                    }
 
@@ -1448,7 +1448,7 @@ namespace bmchain {
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_blog(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_blog( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 query.validate();
                 FC_ASSERT(my->_follow_api, "Node is not running the follow plugin");
@@ -1505,7 +1505,7 @@ namespace bmchain {
                             result.back().first_reblogged_on = blog_itr->reblogged_on;
                         }
                     }
-                    catch (const fc::exception &e) {
+                    catch ( const fc::exception &e) {
                         edump((e.to_detail_string()));
                     }
 
@@ -1516,7 +1516,7 @@ namespace bmchain {
             });
         }
 
-        vector<discussion> database_api::get_discussions_by_comments(const discussion_query &query) const {
+        vector<discussion> database_api::get_discussions_by_comments( const discussion_query &query) const {
             return my->_db.with_read_lock([&]() {
                 vector<discussion> result;
 #ifndef IS_LOW_MEM
@@ -1544,7 +1544,7 @@ namespace bmchain {
                         try {
                             result.push_back(get_discussion(comment_itr->id));
                         }
-                        catch (const fc::exception &e) {
+                        catch ( const fc::exception &e) {
                             edump((e.to_detail_string()));
                         }
                     }
@@ -1579,7 +1579,7 @@ namespace bmchain {
                             if (r.author.size())
                                 referenced_accounts.insert(r.author);
                         }
-                        catch (const fc::exception &e) {
+                        catch ( const fc::exception &e) {
                             edump((e.to_detail_string()));
                         }
                     }
@@ -1736,7 +1736,7 @@ namespace bmchain {
 
                     /// FETCH CATEGORY STATE
                     auto trending_tags = get_trending_tags(std::string(), 50);
-                    for (const auto &t : trending_tags) {
+                    for ( const auto &t : trending_tags) {
                         _state.tag_idx.trending.push_back(string(t.name));
                     }
                     /// END FETCH CATEGORY STATE
@@ -1810,7 +1810,7 @@ namespace bmchain {
                         } else if (part[1] == "recent-replies") {
                             auto replies = get_replies_by_last_update(acnt, "", 50);
                             eacnt.recent_replies = vector<string>();
-                            for (const auto &reply : replies) {
+                            for ( const auto &reply : replies) {
                                 auto reply_ref = reply.author + "/" + reply.permlink;
                                 _state.content[reply_ref] = reply;
                                 if (my->_follow_api) {
@@ -1886,7 +1886,7 @@ namespace bmchain {
                         _state.content[key] = std::move(dis);
                     } else if (part[0] == "witnesses" || part[0] == "~witnesses") {
                         auto wits = get_witnesses_by_vote("", 50);
-                        for (const auto &w : wits) {
+                        for ( const auto &w : wits) {
                             _state.witnesses[w.owner] = w;
                         }
                         _state.pow_queue = get_miner_queue();
@@ -1898,7 +1898,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_trending(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.trending.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -1912,7 +1912,7 @@ namespace bmchain {
                         auto trending_disc = get_post_discussions_by_payout(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.payout.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -1926,7 +1926,7 @@ namespace bmchain {
                         auto trending_disc = get_comment_discussions_by_payout(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.payout_comments.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -1940,7 +1940,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_promoted(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.promoted.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -1954,7 +1954,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_children(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.responses.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -1968,7 +1968,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_hot(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.hot.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -1982,7 +1982,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_promoted(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.promoted.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -1996,7 +1996,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_votes(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.votes.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -2010,7 +2010,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_cashout(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.cashout.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -2024,7 +2024,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_active(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.active.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -2038,7 +2038,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_created(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.created.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -2052,7 +2052,7 @@ namespace bmchain {
                         auto trending_disc = get_discussions_by_created(q);
 
                         auto &didx = _state.discussion_idx[tag];
-                        for (const auto &d : trending_disc) {
+                        for ( const auto &d : trending_disc) {
                             auto key = d.author + "/" + d.permlink;
                             didx.created.push_back(key);
                             if (d.author.size()) accounts.insert(d.author);
@@ -2061,7 +2061,7 @@ namespace bmchain {
                     } else if (part[0] == "tags") {
                         _state.tag_idx.trending.clear();
                         auto trending_tags = get_trending_tags(std::string(), 250);
-                        for (const auto &t : trending_tags) {
+                        for ( const auto &t : trending_tags) {
                             string name = t.name;
                             _state.tag_idx.trending.push_back(name);
                             _state.tags[name] = t;
@@ -2070,7 +2070,7 @@ namespace bmchain {
                         elog("What... no matches");
                     }
 
-                    for (const auto &a : accounts) {
+                    for ( const auto &a : accounts) {
                         _state.accounts.erase("");
                         _state.accounts[a] = extended_account(my->_db.get_account(a), my->_db);
                         if (my->_follow_api) {
@@ -2084,7 +2084,7 @@ namespace bmchain {
 
                     _state.witness_schedule = my->_db.get_witness_schedule_object();
 
-                } catch (const fc::exception &e) {
+                } catch ( const fc::exception &e) {
                     _state.error = e.to_detail_string();
                 }
                 return _state;
@@ -2161,7 +2161,7 @@ namespace bmchain {
                         ++current_comment;
                     }
 
-                    auto sort_lamda = [](const comment_api_obj &elem1, const comment_api_obj &elem2) {
+                    auto sort_lamda = []( const comment_api_obj &elem1, const comment_api_obj &elem2) {
                         return elem1.created > elem2.created;
                     };
 
@@ -2177,7 +2177,7 @@ namespace bmchain {
 
         }
 
-        statistic database_api::get_statistic(const string &begin, const string &end) const {
+        statistic database_api::get_statistic( const string &begin, const string &end) const {
             auto time_begin = fc::time_point_sec::min();
             auto time_end = fc::time_point_sec::maximum();
             if (begin != "") {
@@ -2199,9 +2199,9 @@ namespace bmchain {
             if (time_begin == fc::time_point_sec::min() && time_end == fc::time_point_sec::maximum()) {
                 stat.users = acc_idx.size();
                 stat.posts = count_if(com_idx.cbegin(), com_idx.cend(),
-                                      [](const comment_object &com) { return com.depth == 0; });
+                                      []( const comment_object &com) { return com.depth == 0; });
                 stat.comments = count_if(com_idx.cbegin(), com_idx.cend(),
-                                         [](const comment_object &com) { return com.depth > 0; });
+                                         []( const comment_object &com) { return com.depth > 0; });
                 stat.votes = accumulate(com_idx.cbegin(), com_idx.cend(),
                                         0,
                                         bind(plus<int32_t>(), placeholders::_1,
@@ -2209,15 +2209,15 @@ namespace bmchain {
                 stat.end = fc::time_point_sec::min();
             } else {
                 stat.users = count_if(acc_idx.cbegin(), acc_idx.cend(),
-                                      [time_begin, time_end](const account_object &acc) {
+                                      [time_begin, time_end]( const account_object &acc) {
                                           return acc.created >= time_begin && acc.created <= time_end;
                                       });
                 stat.posts = count_if(com_idx.cbegin(), com_idx.cend(),
-                                      [time_begin, time_end](const comment_object &com) {
+                                      [time_begin, time_end]( const comment_object &com) {
                                           return com.depth == 0 && com.created >= time_begin && com.created <= time_end;
                                       });
                 stat.comments = count_if(com_idx.cbegin(), com_idx.cend(),
-                                         [time_begin, time_end](const comment_object &com) {
+                                         [time_begin, time_end]( const comment_object &com) {
                                              return com.depth > 0 && com.created >= time_begin && com.created <=
                                                                                                   time_end;
                                          });
@@ -2254,7 +2254,7 @@ namespace bmchain {
             vector<block_statistic> bs = get_block_statistic(limit, limit_block_size);
 
             auto max_min_trans = minmax_element(bs.cbegin(), bs.cend(),
-                                                [](const block_statistic &stat1, const block_statistic &stat2) {
+                                                []( const block_statistic &stat1, const block_statistic &stat2) {
                                                     return stat1.transactions < stat2.transactions;
                                                 });
             uint32_t total_trans = accumulate(bs.cbegin(), bs.cend(),
@@ -2263,7 +2263,7 @@ namespace bmchain {
                                                    placeholders::_1,
                                                    bind(&block_statistic::transactions, placeholders::_2)));
             auto max_min_size = minmax_element(bs.cbegin(), bs.cend(),
-                                               [](const block_statistic &stat1, const block_statistic &stat2) {
+                                               []( const block_statistic &stat1, const block_statistic &stat2) {
                                                    return stat1.block_size < stat2.block_size;
                                                });
             uint32_t total_size = accumulate(bs.cbegin(), bs.cend(),
@@ -2287,7 +2287,7 @@ namespace bmchain {
             return total_block_stat;
         }
 
-        map<string, int32_t> database_api_impl::get_reputation_by_categories(const account_object &author) const {
+        map<string, int32_t> database_api_impl::get_reputation_by_categories( const account_object &author) const {
             map<string, int32_t> result;
             const auto &com_idx = _db.get_index<comment_index>().indices().get<by_author_created>();
             auto itr = com_idx.lower_bound(boost::make_tuple(author.name, time_point_sec::maximum()));
@@ -2307,7 +2307,7 @@ namespace bmchain {
             return result;
         };
 
-        vector<discussion> database_api::get_encrypted_discussions( const discussion_query &query ) const{
+        vector<discussion> database_api::get_encrypted_discussions( const discussion_query &query ) const {
            return my->_db.with_read_lock([&]() {
               query.validate();
               auto start_author = query.start_author ? *(query.start_author) : "";
@@ -2402,7 +2402,7 @@ namespace bmchain {
         }
 
         vector<content_order_api_obj> database_api::get_content_orders_by_comment( string author, string permlink, string owner,
-                                                                                   uint32_t limit )const{
+                                                                                   uint32_t limit ) const {
            return my->_db.with_read_lock([&]() {
               FC_ASSERT(!author.empty() && !permlink.empty(), "author and permlink can't be empty.");
               vector<content_order_api_obj> result;
@@ -2437,5 +2437,17 @@ namespace bmchain {
             return result;
         }
 
+        vector< string > database_api::get_custom_tokens( uint32_t limit ) const {
+           return my->_db.with_read_lock([&]() {
+              vector< string > result;
+              const auto &idx = my->_db.get_index< custom_token_index >().indices().get< by_symbol >();
+              auto itr = idx.begin();
+              while ( itr != idx.end() && limit-- ){
+                 result.push_back( to_string( itr->symbol ) );
+                 ++itr;
+              }
+              return result;
+           });
+        }
     }
 } // bmchain::app

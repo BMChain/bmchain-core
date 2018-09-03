@@ -130,12 +130,12 @@ class wallet_api
       /**
        * Returns the list of witnesses producing blocks in the current round (21 Blocks)
        */
-      vector<account_name_type>                      get_active_witnesses()const;
+      vector<account_name_type>           get_active_witnesses()const;
 
       /**
        * Returns the queue of pow miners waiting to produce blocks.
        */
-      vector<account_name_type>                      get_miner_queue()const;
+      vector<account_name_type>           get_miner_queue()const;
 
       /**
        * Returns the state info associated with the URL
@@ -903,18 +903,21 @@ class wallet_api
 
       annotated_signed_transaction create_content_order( string onwer, string author, string permlink, asset price, string json_metadata, bool broadcast);
 
-      annotated_signed_transaction cancel_content_order(string author, uint32_t id, bool broadcast);
+      annotated_signed_transaction cancel_content_order( string author, uint32_t id, bool broadcast );
 
-      annotated_signed_transaction apply_content_order(string author, uint32_t id, bool broadcast);
+      annotated_signed_transaction apply_content_order( string author, uint32_t id, bool broadcast );
 
-      vector<content_order_api_obj> get_content_orders(string owner, string author, uint32_t start_id, uint32_t limit) const;
+      vector<content_order_api_obj> get_content_orders( string owner, string author, uint32_t start_id, uint32_t limit ) const;
 
-      vector< discussion > get_encrypted_discussions(string author, string owner, uint32_t limit) const;
+      vector< discussion > get_encrypted_discussions( string author, string owner, uint32_t limit ) const;
 
       void test_api() const;
 
       string try_decrypt_content( const extended_encrypted_content& content ) const;
 
+      annotated_signed_transaction create_custom_token( string control_account, string symbol, uint64_t init_supply, bool broadcast );
+
+      vector< string > get_custom_tokens( uint32_t limit ) const;
 private:
 
       set<string> get_tags_from_json(string tags)const{
@@ -1066,6 +1069,10 @@ FC_API( bmchain::wallet::wallet_api,
         (get_content_orders)
         (get_encrypted_discussions)
         (test_api)
+
+        /// custom tokens
+        (create_custom_token)
+        (get_custom_tokens)
       )
 
 FC_REFLECT( bmchain::wallet::memo_data, (from)(to)(nonce)(check)(encrypted) )
