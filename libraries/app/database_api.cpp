@@ -2437,13 +2437,13 @@ namespace bmchain {
             return result;
         }
 
-        vector< string > database_api::get_custom_tokens( uint32_t limit ) const {
+        vector< custom_token_api_obj > database_api::get_custom_tokens( uint32_t limit ) const {
            return my->_db.with_read_lock([&]() {
-              vector< string > result;
+              vector< custom_token_api_obj > result;
               const auto &idx = my->_db.get_index< custom_token_index >().indices().get< by_symbol >();
               auto itr = idx.begin();
               while ( itr != idx.end() && limit-- ){
-                 result.push_back( to_string( itr->symbol ) );
+                 result.push_back( *itr );
                  ++itr;
               }
               return result;

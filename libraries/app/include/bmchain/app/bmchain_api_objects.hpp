@@ -7,6 +7,7 @@
 #include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/transaction_object.hpp>
 #include <bmchain/chain/witness_objects.hpp>
+#include <bmchain/chain/custom_token_object.hpp>
 
 #include <bmchain/tags/tags_plugin.hpp>
 
@@ -45,14 +46,14 @@ typedef chain::comment_vote_object                     comment_vote_api_obj;
 typedef chain::convert_request_object                  convert_request_api_obj;
 typedef chain::escrow_object                           escrow_api_obj;
 typedef chain::limit_order_object                      limit_order_api_obj;
-typedef chain::withdraw_rep_route_object           withdraw_rep_route_api_obj;
+typedef chain::withdraw_rep_route_object               withdraw_rep_route_api_obj;
 typedef chain::decline_voting_rights_request_object    decline_voting_rights_request_api_obj;
 typedef chain::witness_vote_object                     witness_vote_api_obj;
 typedef chain::witness_schedule_object                 witness_schedule_api_obj;
 typedef chain::vesting_delegation_object               rep_delegation_api_obj;
-typedef chain::rep_delegation_expiration_object    rep_delegation_expiration_api_obj;
+typedef chain::rep_delegation_expiration_object        rep_delegation_expiration_api_obj;
 typedef chain::reward_fund_object                      reward_fund_api_obj;
-typedef witness::account_bandwidth_object       account_bandwidth_api_obj;
+typedef witness::account_bandwidth_object              account_bandwidth_api_obj;
 
 struct comment_api_obj
 {
@@ -525,6 +526,25 @@ struct content_order_api_obj
     content_order_object::order_status status;
 };
 
+struct custom_token_api_obj
+{
+   custom_token_api_obj(const chain::custom_token_object &o) :
+           id(o.id),
+           control_account(o.control_account),
+           symbol(to_string(o.symbol)),
+           current_supply(o.current_supply),
+           generation_time(o.generation_time)
+   {}
+
+   custom_token_api_obj() {}
+
+   custom_token_id_type id;
+   account_name_type    control_account;
+   string               symbol;
+   share_type           current_supply = 0;
+   time_point_sec       generation_time;
+};
+
 } } // bmchain::app
 
 FC_REFLECT( bmchain::app::comment_api_obj,
@@ -626,3 +646,5 @@ FC_REFLECT_DERIVED( bmchain::app::dynamic_global_property_api_obj, (bmchain::cha
 FC_REFLECT( bmchain::app::content_order_api_obj,
              (id)(sent_time)(author)(permlink)(owner)(price)(status)
            )
+
+FC_REFLECT( bmchain::app::custom_token_api_obj, (id)(control_account)(symbol)(current_supply)(generation_time) )

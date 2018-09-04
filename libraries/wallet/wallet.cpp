@@ -2758,7 +2758,7 @@ annotated_signed_transaction wallet_api::create_custom_token( string control_acc
    return my->sign_transaction(tx, broadcast);
 }
 
-vector< string > wallet_api::get_custom_tokens( uint32_t limit ) const {
+vector< custom_token_api_obj > wallet_api::get_custom_tokens( uint32_t limit ) const {
    FC_ASSERT( !is_locked() );
    return my->_remote_db->get_custom_tokens( limit );
 }

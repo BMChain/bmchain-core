@@ -917,7 +917,7 @@ class wallet_api
 
       annotated_signed_transaction create_custom_token( string control_account, string symbol, uint64_t init_supply, bool broadcast );
 
-      vector< string > get_custom_tokens( uint32_t limit ) const;
+      vector< custom_token_api_obj > get_custom_tokens( uint32_t limit ) const;
 private:
 
       set<string> get_tags_from_json(string tags)const{

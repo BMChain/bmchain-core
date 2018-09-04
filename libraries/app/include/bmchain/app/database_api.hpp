@@ -455,9 +455,9 @@ class database_api
       vector<content_order_api_obj> get_content_orders_by_comment( string author, string permlink, string owner,
                                                                    uint32_t limit ) const;
 
-      optional<content_order_api_obj> get_content_order_by_id( uint32_t id ) const;
+      optional< content_order_api_obj > get_content_order_by_id( uint32_t id ) const;
 
-      vector< string > get_custom_tokens( uint32_t limit ) const;
+      vector< custom_token_api_obj > get_custom_tokens( uint32_t limit ) const;
       
    private:
       void set_pending_payout( discussion& d ) const;
