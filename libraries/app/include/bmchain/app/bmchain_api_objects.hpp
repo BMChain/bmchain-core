@@ -7,7 +7,7 @@
 #include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/transaction_object.hpp>
 #include <bmchain/chain/witness_objects.hpp>
-#include <bmchain/chain/custom_token_object.hpp>
+#include <bmchain/chain/custom_token_objects.hpp>
 
 #include <bmchain/tags/tags_plugin.hpp>
 

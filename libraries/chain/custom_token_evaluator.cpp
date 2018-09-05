@@ -11,7 +11,7 @@
 
 #include <bmchain/chain/util/reward.hpp>
 
-#include <bmchain/chain/custom_token_object.hpp>
+#include <bmchain/chain/custom_token_objects.hpp>
 
 namespace bmchain { namespace chain {
 

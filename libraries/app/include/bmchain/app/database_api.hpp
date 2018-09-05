@@ -6,7 +6,7 @@
 #include <bmchain/chain/bmchain_objects.hpp>
 #include <bmchain/chain/bmchain_object_types.hpp>
 #include <bmchain/chain/history_object.hpp>
-#include <bmchain/chain/custom_token_object.hpp>
+#include <bmchain/chain/custom_token_objects.hpp>
 
 #include <bmchain/tags/tags_plugin.hpp>
 

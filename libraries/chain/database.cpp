@@ -16,7 +16,7 @@
 #include <bmchain/chain/shared_db_merkle.hpp>
 #include <bmchain/chain/operation_notification.hpp>
 #include <bmchain/chain/witness_schedule.hpp>
-#include <bmchain/chain/custom_token_object.hpp>
+#include <bmchain/chain/custom_token_objects.hpp>
 
 #include <bmchain/chain/util/asset.hpp>
 #include <bmchain/chain/util/reward.hpp>
