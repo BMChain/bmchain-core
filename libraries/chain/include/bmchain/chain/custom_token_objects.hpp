@@ -30,6 +30,21 @@ namespace bmchain { namespace chain {
       time_point_sec generation_time;
    };
 
+   class account_balance_object : public object< account_balance_object_type, custom_token_object > {
+      account_balance_object() = delete;
+
+   public:
+      template<typename Constructor, typename Allocator>
+      account_balance_object(Constructor &&c, allocator <Allocator> a) {
+         c(*this);
+      }
+
+      id_type id;
+      /// Name of the account, the balance is held for.
+      account_name_type owner;
+
+   };
+
    struct by_symbol;
    struct by_control_account;
    typedef multi_index_container<
@@ -59,3 +74,4 @@ namespace bmchain { namespace chain {
 FC_REFLECT( bmchain::chain::custom_token_object,(id)(control_account)(symbol)(current_supply)(generation_time) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::custom_token_object, bmchain::chain::custom_token_index )
 
+FC_REFLECT( bmchain::chain::account_balance_object,(id)(owner) )
