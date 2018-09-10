@@ -341,6 +341,7 @@ namespace bmchain {
         vector<extended_account> database_api_impl::get_accounts(vector<string> names) const {
             const auto &idx = _db.get_index<account_index>().indices().get<by_name>();
             const auto &vidx = _db.get_index<witness_vote_index>().indices().get<by_account_witness>();
+            const auto &bidx = _db.get_index<account_balance_index>().indices().get<by_owner>();
             vector<extended_account> results;
 
             for (auto name: names) {
@@ -358,6 +359,12 @@ namespace bmchain {
                     while (vitr != vidx.end() && vitr->account == itr->id) {
                         results.back().witness_votes.insert(_db.get(vitr->witness).owner);
                         ++vitr;
+                    }
+
+                    auto bitr = bidx.lower_bound(boost::make_tuple(name));
+                    while ( bitr != bidx.end() && bitr->owner == name ) {
+                       results.back().custom_token_balance.push_back(*bitr);
+                       ++bitr;
                     }
                 }
             }

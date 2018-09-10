@@ -55,6 +55,8 @@ typedef chain::rep_delegation_expiration_object        rep_delegation_expiration
 typedef chain::reward_fund_object                      reward_fund_api_obj;
 typedef witness::account_bandwidth_object              account_bandwidth_api_obj;
 
+struct account_balance_api_obj;
+
 struct comment_api_obj
 {
    comment_api_obj( const chain::comment_object& o ):
@@ -332,6 +334,7 @@ struct account_api_obj
    time_point_sec    last_root_post;
 
    map<string, int32_t> reputation_by_categories; /// for bmchain
+   vector<account_balance_api_obj> custom_token_balance;
 };
 
 struct owner_authority_history_api_obj
@@ -545,6 +548,23 @@ struct custom_token_api_obj
    time_point_sec       generation_time;
 };
 
+struct account_balance_api_obj
+{
+   account_balance_api_obj(const chain::account_balance_object &o) :
+           id(o.id),
+           owner(o.owner),
+           symbol(to_string(o.symbol)),
+           balance(o.balance)
+   {}
+
+   account_balance_api_obj() {}
+
+   account_balance_id_type id;
+   account_name_type       owner;
+   string                  symbol;
+   share_type              balance;
+};
+
 } } // bmchain::app
 
 FC_REFLECT( bmchain::app::comment_api_obj,
@@ -578,6 +598,7 @@ FC_REFLECT( bmchain::app::account_api_obj,
              (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)
              (last_post)(last_root_post)
              (reputation_by_categories)
+             (custom_token_balance)
           )
 
 FC_REFLECT( bmchain::app::owner_authority_history_api_obj,
@@ -648,3 +669,5 @@ FC_REFLECT( bmchain::app::content_order_api_obj,
            )
 
 FC_REFLECT( bmchain::app::custom_token_api_obj, (id)(control_account)(symbol)(current_supply)(generation_time) )
+
+FC_REFLECT( bmchain::app::account_balance_api_obj, (id)(owner)(symbol)(balance) )
