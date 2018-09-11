@@ -34,4 +34,8 @@ namespace bmchain { namespace chain {
       });
    }
 
+   void custom_token_transfer_evaluator::do_apply( const custom_token_transfer_operation& o ) {
+
+   }
+
 }}

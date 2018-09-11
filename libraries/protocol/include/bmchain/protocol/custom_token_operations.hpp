@@ -15,9 +15,21 @@ namespace bmchain { namespace protocol {
       uint64_t          current_supply;
 
       void validate() const;
-      void get_required_posting_authorities( flat_set<account_name_type>& a )const{ a.insert(control_account); }
+      void get_required_posting_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
+   };
+
+   struct custom_token_transfer_operation : public base_operation
+   {
+      account_name_type from;
+      account_name_type to;
+      asset             amount;
+
+      void              validate()const;
+      void get_required_active_authorities( flat_set<account_name_type>& a ) const { a.insert(from); }
+      void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(from); }
    };
 
 }} // bmchain::protocol
 
 FC_REFLECT( bmchain::protocol::custom_token_create_operation,(control_account)(symbol)(current_supply) )
+FC_REFLECT( bmchain::protocol::custom_token_transfer_operation,(from)(to)(amount) )

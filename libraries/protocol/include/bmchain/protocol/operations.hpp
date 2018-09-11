@@ -90,7 +90,8 @@ namespace bmchain { namespace protocol {
             content_order_cancel_by_author_operation,
 
             /// custom token operations
-            custom_token_create_operation
+            custom_token_create_operation,
+            custom_token_transfer_operation
 
          > operation;
 

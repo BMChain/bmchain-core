@@ -1784,6 +1784,7 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< content_order_cancel_by_author_evaluator >();
    _my->_evaluator_registry.register_evaluator< private_message_evaluator                >();
    _my->_evaluator_registry.register_evaluator< custom_token_create_evaluator            >();
+   _my->_evaluator_registry.register_evaluator< custom_token_transfer_evaluator          >();
 }
 
 void database::set_custom_operation_interpreter( const std::string& id, std::shared_ptr< custom_operation_interpreter > registry )
