@@ -35,7 +35,31 @@ namespace bmchain { namespace chain {
    }
 
    void custom_token_transfer_evaluator::do_apply( const custom_token_transfer_operation& o ) {
+      const auto& by_owner_idx = _db.get_index< account_balance_index >().indices().get< by_owner >();
+      auto itr_from = by_owner_idx.find( boost::make_tuple( o.from ) );
+      FC_ASSERT( itr_from != by_owner_idx.end(), "This account doesn't have enough token #1." );
+      FC_ASSERT( itr_from->balance >= o.amount.amount, "This account doesn't have enough token #2." );
+      FC_ASSERT( to_string(itr_from->symbol) == o.amount.symbol_name(), "Wrong symbol." );
 
+      _db.modify( *itr_from, [&]( account_balance_object& balance_obj )
+      {
+         balance_obj.balance -= o.amount.amount;
+      });
+
+      auto itr_to = by_owner_idx.find( boost::make_tuple( o.to ) );
+      if ( itr_to == by_owner_idx.end() ) {
+         _db.create< account_balance_object >( [&]( account_balance_object& balance_obj ) {
+            balance_obj.owner = o.to;
+            from_string( balance_obj.symbol, o.amount.symbol_name() );
+            balance_obj.balance = o.amount.amount;
+         });
+      }
+      else {
+         _db.modify( *itr_to, [&]( account_balance_object& balance_obj )
+         {
+            balance_obj.balance += o.amount.amount;
+         });
+      }
    }
 
 }}
