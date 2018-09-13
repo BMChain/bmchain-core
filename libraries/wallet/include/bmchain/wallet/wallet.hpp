@@ -915,7 +915,9 @@ class wallet_api
 
       string try_decrypt_content( const extended_encrypted_content& content ) const;
 
-      annotated_signed_transaction create_custom_token( string control_account, string symbol, uint64_t init_supply, bool broadcast );
+      annotated_signed_transaction create_custom_token( string control_account, string symbol, uint64_t init_supply, bool broadcast = false );
+
+      annotated_signed_transaction transfer_custom_token( string from, string to, asset amount, bool broadcast = false );
 
       vector< custom_token_api_obj > get_custom_tokens( uint32_t limit ) const;
 private:
@@ -1072,6 +1074,7 @@ FC_API( bmchain::wallet::wallet_api,
 
         /// custom tokens
         (create_custom_token)
+        (transfer_custom_token)
         (get_custom_tokens)
       )
 

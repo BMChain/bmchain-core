@@ -2758,6 +2758,21 @@ annotated_signed_transaction wallet_api::create_custom_token( string control_acc
    return my->sign_transaction(tx, broadcast);
 }
 
+annotated_signed_transaction wallet_api::transfer_custom_token( string from, string to, asset amount, bool broadcast ) {
+   FC_ASSERT( !is_locked() );
+
+   custom_token_transfer_operation op;
+   op.from   = from;
+   op.to     = to;
+   op.amount = amount;
+
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
+
+   return my->sign_transaction(tx, broadcast);
+}
+
 vector< custom_token_api_obj > wallet_api::get_custom_tokens( uint32_t limit ) const {
    FC_ASSERT( !is_locked() );
    return my->_remote_db->get_custom_tokens( limit );
