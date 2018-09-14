@@ -1518,6 +1518,13 @@ void database::process_comment_cashout()
    }
 }
 
+void database::custom_tokens_inflation() {
+   const auto& gpo = get_dynamic_global_properties();
+
+   if (gpo.head_block_number <= BMCHAIN_FIRST_PAYOUT_BLOCK)
+      return;
+}
+
 void database::process_savings_withdraws()
 {
   const auto& idx = get_index< savings_withdraw_index >().indices().get< by_complete_from_rid >();
@@ -2255,6 +2262,7 @@ void database::_apply_block( const signed_block& next_block )
 
    clear_null_account_balance();
    process_comment_cashout();
+   custom_tokens_inflation();
    process_savings_withdraws();
    update_virtual_supply();
 
