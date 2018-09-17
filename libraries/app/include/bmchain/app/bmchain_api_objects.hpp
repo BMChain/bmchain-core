@@ -535,7 +535,9 @@ struct custom_token_api_obj
            id(o.id),
            control_account(o.control_account),
            symbol(to_string(o.symbol)),
+           inflation_rate(o.inflation_rate),
            current_supply(o.current_supply),
+           reward_fund(o.reward_fund),
            generation_time(o.generation_time)
    {}
 
@@ -544,7 +546,9 @@ struct custom_token_api_obj
    custom_token_id_type id;
    account_name_type    control_account;
    string               symbol;
-   share_type           current_supply = 0;
+   uint16_t             inflation_rate = 0;
+   uint64_t             current_supply = 0;
+   uint64_t             reward_fund = 0;
    time_point_sec       generation_time;
 };
 
@@ -668,6 +672,6 @@ FC_REFLECT( bmchain::app::content_order_api_obj,
              (id)(sent_time)(author)(permlink)(owner)(price)(status)
            )
 
-FC_REFLECT( bmchain::app::custom_token_api_obj, (id)(control_account)(symbol)(current_supply)(generation_time) )
+FC_REFLECT( bmchain::app::custom_token_api_obj, (id)(control_account)(symbol)(inflation_rate)(current_supply)(reward_fund)(generation_time) )
 
 FC_REFLECT( bmchain::app::account_balance_api_obj, (id)(owner)(symbol)(balance) )

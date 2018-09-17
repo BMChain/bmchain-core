@@ -25,9 +25,11 @@ namespace bmchain { namespace chain {
 
       id_type id;
       account_name_type control_account;
-      shared_string symbol;
-      share_type current_supply = 0;
-      time_point_sec generation_time;
+      shared_string     symbol;
+      uint16_t          inflation_rate = 0;
+      uint64_t          current_supply = 0;
+      uint64_t          reward_fund = 0;
+      time_point_sec    generation_time;
    };
 
    class account_balance_object : public object< account_balance_object_type, account_balance_object > {
@@ -94,7 +96,7 @@ namespace bmchain { namespace chain {
 
 }}
 
-FC_REFLECT( bmchain::chain::custom_token_object,(id)(control_account)(symbol)(current_supply)(generation_time) )
+FC_REFLECT( bmchain::chain::custom_token_object,(id)(control_account)(symbol)(current_supply)(inflation_rate)(reward_fund)(generation_time) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::custom_token_object, bmchain::chain::custom_token_index )
 
 FC_REFLECT( bmchain::chain::account_balance_object,(id)(owner)(balance) )
