@@ -15,7 +15,7 @@ namespace bmchain { namespace protocol {
       uint64_t          current_supply;
 
       void validate() const;
-      void get_required_posting_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
+      void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
    };
 
    struct custom_token_transfer_operation : public base_operation
@@ -29,7 +29,18 @@ namespace bmchain { namespace protocol {
       void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(from); }
    };
 
+   struct custom_token_setup_operation : public base_operation
+   {
+      account_name_type control_account;
+      string            symbol;
+      uint16_t          inflation_rate;
+
+      void              validate()const;
+      void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
+   };
+
 }} // bmchain::protocol
 
 FC_REFLECT( bmchain::protocol::custom_token_create_operation,(control_account)(symbol)(current_supply) )
 FC_REFLECT( bmchain::protocol::custom_token_transfer_operation,(from)(to)(amount) )
+FC_REFLECT( bmchain::protocol::custom_token_setup_operation,(control_account)(symbol)(inflation_rate) )

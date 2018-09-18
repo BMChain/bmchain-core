@@ -1524,13 +1524,13 @@ void database::custom_tokens_inflation() {
    if (gpo.head_block_number <= BMCHAIN_FIRST_PAYOUT_BLOCK)
       return;
 
-   std::cout << "====================== " << std::endl;
    const auto& token_idx = get_index< custom_token_index >().indices().get< by_symbol >();
    auto token_itr = token_idx.begin();
    while ( token_itr != token_idx.end() ){
-      auto new_tokens = (token_itr->current_supply * 0.1) / (365 * 24 * 60 * 20);
+      uint64_t inflation_rate = 0;
+      auto new_tokens = (token_itr->current_supply * inflation_rate) / (100 * 365 * 24 * 60 * 20);
 
-      std::cout << "=========== " << token_itr->symbol << " = " << new_tokens <<  std::endl;
+      //std::cout << "=========== " << token_itr->symbol << " = " << new_tokens <<  std::endl;
 
       modify( *token_itr, [&]( custom_token_object& t )
       {

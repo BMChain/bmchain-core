@@ -6,9 +6,14 @@
 namespace bmchain { namespace protocol {
 
    void custom_token_create_operation::validate() const {
+
    }
 
    void custom_token_transfer_operation::validate() const {
+
+   }
+
+   void custom_token_setup_operation::validate() const {
 
    }
 

@@ -13,8 +13,7 @@
 
 namespace bmchain { namespace chain {
 
-   class custom_token_object : public object< custom_token_object_type, custom_token_object >
-   {
+   class custom_token_object : public object< custom_token_object_type, custom_token_object > {
    public:
       custom_token_object() = delete;
 
