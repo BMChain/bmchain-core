@@ -62,4 +62,8 @@ namespace bmchain { namespace chain {
       }
    }
 
+   void custom_token_setup_emissions_evaluator::do_apply( const custom_token_setup_emissions_operation& o ) {
+
+   }
+
 }}

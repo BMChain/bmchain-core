@@ -91,7 +91,8 @@ namespace bmchain { namespace protocol {
 
             /// custom token operations
             custom_token_create_operation,
-            custom_token_transfer_operation
+            custom_token_transfer_operation,
+            custom_token_setup_emissions_operation
 
          > operation;
 

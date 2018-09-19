@@ -29,6 +29,10 @@ namespace bmchain { namespace chain {
       uint64_t          current_supply = 0;
       uint64_t          reward_fund = 0;
       time_point_sec    generation_time;
+
+      time_point_sec    schedule_time;
+      uint32_t          interval_seconds = 0;
+      uint32_t          interval_count = 0;
    };
 
    class account_balance_object : public object< account_balance_object_type, account_balance_object > {
@@ -66,6 +70,13 @@ namespace bmchain { namespace chain {
                                       member< custom_token_object, shared_string, &custom_token_object::symbol >
                               >,
                               composite_key_compare< std::less< account_name_type >, strcmp_less >
+                      >,
+                      ordered_unique< tag< by_schedule_time >,
+                              composite_key< custom_token_object,
+                                      member< custom_token_object, time_point_sec,  &custom_token_object::schedule_time >,
+                                      member< custom_token_object, custom_token_id_type,  &custom_token_object::id >
+                              >,
+                              composite_key_compare< std::greater< time_point_sec >, std::greater< custom_token_id_type > >
                       >
               >,
               allocator< custom_token_object >
@@ -95,7 +106,8 @@ namespace bmchain { namespace chain {
 
 }}
 
-FC_REFLECT( bmchain::chain::custom_token_object,(id)(control_account)(symbol)(current_supply)(inflation_rate)(reward_fund)(generation_time) )
+FC_REFLECT( bmchain::chain::custom_token_object,
+            (id)(control_account)(symbol)(current_supply)(inflation_rate)(reward_fund)(generation_time)(schedule_time)(interval_seconds)(interval_count) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::custom_token_object, bmchain::chain::custom_token_index )
 
 FC_REFLECT( bmchain::chain::account_balance_object,(id)(owner)(balance) )
