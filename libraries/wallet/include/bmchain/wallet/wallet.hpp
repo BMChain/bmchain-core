@@ -919,6 +919,9 @@ class wallet_api
 
       annotated_signed_transaction transfer_custom_token( string from, string to, asset amount, bool broadcast = false );
 
+      annotated_signed_transaction setup_emissions( string control_account, string symbol, fc::time_point schedule_time,
+                                                    uint16_t inflation_rate, uint32_t interval_seconds, uint32_t interval_count, bool broadcast = false );
+
       vector< custom_token_api_obj > get_custom_tokens( uint32_t limit ) const;
 private:
 
@@ -1075,6 +1078,7 @@ FC_API( bmchain::wallet::wallet_api,
         /// custom tokens
         (create_custom_token)
         (transfer_custom_token)
+        (setup_emissions)
         (get_custom_tokens)
       )
 
