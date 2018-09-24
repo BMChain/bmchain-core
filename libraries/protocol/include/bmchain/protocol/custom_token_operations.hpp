@@ -42,9 +42,18 @@ namespace bmchain { namespace protocol {
       void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
    };
 
+   struct custom_token_set_setup_parameters_operation : public base_operation
+   {
+      //flat_set< smt_setup_parameter >  setup_parameters;
+      extensions_type                  extensions;
+
+      void validate()const;
+   };
+
 }} // bmchain::protocol
 
 FC_REFLECT( bmchain::protocol::custom_token_create_operation,(control_account)(symbol)(current_supply) )
 FC_REFLECT( bmchain::protocol::custom_token_transfer_operation,(from)(to)(amount) )
 FC_REFLECT( bmchain::protocol::custom_token_setup_emissions_operation,
             (control_account)(symbol)(inflation_rate)(schedule_time)(interval_seconds)(interval_count) )
+FC_REFLECT( bmchain::protocol::custom_token_set_setup_parameters_operation,(extensions) )

@@ -17,4 +17,8 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( schedule_time > BMCHAIN_GENESIS_TIME );
    }
 
+   void custom_token_set_setup_parameters_operation::validate() const {
+
+   }
+
 }}

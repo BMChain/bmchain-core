@@ -1518,7 +1518,7 @@ void database::process_comment_cashout()
    }
 }
 
-void database::custom_tokens_inflation() {
+void database::custom_tokens_emissions() {
    const auto& gpo = get_dynamic_global_properties();
 
    if (gpo.head_block_number <= BMCHAIN_FIRST_PAYOUT_BLOCK)
@@ -1527,7 +1527,7 @@ void database::custom_tokens_inflation() {
    const auto& token_idx = get_index< custom_token_index >().indices().get< by_symbol >();
    auto token_itr = token_idx.begin();
    while ( token_itr != token_idx.end() ){
-      uint64_t inflation_rate = 0;
+      uint64_t inflation_rate = token_itr->inflation_rate;
       auto new_tokens = (token_itr->current_supply * inflation_rate) / (100 * 365 * 24 * 60 * 20);
 
       //std::cout << "=========== " << token_itr->symbol << " = " << new_tokens <<  std::endl;
@@ -2280,7 +2280,7 @@ void database::_apply_block( const signed_block& next_block )
 
    clear_null_account_balance();
    process_comment_cashout();
-   custom_tokens_inflation();
+   custom_tokens_emissions();
    process_savings_withdraws();
    update_virtual_supply();
 
