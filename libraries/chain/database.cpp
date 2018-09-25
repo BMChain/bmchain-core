@@ -1524,9 +1524,9 @@ void database::custom_tokens_emissions() {
    if (gpo.head_block_number <= BMCHAIN_FIRST_PAYOUT_BLOCK)
       return;
 
-   const auto& token_idx = get_index< custom_token_index >().indices().get< by_symbol >();
+   const auto& token_idx = get_index< custom_token_index >().indices().get< by_schedule_time >();
    auto token_itr = token_idx.begin();
-   while ( token_itr != token_idx.end() ){
+   while ( token_itr != token_idx.end() && token_itr->schedule_time <= head_block_time() ){
       uint64_t inflation_rate = token_itr->inflation_rate;
       auto new_tokens = (token_itr->current_supply * inflation_rate) / (100 * 365 * 24 * 60 * 20);
 
@@ -1534,6 +1534,7 @@ void database::custom_tokens_emissions() {
 
       modify( *token_itr, [&]( custom_token_object& t )
       {
+         t.schedule_time = t.schedule_time + (t.interval_seconds * t.interval_count);
          t.current_supply += new_tokens;
          t.reward_fund += new_tokens;
       });
