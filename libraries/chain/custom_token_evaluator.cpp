@@ -76,4 +76,8 @@ namespace bmchain { namespace chain {
       });
    }
 
+   void custom_token_set_setup_parameters_evaluator::do_apply( const custom_token_set_setup_parameters_operation& o ) {
+
+   }
+
 }}

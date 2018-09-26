@@ -59,5 +59,6 @@ DEFINE_EVALUATOR( private_message )
 DEFINE_EVALUATOR( custom_token_create )
 DEFINE_EVALUATOR( custom_token_transfer )
 DEFINE_EVALUATOR( custom_token_setup_emissions )
+DEFINE_EVALUATOR( custom_token_set_setup_parameters )
 
 } } // bmchain::chain

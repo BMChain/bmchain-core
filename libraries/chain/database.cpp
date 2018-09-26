@@ -1811,6 +1811,7 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< custom_token_create_evaluator            >();
    _my->_evaluator_registry.register_evaluator< custom_token_transfer_evaluator          >();
    _my->_evaluator_registry.register_evaluator< custom_token_setup_emissions_evaluator   >();
+   _my->_evaluator_registry.register_evaluator< custom_token_set_setup_parameters_evaluator >();
 }
 
 void database::set_custom_operation_interpreter( const std::string& id, std::shared_ptr< custom_operation_interpreter > registry )
