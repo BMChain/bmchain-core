@@ -49,9 +49,9 @@ namespace bmchain { namespace chain {
       auto itr_to = by_owner_idx.find( boost::make_tuple( o.to ) );
       if ( itr_to == by_owner_idx.end() ) {
          _db.create< account_balance_object >( [&]( account_balance_object& balance_obj ) {
-            //balance_obj.owner = o.to;
-            //from_string( balance_obj.symbol, o.amount.symbol_name() );
-            //balance_obj.balance = o.amount.amount;
+            balance_obj.owner = o.to;
+            from_string( balance_obj.symbol, o.amount.symbol_name() );
+            balance_obj.balance = o.amount.amount;
          });
       }
       else {
@@ -69,10 +69,10 @@ namespace bmchain { namespace chain {
 
       _db.modify( *itr, [&]( custom_token_object& obj )
       {
-         //obj.inflation_rate   = o.inflation_rate;
-         //obj.schedule_time    = o.schedule_time;
-         //obj.interval_count   = o.interval_count;
-         //obj.interval_seconds = o.interval_seconds;
+         obj.inflation_rate   = o.inflation_rate;
+         obj.schedule_time    = o.schedule_time;
+         obj.interval_count   = o.interval_count;
+         obj.interval_seconds = o.interval_seconds;
       });
    }
 

@@ -1530,7 +1530,7 @@ void database::custom_tokens_emissions() {
       uint64_t inflation_rate = token_itr->inflation_rate;
       auto new_tokens = (token_itr->current_supply * inflation_rate) / (100 * 365 * 24 * 60 * 20);
 
-      //std::cout << "=========== " << token_itr->symbol << " = " << new_tokens <<  std::endl;
+      std::cout << "=========== " << token_itr->symbol << " = " << new_tokens <<  std::endl;
 
       modify( *token_itr, [&]( custom_token_object& t )
       {
