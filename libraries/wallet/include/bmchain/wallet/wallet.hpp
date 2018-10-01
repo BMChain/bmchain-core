@@ -915,7 +915,7 @@ class wallet_api
 
       string try_decrypt_content( const extended_encrypted_content& content ) const;
 
-      annotated_signed_transaction create_custom_token( string control_account, string symbol, uint64_t init_supply, bool broadcast = false );
+      annotated_signed_transaction create_custom_token( string control_account, asset init_supply, bool broadcast = false );
 
       annotated_signed_transaction transfer_custom_token( string from, string to, asset amount, bool broadcast = false );
 

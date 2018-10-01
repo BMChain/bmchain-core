@@ -11,8 +11,7 @@ namespace bmchain { namespace protocol {
    struct custom_token_create_operation : public base_operation
    {
       account_name_type control_account;
-      string            symbol;
-      uint64_t          current_supply;
+      asset             current_supply;
 
       void validate() const;
       void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
@@ -52,7 +51,7 @@ namespace bmchain { namespace protocol {
 
 }} // bmchain::protocol
 
-FC_REFLECT( bmchain::protocol::custom_token_create_operation,(control_account)(symbol)(current_supply) )
+FC_REFLECT( bmchain::protocol::custom_token_create_operation,(control_account)(current_supply) )
 FC_REFLECT( bmchain::protocol::custom_token_transfer_operation,(from)(to)(amount) )
 FC_REFLECT( bmchain::protocol::custom_token_setup_emissions_operation,
             (control_account)(symbol)(inflation_rate)(schedule_time)(interval_seconds)(interval_count) )

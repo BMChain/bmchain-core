@@ -18,16 +18,16 @@ namespace bmchain { namespace chain {
       custom_token_object() = delete;
 
       template<typename Constructor, typename Allocator>
-      custom_token_object(Constructor &&c, allocator<Allocator> a) : symbol(a) {
+      custom_token_object(Constructor &&c, allocator<Allocator> a) {
          c(*this);
       }
 
       id_type id;
       account_name_type control_account;
-      shared_string     symbol;
+      asset_symbol_type symbol;
+      asset             current_supply;
+      asset             reward_fund;
       uint16_t          inflation_rate = 0;
-      uint64_t          current_supply = 0;
-      uint64_t          reward_fund = 0;
       time_point_sec    generation_time;
 
       time_point_sec    schedule_time;
@@ -40,15 +40,15 @@ namespace bmchain { namespace chain {
 
    public:
       template<typename Constructor, typename Allocator>
-      account_balance_object(Constructor &&c, allocator <Allocator> a) : symbol(a) {
+      account_balance_object(Constructor &&c, allocator <Allocator> a) {
          c(*this);
       }
 
       id_type id;
       /// Name of the account, the balance is held for.
-      shared_string     symbol;
+      asset_symbol_type symbol;
       account_name_type owner;
-      share_type        balance;
+      asset             balance;
    };
 
    struct by_symbol;
@@ -66,10 +66,8 @@ namespace bmchain { namespace chain {
                       >,
                       ordered_unique< tag< by_symbol >,
                               composite_key< custom_token_object,
-                                      member< custom_token_object, account_name_type,  &custom_token_object::control_account >,
-                                      member< custom_token_object, shared_string, &custom_token_object::symbol >
-                              >,
-                              composite_key_compare< std::less< account_name_type >, strcmp_less >
+                                      member< custom_token_object, asset_symbol_type, &custom_token_object::symbol >
+                              >
                       >,
                       ordered_unique< tag< by_schedule_time >,
                               composite_key< custom_token_object,
@@ -88,10 +86,10 @@ namespace bmchain { namespace chain {
                       ordered_unique< tag< by_id >, member< account_balance_object, account_balance_id_type, &account_balance_object::id > >,
                       ordered_unique< tag< by_symbol >,
                               composite_key< account_balance_object,
-                                      member< account_balance_object, shared_string,  &account_balance_object::symbol >,
+                                      member< account_balance_object, asset_symbol_type,  &account_balance_object::symbol >,
                                       member< account_balance_object, account_balance_id_type, &account_balance_object::id >
                               >,
-                              composite_key_compare< strcmp_less, std::greater< account_balance_id_type > >
+                              composite_key_compare< std::less< asset_symbol_type >, std::greater< account_balance_id_type > >
                       >,
                       ordered_unique< tag< by_owner >,
                               composite_key< account_balance_object,
