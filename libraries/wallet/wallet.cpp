@@ -2772,7 +2772,7 @@ annotated_signed_transaction wallet_api::transfer_custom_token( string from, str
    return my->sign_transaction(tx, broadcast);
 }
 
-annotated_signed_transaction wallet_api::setup_emissions( string control_account, string symbol, fc::time_point schedule_time,
+annotated_signed_transaction wallet_api::setup_emissions( string control_account, asset symbol, fc::time_point schedule_time,
                                               uint16_t inflation_rate, uint32_t interval_seconds, uint32_t interval_count, bool broadcast ) {
    FC_ASSERT( !is_locked() );
 

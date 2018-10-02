@@ -534,7 +534,7 @@ struct custom_token_api_obj
    custom_token_api_obj(const chain::custom_token_object &o) :
            id(o.id),
            control_account(o.control_account),
-           symbol(to_string(o.symbol)),
+           symbol(o.current_supply.symbol_name()),
            inflation_rate(o.inflation_rate),
            current_supply(o.current_supply),
            reward_fund(o.reward_fund),
@@ -547,8 +547,8 @@ struct custom_token_api_obj
    account_name_type    control_account;
    string               symbol;
    uint16_t             inflation_rate = 0;
-   uint64_t             current_supply = 0;
-   uint64_t             reward_fund = 0;
+   asset                current_supply;
+   asset                reward_fund;
    time_point_sec       generation_time;
 };
 
@@ -557,7 +557,7 @@ struct account_balance_api_obj
    account_balance_api_obj(const chain::account_balance_object &o) :
            id(o.id),
            owner(o.owner),
-           symbol(to_string(o.symbol)),
+           symbol(o.balance.symbol_name()),
            balance(o.balance)
    {}
 
@@ -566,7 +566,7 @@ struct account_balance_api_obj
    account_balance_id_type id;
    account_name_type       owner;
    string                  symbol;
-   share_type              balance;
+   asset                   balance;
 };
 
 } } // bmchain::app

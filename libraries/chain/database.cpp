@@ -1528,15 +1528,15 @@ void database::custom_tokens_emissions() {
    auto token_itr = token_idx.begin();
    while ( token_itr != token_idx.end() && token_itr->schedule_time <= head_block_time() ){
       uint64_t inflation_rate = token_itr->inflation_rate;
-      auto new_tokens = (token_itr->current_supply * inflation_rate) / (100 * 365 * 24 * 60 * 20);
+      auto new_tokens = (token_itr->current_supply.amount * inflation_rate) / (100 * 365 * 24 * 60 * 20);
 
-      std::cout << "=========== " << token_itr->symbol << " = " << new_tokens <<  std::endl;
+      //std::cout << "=========== " << token_itr->symbol << " = " << new_tokens <<  std::endl;
 
       modify( *token_itr, [&]( custom_token_object& t )
       {
          t.schedule_time = t.schedule_time + (t.interval_seconds * t.interval_count);
-         t.current_supply += new_tokens;
-         t.reward_fund += new_tokens;
+         t.current_supply += asset( new_tokens, t.current_supply.symbol );
+         t.reward_fund += asset( new_tokens, t.current_supply.symbol );
       });
 
       ++token_itr;

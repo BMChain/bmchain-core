@@ -31,7 +31,7 @@ namespace bmchain { namespace protocol {
    struct custom_token_setup_emissions_operation : public base_operation
    {
       account_name_type control_account;
-      string            symbol;
+      asset             symbol;
       uint16_t          inflation_rate;
       time_point_sec    schedule_time;
       uint32_t          interval_seconds = 0;
