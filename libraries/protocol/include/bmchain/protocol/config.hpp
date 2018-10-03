@@ -250,3 +250,4 @@
 
 /// custom tokens
 #define BMCHAIN_ENABLE_CUSTOM_TOKENS            true
+#define BMCHAIN_CUSTOM_TOKEN_CREATION_FEE       int64_t(1000000ll)

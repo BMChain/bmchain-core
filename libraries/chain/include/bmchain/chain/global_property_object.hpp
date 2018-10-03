@@ -103,6 +103,7 @@ namespace bmchain { namespace chain {
           * their votes reduced.
           */
          uint32_t vote_power_reserve_rate = 10;
+         asset custom_token_creation_fee = asset( BMCHAIN_CUSTOM_TOKEN_CREATION_FEE, BMT_SYMBOL );
    };
 
    typedef multi_index_container<
@@ -138,5 +139,6 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (participation_count)
              (last_irreversible_block_num)
              (vote_power_reserve_rate)
+             (custom_token_creation_fee)
           )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::dynamic_global_property_object, bmchain::chain::dynamic_global_property_index )

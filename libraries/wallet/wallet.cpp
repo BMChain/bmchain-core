@@ -2746,9 +2746,12 @@ string wallet_api::vec_to_str(vector< char > vec) const {
 annotated_signed_transaction wallet_api::create_custom_token( string control_account, asset init_supply, bool broadcast ) {
    FC_ASSERT( !is_locked() );
 
+   auto props = my->_remote_db->get_dynamic_global_properties();
+
    custom_token_create_operation op;
    op.control_account = control_account;
    op.current_supply  = init_supply;
+   op.custom_token_creation_fee = props.custom_token_creation_fee;
 
    signed_transaction tx;
    tx.operations.push_back(op);
