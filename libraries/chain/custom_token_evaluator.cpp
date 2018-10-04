@@ -18,7 +18,9 @@ namespace bmchain { namespace chain {
    void custom_token_create_evaluator::do_apply( const custom_token_create_operation& o ) {
       const auto& by_symbol_idx = _db.get_index< custom_token_index >().indices().get< by_symbol >();
       auto itr = by_symbol_idx.find( boost::make_tuple( o.current_supply.symbol ) );
-      //auto itr = by_symbol_idx.begin();
+      auto acc = _db.get_account(o.control_account);
+      //FC_ASSERT( acc != nullptr, "This control account dosn't esixt." );
+      FC_ASSERT( acc.balance >= o.custom_token_creation_fee, "Control account dosn't have enough BMT." );
       FC_ASSERT( itr == by_symbol_idx.end(), "Custom token with such symbol exists." );
 
       _db.create< custom_token_object >( [&]( custom_token_object& token ) {
@@ -32,6 +34,11 @@ namespace bmchain { namespace chain {
          balance_obj.owner   = o.control_account;
          balance_obj.symbol  = o.current_supply.symbol;
          balance_obj.balance = o.current_supply;
+      });
+
+      _db.modify( acc, [&]( account_object& acc_obj )
+      {
+         acc_obj.balance -= o.custom_token_creation_fee;
       });
    }
 
