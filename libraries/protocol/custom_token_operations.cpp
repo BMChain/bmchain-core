@@ -15,6 +15,7 @@ namespace bmchain { namespace protocol {
 
    void custom_token_setup_emissions_operation::validate() const {
       FC_ASSERT( schedule_time > BMCHAIN_GENESIS_TIME );
+      FC_ASSERT( emissions_unit.token_unit.empty() == false );
    }
 
    void custom_token_set_setup_parameters_operation::validate() const {

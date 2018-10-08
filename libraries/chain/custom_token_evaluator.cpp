@@ -79,6 +79,7 @@ namespace bmchain { namespace chain {
       {
          obj.inflation_rate   = o.inflation_rate;
          obj.schedule_time    = o.schedule_time;
+         obj.emissions_unit   = o.emissions_unit;
          obj.interval_count   = o.interval_count;
          obj.interval_seconds = o.interval_seconds;
       });

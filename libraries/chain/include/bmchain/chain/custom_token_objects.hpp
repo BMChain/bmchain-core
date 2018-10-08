@@ -30,9 +30,10 @@ namespace bmchain { namespace chain {
       uint16_t          inflation_rate = 0;
       time_point_sec    generation_time;
 
-      time_point_sec    schedule_time;
-      uint32_t          interval_seconds = 0;
-      uint32_t          interval_count = 0;
+      time_point_sec       schedule_time =  BMCHAIN_GENESIS_TIME;;
+      bmchain::protocol::token_emissions_unit emissions_unit;
+      uint32_t             interval_seconds = 0;
+      uint32_t             interval_count = 0;
    };
 
    class account_balance_object : public object< account_balance_object_type, account_balance_object > {
@@ -105,7 +106,8 @@ namespace bmchain { namespace chain {
 }}
 
 FC_REFLECT( bmchain::chain::custom_token_object,
-            (id)(control_account)(symbol)(current_supply)(inflation_rate)(reward_fund)(generation_time)(schedule_time)(interval_seconds)(interval_count) )
+                    (id)(control_account)(symbol)(current_supply)(inflation_rate)(reward_fund)(generation_time)(schedule_time)
+                    (emissions_unit)(interval_seconds)(interval_count) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::custom_token_object, bmchain::chain::custom_token_index )
 
 FC_REFLECT( bmchain::chain::account_balance_object,(id)(owner)(balance) )

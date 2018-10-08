@@ -8,6 +8,11 @@
 
 namespace bmchain { namespace protocol {
 
+   struct token_emissions_unit
+   {
+      flat_map< account_name_type, uint16_t > token_unit;
+   };
+
    struct custom_token_create_operation : public base_operation
    {
 
@@ -32,10 +37,13 @@ namespace bmchain { namespace protocol {
 
    struct custom_token_setup_emissions_operation : public base_operation
    {
+      token_emissions_unit emissions_unit;
+      time_point_sec       schedule_time;
+
       account_name_type control_account;
       asset             symbol;
       uint16_t          inflation_rate;
-      time_point_sec    schedule_time;
+
       uint32_t          interval_seconds = 0;
       uint32_t          interval_count = 0;
 
@@ -53,8 +61,9 @@ namespace bmchain { namespace protocol {
 
 }} // bmchain::protocol
 
+FC_REFLECT( bmchain::protocol::token_emissions_unit, (token_unit))
 FC_REFLECT( bmchain::protocol::custom_token_create_operation,(control_account)(current_supply)(custom_token_creation_fee) )
 FC_REFLECT( bmchain::protocol::custom_token_transfer_operation,(from)(to)(amount) )
 FC_REFLECT( bmchain::protocol::custom_token_setup_emissions_operation,
-            (control_account)(symbol)(inflation_rate)(schedule_time)(interval_seconds)(interval_count) )
+            (emissions_unit)(schedule_time)(control_account)(symbol)(inflation_rate)(interval_seconds)(interval_count) )
 FC_REFLECT( bmchain::protocol::custom_token_set_setup_parameters_operation,(extensions) )
