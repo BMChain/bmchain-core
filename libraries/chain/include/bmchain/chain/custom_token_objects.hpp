@@ -31,7 +31,7 @@ namespace bmchain { namespace chain {
       time_point_sec    generation_time;
 
       time_point_sec       schedule_time =  BMCHAIN_GENESIS_TIME;;
-      bmchain::protocol::token_emissions_unit emissions_unit;
+      bmchain::protocol::custom_token_emissions_unit emissions_unit;
       uint32_t             interval_seconds = 0;
       uint32_t             interval_count = 0;
    };
