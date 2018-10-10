@@ -13,6 +13,17 @@
 
 namespace bmchain { namespace chain {
 
+   enum class smt_phase : uint8_t
+   {
+      account_elevated,
+      setup_completed,
+      contribution_begin_time_completed,
+      contribution_end_time_completed,
+      launch_time_completed,              /// launch window opened
+      launch_failed,                      /// launch window closed with either not enough contributions or some cap not revealed
+      launch_success                      /// enough contributions were declared and caps revealed before launch windows closed
+   };
+
    class custom_token_object : public object< custom_token_object_type, custom_token_object > {
    public:
       custom_token_object() = delete;
@@ -50,6 +61,29 @@ namespace bmchain { namespace chain {
       asset_symbol_type symbol;
       account_name_type owner;
       asset             balance;
+   };
+
+   class custom_token_inflation_event_object : public object< custom_token_inflation_event_object_type, custom_token_inflation_event_object >
+   {
+      custom_token_inflation_event_object() = delete;
+
+   public:
+      template<typename Constructor, typename Allocator>
+      custom_token_inflation_event_object(Constructor &&c, allocator <Allocator> a) {
+         c(*this);
+      }
+
+      // id_type is actually oid<smt_event_token_object>
+      id_type id;
+
+      custom_token_inflation_event_id_type parent;
+
+      smt_phase phase = smt_phase::setup_completed;
+
+      time_point_sec generation_begin_time;
+      time_point_sec generation_end_time;
+      time_point_sec announced_launch_time;
+      time_point_sec launch_expiration_time;
    };
 
    struct by_symbol;
