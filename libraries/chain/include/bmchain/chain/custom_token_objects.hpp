@@ -63,20 +63,20 @@ namespace bmchain { namespace chain {
       asset             balance;
    };
 
-   class custom_token_inflation_event_object : public object< custom_token_inflation_event_object_type, custom_token_inflation_event_object >
-   {
-      custom_token_inflation_event_object() = delete;
+   class custom_token_event_object : public object< custom_token_event_object_type, custom_token_event_object >   {
+
+      custom_token_event_object() = delete;
 
    public:
       template<typename Constructor, typename Allocator>
-      custom_token_inflation_event_object(Constructor &&c, allocator <Allocator> a) {
+      custom_token_event_object(Constructor &&c, allocator <Allocator> a) {
          c(*this);
       }
 
       // id_type is actually oid<smt_event_token_object>
       id_type id;
 
-      custom_token_inflation_event_id_type parent;
+      custom_token_event_id_type parent;
 
       smt_phase phase = smt_phase::setup_completed;
 
@@ -137,6 +137,44 @@ namespace bmchain { namespace chain {
               allocator< account_balance_object >
    > account_balance_index;
 
+struct by_interval_gen_begin;
+struct by_interval_gen_end;
+struct by_interval_launch;
+struct by_interval_launch_exp;
+typedef multi_index_container <
+   custom_token_event_object,
+   indexed_by <
+      ordered_unique< tag< by_id >,
+         member< custom_token_event_object, custom_token_event_id_type, &custom_token_event_object::id > >,
+
+      ordered_non_unique< tag< by_interval_gen_begin >,
+         composite_key< custom_token_event_object,
+            member< custom_token_event_object, smt_phase, &custom_token_event_object::phase >,
+            member< custom_token_event_object, time_point_sec, &custom_token_event_object::generation_begin_time >
+         >
+      >,
+      ordered_non_unique< tag< by_interval_gen_end >,
+         composite_key< custom_token_event_object,
+            member< custom_token_event_object, smt_phase, &custom_token_event_object::phase >,
+            member< custom_token_event_object, time_point_sec, &custom_token_event_object::generation_end_time >
+         >
+      >,
+      ordered_non_unique< tag< by_interval_launch >,
+         composite_key< custom_token_event_object,
+            member< custom_token_event_object, smt_phase, &custom_token_event_object::phase >,
+            member< custom_token_event_object, time_point_sec, &custom_token_event_object::announced_launch_time >
+         >
+      >,
+      ordered_non_unique< tag< by_interval_launch_exp >,
+         composite_key< custom_token_event_object,
+            member< custom_token_event_object, smt_phase, &custom_token_event_object::phase >,
+            member< custom_token_event_object, time_point_sec, &custom_token_event_object::launch_expiration_time >
+         >
+      >
+   >,
+   allocator< custom_token_event_object >
+> custom_token_event_index;
+
 }}
 
 FC_REFLECT( bmchain::chain::custom_token_object,
@@ -146,3 +184,6 @@ CHAINBASE_SET_INDEX_TYPE( bmchain::chain::custom_token_object, bmchain::chain::c
 
 FC_REFLECT( bmchain::chain::account_balance_object,(id)(owner)(balance) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::account_balance_object, bmchain::chain::account_balance_index )
+
+FC_REFLECT( bmchain::chain::custom_token_event_object, (id)(parent)(phase)(generation_begin_time)(generation_end_time)(announced_launch_time)(launch_expiration_time) )
+CHAINBASE_SET_INDEX_TYPE( bmchain::chain::custom_token_event_object, bmchain::chain::custom_token_event_index )

@@ -1860,6 +1860,7 @@ void database::initialize_indexes()
    add_core_index< content_order_index                     >(*this);
    add_core_index< custom_token_index                      >(*this);
    add_core_index< account_balance_index                   >(*this);
+   add_core_index< custom_token_event_index      >(*this);
 
    _plugin_index_signal();
 }

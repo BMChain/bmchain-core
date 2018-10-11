@@ -68,7 +68,7 @@ enum object_type
    content_order_object_type,
    custom_token_object_type,
    account_balance_object_type,
-   custom_token_inflation_event_object_type,
+   custom_token_event_object_type,
 };
 
 class dynamic_global_property_object;
@@ -101,7 +101,7 @@ class rep_delegation_expiration_object;
 class content_order_object;
 class custom_token_object;
 class account_balance_object;
-class custom_token_inflation_event_object;
+class custom_token_event_object;
 
 typedef oid< dynamic_global_property_object         > dynamic_global_property_id_type;
 typedef oid< account_object                         > account_id_type;
@@ -133,7 +133,7 @@ typedef oid< rep_delegation_expiration_object       > rep_delegation_expiration_
 typedef oid< content_order_object                   > content_order_id_type;
 typedef oid< custom_token_object                    > custom_token_id_type;
 typedef oid< account_balance_object                 > account_balance_id_type;
-typedef oid< custom_token_inflation_event_object    > custom_token_inflation_event_id_type;
+typedef oid< custom_token_event_object    > custom_token_event_id_type;
 
 enum bandwidth_type
 {
@@ -246,7 +246,7 @@ FC_REFLECT_ENUM( bmchain::chain::object_type,
                  (content_order_object_type)
                  (custom_token_object_type)
                  (account_balance_object_type)
-                 (custom_token_inflation_event_object_type)
+                 (custom_token_event_object_type)
                )
 
 FC_REFLECT_TYPENAME( bmchain::chain::shared_string )
