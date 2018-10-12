@@ -51,6 +51,48 @@ namespace bmchain { namespace protocol {
       void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
    };
 
+   struct custom_token_capped_generation_policy
+   {
+//         smt_generation_unit pre_soft_cap_unit;
+//         smt_generation_unit post_soft_cap_unit;
+//
+//         smt_cap_commitment  min_steem_units_commitment;
+//         smt_cap_commitment  hard_cap_steem_units_commitment;
+
+         uint16_t            soft_cap_percent = 0;
+
+         uint32_t            min_unit_ratio = 0;
+         uint32_t            max_unit_ratio = 0;
+
+         extensions_type     extensions;
+
+         void validate()const;
+   };
+
+   typedef static_variant<
+           custom_token_capped_generation_policy
+   > smt_generation_policy;
+
+   struct custom_token_setup_operation : public base_operation
+   {
+         account_name_type control_account;
+         asset             symbol;
+
+         uint8_t                 decimal_places = 0;
+         int64_t                 max_supply = BMCHAIN_MAX_SHARE_SUPPLY;
+
+         smt_generation_policy   initial_generation_policy;
+
+         time_point_sec          generation_begin_time;
+         time_point_sec          generation_end_time;
+         time_point_sec          announced_launch_time;
+         time_point_sec          launch_expiration_time;
+
+         extensions_type         extensions;
+
+         void validate()const;
+   };
+
    struct custom_token_set_setup_parameters_operation : public base_operation
    {
       //flat_set< smt_setup_parameter >  setup_parameters;

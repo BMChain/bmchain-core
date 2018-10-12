@@ -1564,6 +1564,15 @@ void database::process_savings_withdraws()
   }
 }
 
+asset database::get_liquidity_reward()const
+{
+   const auto &props = get_dynamic_global_properties();
+   static_assert(BMCHAIN_LIQUIDITY_REWARD_PERIOD_SEC == 60 * 60, "this code assumes a 1 hour time interval");
+   asset percent(protocol::calc_percent_reward_per_hour<BMCHAIN_LIQUIDITY_APR_PERCENT>(props.virtual_supply.amount),
+                 BMT_SYMBOL);
+   return std::max(percent, BMCHAIN_MIN_LIQUIDITY_REWARD );
+}
+
 asset database::get_content_reward()const
 {
    const auto& props = get_dynamic_global_properties();
