@@ -22,4 +22,20 @@ namespace bmchain { namespace protocol {
 
    }
 
+   void custom_token_setup_operation::validate() const {
+
+   }
+
+   void custom_token_capped_generation_policy::validate() const {
+
+   }
+
+   void custom_token_cap_commitment::validate() const {
+
+   }
+
+   void custom_token_generation_unit::validate() const {
+
+   }
+
 }}

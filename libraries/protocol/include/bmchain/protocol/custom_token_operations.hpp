@@ -10,45 +10,48 @@ namespace bmchain { namespace protocol {
 
 struct custom_token_emissions_unit
 {
-      flat_map< account_name_type, uint16_t > token_unit;
+   flat_map< account_name_type, uint16_t > token_unit;
 };
 
 struct custom_token_create_operation : public base_operation
 {
+   account_name_type control_account;
+   asset current_supply;
+   asset custom_token_creation_fee;
 
-      account_name_type control_account;
-      asset             current_supply;
-      asset             custom_token_creation_fee;
+   void validate() const;
 
-      void validate() const;
-      void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
+   void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
 };
 
 struct custom_token_transfer_operation : public base_operation
 {
-      account_name_type from;
-      account_name_type to;
-      asset             amount;
+   account_name_type from;
+   account_name_type to;
+   asset amount;
 
-      void              validate()const;
-      void get_required_active_authorities( flat_set<account_name_type>& a ) const { a.insert(from); }
-      void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(from); }
+   void validate() const;
+
+   void get_required_active_authorities(flat_set<account_name_type> &a) const { a.insert(from); }
+
+   void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(from); }
 };
 
 struct custom_token_setup_emissions_operation : public base_operation
 {
-      custom_token_emissions_unit emissions_unit;
-      time_point_sec       schedule_time;
+   custom_token_emissions_unit emissions_unit;
+   time_point_sec schedule_time;
 
-      account_name_type control_account;
-      asset             symbol;
-      uint16_t          inflation_rate;
+   account_name_type control_account;
+   asset symbol;
+   uint16_t inflation_rate;
 
-      uint32_t          interval_seconds = 0;
-      uint32_t          interval_count = 0;
+   uint32_t interval_seconds = 0;
+   uint32_t interval_count = 0;
 
-      void              validate()const;
-      void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
+   void validate() const;
+
+   void get_required_owner_authorities( flat_set<account_name_type>& a ) const { a.insert(control_account); }
 };
 
 struct custom_token_generation_unit
@@ -116,27 +119,42 @@ typedef static_variant<
 
 struct custom_token_setup_operation : public base_operation
 {
-         account_name_type control_account;
-         asset             symbol;
+   account_name_type control_account;
+   asset symbol;
 
-         uint8_t                 decimal_places = 0;
-         int64_t                 max_supply = BMCHAIN_MAX_SHARE_SUPPLY;
+   uint8_t decimal_places = 0;
+   int64_t max_supply = BMCHAIN_MAX_SHARE_SUPPLY;
 
-         smt_generation_policy   initial_generation_policy;
+   smt_generation_policy initial_generation_policy;
 
-         time_point_sec          generation_begin_time;
-         time_point_sec          generation_end_time;
-         time_point_sec          announced_launch_time;
-         time_point_sec          launch_expiration_time;
+   time_point_sec generation_begin_time;
+   time_point_sec generation_end_time;
+   time_point_sec announced_launch_time;
+   time_point_sec launch_expiration_time;
 
-         extensions_type         extensions;
+   extensions_type extensions;
 
-         void validate()const;
+   void validate()const;
 };
+
+struct token_param_allow_vesting
+{
+   bool value = true;
+};
+
+struct token_param_allow_voting
+{
+   bool value = true;
+};
+
+typedef static_variant<
+              token_param_allow_vesting,
+        token_param_allow_voting
+> token_setup_parameter;
 
 struct custom_token_set_setup_parameters_operation : public base_operation
 {
-      //flat_set< smt_setup_parameter >  setup_parameters;
+      flat_set< token_setup_parameter >  setup_parameters;
       extensions_type                  extensions;
 
       void validate()const;
@@ -154,8 +172,6 @@ FC_REFLECT( bmchain::protocol::custom_token_generation_unit, (bmt_unit)(token_un
 FC_REFLECT( bmchain::protocol::custom_token_cap_commitment, (lower_bound)(upper_bound)(hash))
 FC_REFLECT( bmchain::protocol::custom_token_capped_generation_policy,(pre_soft_cap_unit)(post_soft_cap_unit)
                 (min_steem_units_commitment)(hard_cap_steem_units_commitment)(soft_cap_percent)
-                (min_unit_ratio)(max_unit_ratio)(extensions)
-)
-//FC_REFLECT_DERIVED( bmchain::protocol::custom_token_setup_operation,(bmchain::protocol::base_operation),
-//        (decimal_places)(max_supply)(initial_generation_policy)(generation_begin_time)(generation_end_time)
-//                (announced_launch_time)(launch_expiration_time)(extensions))
+                (min_unit_ratio)(max_unit_ratio)(extensions))
+FC_REFLECT( bmchain::protocol::custom_token_setup_operation,(decimal_places)(max_supply)(initial_generation_policy)
+        (generation_begin_time)(generation_end_time)(announced_launch_time)(launch_expiration_time)(extensions))
