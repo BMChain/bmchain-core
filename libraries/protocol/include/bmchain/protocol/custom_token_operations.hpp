@@ -147,6 +147,27 @@ struct token_param_allow_voting
    bool value = true;
 };
 
+struct token_param_windows_v1
+{
+   uint32_t cashout_window_seconds = 0;                // BMCHAIN_CASHOUT_WINDOW_SECONDS
+   uint32_t reverse_auction_window_seconds = 0;        // BMCHAIN_REVERSE_AUCTION_WINDOW_SECONDS
+};
+
+struct token_param_vote_regeneration_period_seconds_v1
+{
+   uint32_t vote_regeneration_period_seconds = 0;      // BMCHAIN_VOTE_REGENERATION_SECONDS
+   uint32_t votes_per_regeneration_period = 0;
+};
+
+struct token_param_rewards_v1
+{
+         uint128_t               content_constant = 0;
+         uint16_t                percent_curation_rewards = 0;
+         uint16_t                percent_content_rewards = 0;
+//         protocol::curve_id                author_reward_curve;
+//         protocol::curve_id                curation_reward_curve;
+};
+
 typedef static_variant<
               token_param_allow_vesting,
         token_param_allow_voting
