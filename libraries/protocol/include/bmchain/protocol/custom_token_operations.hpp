@@ -196,3 +196,9 @@ FC_REFLECT( bmchain::protocol::custom_token_capped_generation_policy,(pre_soft_c
                 (min_unit_ratio)(max_unit_ratio)(extensions))
 FC_REFLECT( bmchain::protocol::custom_token_setup_operation,(decimal_places)(max_supply)(initial_generation_policy)
         (generation_begin_time)(generation_end_time)(announced_launch_time)(launch_expiration_time)(extensions))
+
+FC_REFLECT( bmchain::protocol::token_param_allow_vesting,(value) )
+FC_REFLECT( bmchain::protocol::token_param_allow_voting,(value) )
+FC_REFLECT( bmchain::protocol::token_param_windows_v1,(cashout_window_seconds)(reverse_auction_window_seconds) )
+FC_REFLECT( bmchain::protocol::token_param_vote_regeneration_period_seconds_v1,(vote_regeneration_period_seconds)(votes_per_regeneration_period) )
+FC_REFLECT( bmchain::protocol::token_param_rewards_v1,(content_constant)(percent_curation_rewards)(percent_content_rewards) )
