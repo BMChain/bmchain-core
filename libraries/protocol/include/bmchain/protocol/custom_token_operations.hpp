@@ -176,7 +176,7 @@ typedef static_variant<
 struct custom_token_set_setup_parameters_operation : public base_operation
 {
       flat_set< token_setup_parameter >  setup_parameters;
-      extensions_type                  extensions;
+      extensions_type                    extensions;
 
       void validate()const;
 };

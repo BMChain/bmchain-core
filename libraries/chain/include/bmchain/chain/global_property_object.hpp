@@ -103,7 +103,7 @@ namespace bmchain { namespace chain {
           * their votes reduced.
           */
          uint32_t vote_power_reserve_rate = 10;
-         asset custom_token_creation_fee = asset( BMCHAIN_CUSTOM_TOKEN_CREATION_FEE, BMT_SYMBOL );
+         asset custom_token_creation_fee = asset( CUSTOM_TOKEN_CREATION_FEE, BMT_SYMBOL );
    };
 
    typedef multi_index_container<
