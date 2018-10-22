@@ -15,6 +15,38 @@
 
 namespace bmchain { namespace chain {
 
+class smt_setup_parameters_visitor : public fc::visitor<bool>
+{
+public:
+   smt_setup_parameters_visitor(custom_token_object& smt_token) : _smt_token(smt_token) {}
+
+   bool operator () (const token_param_allow_voting& allow_voting)
+   {
+      _smt_token.allow_voting = allow_voting.value;
+      return true;
+   }
+
+   bool operator () (const token_param_allow_vesting& allow_vesting)
+   {
+      _smt_token.allow_vesting = allow_vesting.value;
+      return true;
+   }
+
+private:
+   custom_token_object& _smt_token;
+};
+
+const custom_token_object& common_pre_setup_evaluation(
+   const database& _db, const asset_symbol_type& symbol, const account_name_type& control_account )
+{
+   const custom_token_object& smt = get_controlled_smt( _db, control_account, symbol );
+
+   // Check whether it's not too late to setup emissions operation.
+   FC_ASSERT( smt.phase < smt_phase::setup_completed, "SMT pre-setup operation no longer allowed after setup phase is over" );
+
+   return smt;
+}
+
    void custom_token_create_evaluator::do_apply( const custom_token_create_operation& o ) {
       const auto& by_symbol_idx = _db.get_index< custom_token_index >().indices().get< by_symbol >();
       auto itr = by_symbol_idx.find( boost::make_tuple( o.current_supply.symbol ) );
@@ -90,5 +122,20 @@ namespace bmchain { namespace chain {
       const auto& by_owner_idx = _db.get_index< account_balance_index >().indices().get< by_owner >();
 
    }
+
+//void smt_set_setup_parameters_evaluator::do_apply( const smt_set_setup_parameters_operation& o )
+//{
+//   FC_ASSERT( _db.has_hardfork( STEEM_SMT_HARDFORK ), "SMT functionality not enabled until hardfork ${hf}", ("hf", STEEM_SMT_HARDFORK) );
+//
+//   const smt_token_object& smt_token = common_pre_setup_evaluation(_db, o.symbol, o.control_account);
+//
+//   _db.modify( smt_token, [&]( smt_token_object& token )
+//   {
+//      smt_setup_parameters_visitor visitor(token);
+//
+//      for (auto& param : o.setup_parameters)
+//         param.visit(visitor);
+//   });
+//}
 
 }}

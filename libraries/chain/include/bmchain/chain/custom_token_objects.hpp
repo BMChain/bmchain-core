@@ -45,6 +45,12 @@ namespace bmchain { namespace chain {
       bmchain::protocol::custom_token_emissions_unit emissions_unit;
       uint32_t             interval_seconds = 0;
       uint32_t             interval_count = 0;
+
+      /// set_setup_parameters
+      bool              allow_voting = false;
+      bool              allow_vesting = false;
+
+      smt_phase         phase = smt_phase::account_elevated;
    };
 
    class account_balance_object : public object< account_balance_object_type, account_balance_object > {
@@ -179,7 +185,7 @@ typedef multi_index_container <
 
 FC_REFLECT( bmchain::chain::custom_token_object,
                     (id)(control_account)(symbol)(current_supply)(inflation_rate)(reward_fund)(generation_time)(schedule_time)
-                    (emissions_unit)(interval_seconds)(interval_count) )
+                    (emissions_unit)(interval_seconds)(interval_count)(allow_voting)(allow_vesting) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::custom_token_object, bmchain::chain::custom_token_index )
 
 FC_REFLECT( bmchain::chain::account_balance_object,(id)(owner)(balance) )
