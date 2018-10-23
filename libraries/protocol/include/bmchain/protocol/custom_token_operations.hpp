@@ -161,11 +161,11 @@ struct token_param_vote_regeneration_period_seconds_v1
 
 struct token_param_rewards_v1
 {
-         uint128_t               content_constant = 0;
-         uint16_t                percent_curation_rewards = 0;
-         uint16_t                percent_content_rewards = 0;
-//         protocol::curve_id                author_reward_curve;
-//         protocol::curve_id                curation_reward_curve;
+   uint128_t content_constant = 0;
+   uint16_t  percent_curation_rewards = 0;
+   uint16_t  percent_content_rewards = 0;
+// protocol::curve_id author_reward_curve;
+// protocol::curve_id curation_reward_curve;
 };
 
 typedef static_variant<
@@ -175,10 +175,13 @@ typedef static_variant<
 
 struct custom_token_set_setup_parameters_operation : public base_operation
 {
-      flat_set< token_setup_parameter >  setup_parameters;
-      extensions_type                    extensions;
+   account_name_type control_account;
+   asset symbol;
 
-      void validate()const;
+   flat_set< token_setup_parameter >  setup_parameters;
+   extensions_type                    extensions;
+
+   void validate()const;
 };
 
 }} // bmchain::protocol
@@ -188,7 +191,7 @@ FC_REFLECT( bmchain::protocol::custom_token_create_operation,(control_account)(c
 FC_REFLECT( bmchain::protocol::custom_token_transfer_operation,(from)(to)(amount) )
 FC_REFLECT( bmchain::protocol::custom_token_setup_emissions_operation,
             (emissions_unit)(schedule_time)(control_account)(symbol)(inflation_rate)(interval_seconds)(interval_count) )
-FC_REFLECT( bmchain::protocol::custom_token_set_setup_parameters_operation,(extensions) )
+FC_REFLECT( bmchain::protocol::custom_token_set_setup_parameters_operation,(control_account)(symbol)(setup_parameters)(extensions) )
 FC_REFLECT( bmchain::protocol::custom_token_generation_unit, (bmt_unit)(token_unit))
 FC_REFLECT( bmchain::protocol::custom_token_cap_commitment, (lower_bound)(upper_bound)(hash))
 FC_REFLECT( bmchain::protocol::custom_token_capped_generation_policy,(pre_soft_cap_unit)(post_soft_cap_unit)
