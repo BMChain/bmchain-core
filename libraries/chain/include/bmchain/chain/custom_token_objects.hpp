@@ -51,6 +51,15 @@ namespace bmchain { namespace chain {
       bool              allow_vesting = false;
 
       smt_phase         phase = smt_phase::account_elevated;
+
+      ///parameters for 'setup_operation'
+      int64_t                       max_supply = 0;
+      bmchain::protocol::
+      custom_token_capped_generation_policy  capped_generation_policy;
+      time_point_sec                generation_begin_time;
+      time_point_sec                generation_end_time;
+      time_point_sec                announced_launch_time;
+      time_point_sec                launch_expiration_time;
    };
 
    class account_balance_object : public object< account_balance_object_type, account_balance_object > {

@@ -32,27 +32,27 @@ inline const custom_token_object& get_controlled_token( const database& db, cons
 
 }
 
+namespace {
 
-class custom_token_setup_parameters_visitor : public fc::visitor<bool>
-{
+class custom_token_setup_parameters_visitor : public fc::visitor<bool> {
 public:
-   custom_token_setup_parameters_visitor(custom_token_object& custom_token) : _custom_token(custom_token) {}
+   custom_token_setup_parameters_visitor(custom_token_object &custom_token) : _custom_token(custom_token) {}
 
-   bool operator () (const token_param_allow_voting& allow_voting)
-   {
+   bool operator()(const token_param_allow_voting &allow_voting) {
       _custom_token.allow_voting = allow_voting.value;
       return true;
    }
 
-   bool operator () (const token_param_allow_vesting& allow_vesting)
-   {
+   bool operator()(const token_param_allow_vesting &allow_vesting) {
       _custom_token.allow_vesting = allow_vesting.value;
       return true;
    }
 
 private:
-   custom_token_object& _custom_token;
+   custom_token_object &_custom_token;
 };
+
+}
 
 const custom_token_object& common_pre_setup_evaluation(
    const database& _db, const asset_symbol_type& symbol, const account_name_type& control_account )
@@ -64,6 +64,22 @@ const custom_token_object& common_pre_setup_evaluation(
 
    return token;
 }
+
+struct smt_setup_evaluator_visitor
+{
+   const custom_token_object &_token;
+   database &_db;
+
+   smt_setup_evaluator_visitor(const custom_token_object &token, database &db) : _token(token), _db(db) {}
+
+   typedef void result_type;
+
+   void operator()(const custom_token_capped_generation_policy &capped_generation_policy) const {
+      _db.modify(_token, [&](custom_token_object &token) {
+         token.capped_generation_policy = capped_generation_policy;
+      });
+   }
+};
 
 void custom_token_create_evaluator::do_apply( const custom_token_create_operation& o ) {
       const auto &by_symbol_idx = _db.get_index<custom_token_index>().indices().get<by_symbol>();
@@ -134,7 +150,7 @@ void custom_token_set_setup_parameters_evaluator::do_apply( const custom_token_s
 
    const auto& by_owner_idx = _db.get_index< account_balance_index >().indices().get< by_owner >();
 
-   const custom_token_object& token = common_pre_setup_evaluation(_db, o.symbol, o.control_account);
+   const custom_token_object& token = common_pre_setup_evaluation(_db, o.symbol.symbol, o.control_account);
 
    _db.modify( token, [&]( custom_token_object& token )
    {
