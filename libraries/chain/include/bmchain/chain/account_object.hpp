@@ -58,9 +58,21 @@ namespace bmchain { namespace chain {
          asset             balance = asset( 0, BMT_SYMBOL );  ///< total liquid shares held by this account
          asset             savings_balance = asset( 0, BMT_SYMBOL );  ///< total liquid shares held by this account
 
+         asset             sbd_balance = asset( 0, SBD_SYMBOL ); /// total sbd balance
+         uint128_t         sbd_seconds; ///< total sbd * how long it has been hel
+         time_point_sec    sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
+         time_point_sec    sbd_last_interest_payment; ///< used to pay interest at most once per month
+
+
+         asset             savings_sbd_balance = asset( 0, SBD_SYMBOL ); /// total sbd balance
+         uint128_t         savings_sbd_seconds; ///< total sbd * how long it has been hel
+         time_point_sec    savings_sbd_seconds_last_update; ///< the last time the sbd_seconds was updated
+         time_point_sec    savings_sbd_last_interest_payment; ///< used to pay interest at most once per month
+
          uint8_t           savings_withdraw_requests = 0;
          ///@}
 
+         asset             reward_sbd_balance = asset( 0, SBD_SYMBOL );
          asset             reward_bmt_balance = asset( 0, BMT_SYMBOL );
          asset             reward_rep_balance = asset( 0, REP_SYMBOL );
          asset             reward_rep_bmt = asset( 0, BMT_SYMBOL );
@@ -446,8 +458,9 @@ FC_REFLECT( bmchain::chain::account_object,
              (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
              (savings_balance)
-             (savings_withdraw_requests)
-             (reward_bmt_balance)(reward_rep_balance)(reward_rep_bmt)
+             (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
+             (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
+             (reward_bmt_balance)(reward_sbd_balance)(reward_rep_balance)(reward_rep_bmt)
              (rep_shares)(delegated_rep_shares)(received_rep_shares)
              (rep_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)

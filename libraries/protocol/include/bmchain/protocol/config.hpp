@@ -36,6 +36,7 @@
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain"))
 #define REP_SYMBOL  (uint64_t(6) | (uint64_t('R') << 8) | (uint64_t('E') << 16) | (uint64_t('P') << 24)) ///< RPT with 6 digits of precision
 #define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precisionDollars with 3 digits of precision
+#define SBD_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24))
 #define BMCHAIN_SYMBOL                          "BMT"
 #define BMCHAIN_ADDRESS_PREFIX                  "BMT"
 

@@ -51,6 +51,9 @@ namespace bmchain { namespace chain {
 
          asset       virtual_supply              = asset( 0, BMT_SYMBOL );
          asset       current_supply              = asset( 0, BMT_SYMBOL );
+         asset       confidential_supply         = asset( 0, BMT_SYMBOL ); ///< total asset held in confidential balances
+         asset       current_sbd_supply          = asset( 0, SBD_SYMBOL );
+         asset       confidential_sbd_supply     = asset( 0, SBD_SYMBOL ); ///< total asset held in confidential balances
          asset       total_rep_fund_bmt          = asset( 0, BMT_SYMBOL );
          asset       total_rep_shares            = asset( 0, REP_SYMBOL );
          asset       total_reward_fund_bmt       = asset( 0, BMT_SYMBOL );
@@ -71,6 +74,10 @@ namespace bmchain { namespace chain {
             return price( total_rep_shares + pending_rewarded_rep_shares,
                total_rep_fund_bmt + pending_rewarded_rep_bmt );
          }
+
+         uint16_t sbd_interest_rate = 0;
+
+         uint16_t sbd_print_rate = BMCHAIN_100_PERCENT;
 
          /**
           *  Maximum block size is decided by the set of active witnesses which change every round.
@@ -104,6 +111,8 @@ namespace bmchain { namespace chain {
           */
          uint32_t vote_power_reserve_rate = 10;
          asset custom_token_creation_fee = asset( CUSTOM_TOKEN_CREATION_FEE, BMT_SYMBOL );
+         uint16_t sbd_stop_percent = 0;
+         uint16_t sbd_start_percent = 0;
    };
 
    typedef multi_index_container<
@@ -127,12 +136,17 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (num_pow_witnesses)
              (virtual_supply)
              (current_supply)
+             (confidential_supply)
+             (current_sbd_supply)
+             (confidential_sbd_supply)
              (total_rep_fund_bmt)
              (total_rep_shares)
              (total_reward_fund_bmt)
              (total_reward_shares2)
              (pending_rewarded_rep_shares)
              (pending_rewarded_rep_bmt)
+             (sbd_interest_rate)
+             (sbd_print_rate)
              (maximum_block_size)
              (current_aslot)
              (recent_slots_filled)
@@ -140,5 +154,7 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (last_irreversible_block_num)
              (vote_power_reserve_rate)
              (custom_token_creation_fee)
+             (sbd_stop_percent)
+             (sbd_start_percent)
           )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::dynamic_global_property_object, bmchain::chain::dynamic_global_property_index )

@@ -212,7 +212,16 @@ struct account_api_obj
       last_vote_time( a.last_vote_time ),
       balance( a.balance ),
       savings_balance( a.savings_balance ),
+      sbd_balance( a.sbd_balance ),
+      sbd_seconds( a.sbd_seconds ),
+      sbd_seconds_last_update( a.sbd_seconds_last_update ),
+      sbd_last_interest_payment( a.sbd_last_interest_payment ),
+      savings_sbd_balance( a.savings_sbd_balance ),
+      savings_sbd_seconds( a.savings_sbd_seconds ),
+      savings_sbd_seconds_last_update( a.savings_sbd_seconds_last_update ),
+      savings_sbd_last_interest_payment( a.savings_sbd_last_interest_payment ),
       savings_withdraw_requests( a.savings_withdraw_requests ),
+      reward_sbd_balance( a.reward_sbd_balance ),
       reward_bmt_balance( a.reward_bmt_balance ),
       reward_rep_balance( a.reward_rep_balance ),
       reward_rep_bmt( a.reward_rep_bmt ),
@@ -300,8 +309,19 @@ struct account_api_obj
    asset             balance;
    asset             savings_balance;
 
+   asset             sbd_balance;
+   uint128_t         sbd_seconds;
+   time_point_sec    sbd_seconds_last_update;
+   time_point_sec    sbd_last_interest_payment;
+
+   asset             savings_sbd_balance;
+   uint128_t         savings_sbd_seconds;
+   time_point_sec    savings_sbd_seconds_last_update;
+   time_point_sec    savings_sbd_last_interest_payment;
+
    uint8_t           savings_withdraw_requests = 0;
 
+   asset             reward_sbd_balance;
    asset             reward_bmt_balance;
    asset             reward_rep_balance;
    asset             reward_rep_bmt;
@@ -592,8 +612,9 @@ FC_REFLECT( bmchain::app::account_api_obj,
              (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
              (savings_balance)
-             (savings_withdraw_requests)
-             (reward_bmt_balance)(reward_rep_balance)(reward_rep_bmt)
+             (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
+             (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
+             (reward_sbd_balance)(reward_bmt_balance)(reward_rep_balance)(reward_rep_bmt)
              (rep_shares)(delegated_rep_shares)(received_rep_shares)(rep_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
