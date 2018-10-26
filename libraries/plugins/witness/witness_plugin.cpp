@@ -360,7 +360,7 @@ namespace detail
       const auto& props = _db.get_dynamic_global_properties();
       bool has_bandwidth = true;
 
-      if( props.total_rep_shares.amount > 0 )
+      if( props.total_vesting_shares.amount > 0 )
       {
          auto band = _db.find< account_bandwidth_object, by_account_bandwidth_type >( boost::make_tuple( a.name, type ) );
 
@@ -393,7 +393,7 @@ namespace detail
          });
 
          fc::uint128 account_vshares( a.effective_rep_shares().amount.value );
-         fc::uint128 total_vshares( props.total_rep_shares.amount.value );
+         fc::uint128 total_vshares( props.total_vesting_shares.amount.value );
          fc::uint128 account_average_bandwidth( band->average_bandwidth.value );
          fc::uint128 max_virtual_bandwidth( _db.get( reserve_ratio_id_type() ).max_virtual_bandwidth );
 
@@ -406,7 +406,7 @@ namespace detail
                ("account_vshares", account_vshares)
                ("account_average_bandwidth", account_average_bandwidth)
                ("max_virtual_bandwidth", max_virtual_bandwidth)
-               ("total_rep_shares", total_vshares) );
+               ("total_vesting_shares", total_vshares) );
       }
    }
 }

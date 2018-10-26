@@ -976,7 +976,7 @@ asset database::create_rep( const account_object& to_account, asset bmt, bool to
       const auto& cprops = get_dynamic_global_properties();
 
       /**
-       *  The ratio of total_rep_shares / total_rep_fund_bmt should not
+       *  The ratio of total_vesting_shares / total_rep_fund_bmt should not
        *  change as the result of the user adding funds
        *
        *  V / C  = (V+Vn) / (C+Cn)
@@ -1011,7 +1011,7 @@ asset database::create_rep( const account_object& to_account, asset bmt, bool to
          else
          {
             props.total_rep_fund_bmt += bmt;
-            props.total_rep_shares += new_rep;
+            props.total_vesting_shares += new_rep;
          }
       } );
 
@@ -1120,7 +1120,7 @@ void database::adjust_witness_vote( const witness_object& witness, share_type de
 
       w.virtual_last_update = wso.current_virtual_time;
       w.votes += delta;
-      FC_ASSERT( w.votes <= get_dynamic_global_properties().total_rep_shares.amount, "", ("w.votes", w.votes)("props",get_dynamic_global_properties().total_rep_shares) );
+      FC_ASSERT( w.votes <= get_dynamic_global_properties().total_vesting_shares.amount, "", ("w.votes", w.votes)("props",get_dynamic_global_properties().total_vesting_shares) );
 
       w.virtual_scheduled_time = w.virtual_last_update + (VIRTUAL_SCHEDULE_LAP_LENGTH2 - w.virtual_position)/(w.votes.value+1);
 
@@ -1172,7 +1172,7 @@ void database::clear_null_account_balance()
 
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
-         g.total_rep_shares -= null_account.rep_shares;
+         g.total_vesting_shares -= null_account.rep_shares;
          g.total_rep_fund_bmt -= converted_bmt;
       });
 
@@ -2031,7 +2031,7 @@ void database::init_genesis( uint64_t init_supply )
          p.participation_count = 128;
          p.current_supply = asset( init_supply + init_rep / 1000, BMT_SYMBOL );
          p.virtual_supply = p.current_supply;
-         p.total_rep_shares = asset( init_rep, REP_SYMBOL);
+         p.total_vesting_shares = asset( init_rep, REP_SYMBOL);
          p.total_rep_fund_bmt = asset( init_rep / 1000, BMT_SYMBOL);
          p.maximum_block_size = BMCHAIN_MAX_BLOCK_SIZE;
       } );
@@ -2973,7 +2973,7 @@ void database::validate_invariants()const
       /// verify no witness has too many votes
       const auto& witness_idx = get_index< witness_index >().indices();
       for( auto itr = witness_idx.begin(); itr != witness_idx.end(); ++itr )
-         FC_ASSERT( itr->votes <= gpo.total_rep_shares.amount, "", ("itr",*itr) );
+         FC_ASSERT( itr->votes <= gpo.total_vesting_shares.amount, "", ("itr",*itr) );
 
       for( auto itr = account_idx.begin(); itr != account_idx.end(); ++itr )
       {
@@ -3063,8 +3063,8 @@ void database::validate_invariants()const
       total_supply += gpo.total_rep_fund_bmt + gpo.total_reward_fund_bmt + gpo.pending_rewarded_rep_bmt;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
-      FC_ASSERT( gpo.total_rep_shares + gpo.pending_rewarded_rep_shares == total_rep, "", ("gpo.total_rep_shares",gpo.total_rep_shares)("total_rep",total_rep) );
-      FC_ASSERT( gpo.total_rep_shares.amount == total_vsf_votes, "", ("total_rep_shares",gpo.total_rep_shares)("total_vsf_votes",total_vsf_votes) );
+      FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_rep_shares == total_rep, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_rep",total_rep) );
+      FC_ASSERT( gpo.total_vesting_shares.amount == total_vsf_votes, "", ("total_vesting_shares",gpo.total_vesting_shares)("total_vsf_votes",total_vsf_votes) );
       FC_ASSERT( gpo.pending_rewarded_rep_bmt == pending_rep_bmt, "", ("pending_rewarded_rep_bmt",gpo.pending_rewarded_rep_bmt)("pending_rep_bmt", pending_rep_bmt));
 
       FC_ASSERT( gpo.virtual_supply >= gpo.current_supply );
@@ -3082,7 +3082,7 @@ void database::perform_rep_share_split( uint32_t magnitude )
    {
       modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& d )
       {
-         d.total_rep_shares.amount *= magnitude;
+         d.total_vesting_shares.amount *= magnitude;
          d.total_reward_shares2 = 0;
       } );
 

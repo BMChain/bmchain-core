@@ -55,7 +55,7 @@ namespace bmchain { namespace chain {
          asset       current_sbd_supply          = asset( 0, SBD_SYMBOL );
          asset       confidential_sbd_supply     = asset( 0, SBD_SYMBOL ); ///< total asset held in confidential balances
          asset       total_rep_fund_bmt          = asset( 0, BMT_SYMBOL );
-         asset       total_rep_shares            = asset( 0, REP_SYMBOL );
+         asset       total_vesting_shares            = asset( 0, REP_SYMBOL );
          asset       total_reward_fund_bmt       = asset( 0, BMT_SYMBOL );
          fc::uint128 total_reward_shares2        = 0; ///< the running total of REWARD^2
          asset       pending_rewarded_rep_shares = asset( 0, REP_SYMBOL );
@@ -63,15 +63,15 @@ namespace bmchain { namespace chain {
 
          price       get_rep_share_price() const
          {
-            if ( total_rep_fund_bmt.amount == 0 || total_rep_shares.amount == 0 )
+            if ( total_rep_fund_bmt.amount == 0 || total_vesting_shares.amount == 0 )
                return price ( asset( 1000, BMT_SYMBOL ), asset( 1000000, REP_SYMBOL ) );
 
-            return price( total_rep_shares, total_rep_fund_bmt );
+            return price( total_vesting_shares, total_rep_fund_bmt );
          }
 
          price get_reward_rep_share_price() const
          {
-            return price( total_rep_shares + pending_rewarded_rep_shares,
+            return price( total_vesting_shares + pending_rewarded_rep_shares,
                total_rep_fund_bmt + pending_rewarded_rep_bmt );
          }
 
@@ -140,7 +140,7 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (current_sbd_supply)
              (confidential_sbd_supply)
              (total_rep_fund_bmt)
-             (total_rep_shares)
+             (total_vesting_shares)
              (total_reward_fund_bmt)
              (total_reward_shares2)
              (pending_rewarded_rep_shares)

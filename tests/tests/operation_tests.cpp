@@ -103,7 +103,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
            const account_object& acct = db.get_account( "alice" );
            const account_authority_object& acct_auth = db.get< account_authority_object, by_account >( "alice" );
 
-           //auto vest_shares = gpo.total_rep_shares;
+           //auto vest_shares = gpo.total_vesting_shares;
            //auto vests = gpo.total_rep_fund_bmt;
 
            BOOST_REQUIRE( acct.name == "alice" );
@@ -1326,7 +1326,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 
            BOOST_REQUIRE( alice.balance == ASSET( "10.000 TESTS" ) );
 
-           auto shares = asset( gpo.total_rep_shares.amount, REP_SYMBOL );
+           auto shares = asset( gpo.total_vesting_shares.amount, REP_SYMBOL );
            auto vests = asset( gpo.total_rep_fund_bmt.amount, BMT_SYMBOL );
            auto alice_shares = alice.rep_shares;
            auto bob_shares = bob.rep_shares;
@@ -1350,7 +1350,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
            BOOST_REQUIRE( alice.balance.amount.value == ASSET( "2.500 TESTS" ).amount.value );
            BOOST_REQUIRE( alice.rep_shares.amount.value == alice_shares.amount.value );
            BOOST_REQUIRE( gpo.total_rep_fund_bmt.amount.value == vests.amount.value );
-           BOOST_REQUIRE( gpo.total_rep_shares.amount.value == shares.amount.value );
+           BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == shares.amount.value );
            validate_database();
 
            op.to = "bob";
@@ -1372,7 +1372,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
            BOOST_REQUIRE( bob.balance.amount.value == ASSET( "0.000 TESTS" ).amount.value );
            BOOST_REQUIRE( bob.rep_shares.amount.value == bob_shares.amount.value );
            BOOST_REQUIRE( gpo.total_rep_fund_bmt.amount.value == vests.amount.value );
-           BOOST_REQUIRE( gpo.total_rep_shares.amount.value == shares.amount.value );
+           BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == shares.amount.value );
            validate_database();
 
            BMCHAIN_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
@@ -1382,7 +1382,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
            BOOST_REQUIRE( bob.balance.amount.value == ASSET( "0.000 TESTS" ).amount.value );
            BOOST_REQUIRE( bob.rep_shares.amount.value == bob_shares.amount.value );
            BOOST_REQUIRE( gpo.total_rep_fund_bmt.amount.value == vests.amount.value );
-           BOOST_REQUIRE( gpo.total_rep_shares.amount.value == shares.amount.value );
+           BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == shares.amount.value );
            validate_database();
        }
        FC_LOG_AND_RETHROW()
