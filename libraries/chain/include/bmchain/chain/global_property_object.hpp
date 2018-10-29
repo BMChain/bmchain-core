@@ -55,7 +55,7 @@ namespace bmchain { namespace chain {
          asset       current_sbd_supply          = asset( 0, SBD_SYMBOL );
          asset       confidential_sbd_supply     = asset( 0, SBD_SYMBOL ); ///< total asset held in confidential balances
          asset       total_rep_fund_bmt          = asset( 0, BMT_SYMBOL );
-         asset       total_vesting_shares            = asset( 0, REP_SYMBOL );
+         asset       total_vesting_shares        = asset( 0, REP_SYMBOL );
          asset       total_reward_fund_bmt       = asset( 0, BMT_SYMBOL );
          fc::uint128 total_reward_shares2        = 0; ///< the running total of REWARD^2
          asset       pending_rewarded_rep_shares = asset( 0, REP_SYMBOL );
