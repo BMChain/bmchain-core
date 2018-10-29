@@ -318,6 +318,7 @@ namespace bmchain { namespace chain {
          share_type pay_curators( const comment_object& c, share_type& max_rewards );
          share_type cashout_comment_helper( util::comment_reward_context& ctx, const comment_object& comment );
          void process_comment_cashout();
+         void process_funds();
          void process_funds_bmchain(int64_t new_bmt);
          void process_savings_withdraws();
          void account_recovery_processing();
