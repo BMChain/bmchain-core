@@ -965,6 +965,122 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when)const
    return (when - first_slot_time).to_seconds() / BMCHAIN_BLOCK_INTERVAL + 1;
 }
 
+// Create vesting, then a caller-supplied callback after determining how many shares to create, but before
+// we modify the database.
+// This allows us to implement virtual op pre-notifications in the Before function.
+template< typename Before >
+asset create_vesting2( database& db, const account_object& to_account, asset liquid, bool to_reward_balance, Before&& before_vesting_callback )
+{
+   try
+   {
+      auto calculate_new_vesting = [ liquid ] ( price vesting_share_price ) -> asset
+         {
+         /**
+          *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
+          *  change as the result of the user adding funds
+          *
+          *  V / C  = (V+Vn) / (C+Cn)
+          *
+          *  Simplifies to Vn = (V * Cn ) / C
+          *
+          *  If Cn equals o.amount, then we must solve for Vn to know how many new vesting shares
+          *  the user should receive.
+          *
+          *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
+          */
+         asset new_vesting = liquid * ( vesting_share_price );
+         return new_vesting;
+         };
+
+//#ifdef STEEM_ENABLE_SMT
+//      if( liquid.symbol.space() == asset_symbol_type::smt_nai_space )
+//      {
+//         FC_ASSERT( liquid.symbol.is_vesting() == false );
+//         // Get share price.
+//         const auto& smt = db.get< smt_token_object, by_symbol >( liquid.symbol );
+//         FC_ASSERT( smt.allow_voting == to_reward_balance, "No voting - no rewards" );
+//         price vesting_share_price = to_reward_balance ? smt.get_reward_vesting_share_price() : smt.get_vesting_share_price();
+//         // Calculate new vesting from provided liquid using share price.
+//         asset new_vesting = calculate_new_vesting( vesting_share_price );
+//         before_vesting_callback( new_vesting );
+//         // Add new vesting to owner's balance.
+//         if( to_reward_balance )
+//            db.adjust_reward_balance( to_account, liquid, new_vesting );
+//         else
+//            db.adjust_balance( to_account, new_vesting );
+//         // Update global vesting pool numbers.
+//         db.modify( smt, [&]( smt_token_object& smt_object )
+//         {
+//            if( to_reward_balance )
+//            {
+//               smt_object.pending_rewarded_vesting_shares += new_vesting.amount;
+//               smt_object.pending_rewarded_vesting_smt += liquid.amount;
+//            }
+//            else
+//            {
+//               smt_object.total_vesting_fund_smt += liquid.amount;
+//               smt_object.total_vesting_shares += new_vesting.amount;
+//            }
+//         } );
+//
+//         // NOTE that SMT vesting does not impact witness voting.
+//
+//         return new_vesting;
+//      }
+//#endif
+
+      FC_ASSERT( liquid.symbol == BMT_SYMBOL );
+      // ^ A novelty, needed but risky in case someone managed to slip SBD/TESTS here in blockchain history.
+      // Get share price.
+      const auto& cprops = db.get_dynamic_global_properties();
+      price vesting_share_price = to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price();
+      // Calculate new vesting from provided liquid using share price.
+      asset new_vesting = calculate_new_vesting( vesting_share_price );
+      before_vesting_callback( new_vesting );
+      // Add new vesting to owner's balance.
+      if( to_reward_balance )
+      {
+         db.adjust_reward_balance( to_account, liquid, new_vesting );
+      }
+      else
+      {
+         if( db.has_hardfork( false ) )
+         {
+            db.modify( to_account, [&]( account_object& a )
+            {
+               util::manabar_params params( util::get_effective_vesting_shares( a ), STEEM_VOTING_MANA_REGENERATION_SECONDS );
+               FC_TODO( "Set skip_cap_regen=true without breaking consensus" );
+               a.voting_manabar.regenerate_mana( params, db.head_block_time() );
+               a.voting_manabar.use_mana( -new_vesting.amount.value );
+            });
+         }
+
+         db.adjust_balance( to_account, new_vesting );
+      }
+      // Update global vesting pool numbers.
+      db.modify( cprops, [&]( dynamic_global_property_object& props )
+      {
+         if( to_reward_balance )
+         {
+            props.pending_rewarded_vesting_shares += new_vesting;
+            props.pending_rewarded_vesting_steem += liquid;
+         }
+         else
+         {
+            props.total_vesting_fund_steem += liquid;
+            props.total_vesting_shares += new_vesting;
+         }
+      } );
+      // Update witness voting numbers.
+      if( !to_reward_balance )
+         db.adjust_proxied_witness_votes( to_account, new_vesting.amount );
+
+      return new_vesting;
+   }
+   FC_CAPTURE_AND_RETHROW( (to_account.name)(liquid) )
+}
+
+
 /**
  * @param to_account - the account to receive the new vesting shares
  * @param BMT - BMT to be converted to vesting shares
@@ -988,7 +1104,7 @@ asset database::create_rep( const account_object& to_account, asset bmt, bool to
        *
        *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
        */
-      asset new_rep = bmt * ( to_reward_balance ? cprops.get_reward_rep_share_price() : cprops.get_rep_share_price() );
+      asset new_rep = bmt * ( to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price() );
 
       modify( to_account, [&]( account_object& to )
       {
@@ -1168,7 +1284,7 @@ void database::clear_null_account_balance()
    if( null_account.rep_shares.amount > 0 )
    {
       const auto& gpo = get_dynamic_global_properties();
-      auto converted_bmt = null_account.rep_shares * gpo.get_rep_share_price();
+      auto converted_bmt = null_account.rep_shares * gpo.get_vesting_share_price();
 
       modify( gpo, [&]( dynamic_global_property_object& g )
       {

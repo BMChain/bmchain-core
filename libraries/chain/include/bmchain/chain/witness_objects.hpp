@@ -30,7 +30,7 @@ namespace bmchain { namespace chain {
       public:
          enum witness_schedule_type
          {
-            top19,
+            elected,
             timeshare,
             miner,
             none
@@ -150,7 +150,7 @@ namespace bmchain { namespace chain {
          uint32_t                                                          next_shuffle_block_num = 1;
          fc::array< account_name_type, BMCHAIN_MAX_WITNESSES >             current_shuffled_witnesses;
          uint8_t                                                           num_scheduled_witnesses = 1;
-         uint8_t                                                           top19_weight = 1;
+         uint8_t                                                           elected_weight = 1;
          uint8_t                                                           timeshare_weight = 5;
          uint8_t                                                           miner_weight = 1;
          uint32_t                                                          witness_pay_normalization_factor = 25;
@@ -231,7 +231,7 @@ namespace bmchain { namespace chain {
 
 } }
 
-FC_REFLECT_ENUM( bmchain::chain::witness_object::witness_schedule_type, (top19)(timeshare)(miner)(none) )
+FC_REFLECT_ENUM( bmchain::chain::witness_object::witness_schedule_type, (elected)(timeshare)(miner)(none) )
 
 FC_REFLECT( bmchain::chain::witness_object,
              (id)
@@ -251,7 +251,7 @@ CHAINBASE_SET_INDEX_TYPE( bmchain::chain::witness_vote_object, bmchain::chain::w
 
 FC_REFLECT( bmchain::chain::witness_schedule_object,
              (id)(current_virtual_time)(next_shuffle_block_num)(current_shuffled_witnesses)(num_scheduled_witnesses)
-             (top19_weight)(timeshare_weight)(miner_weight)(witness_pay_normalization_factor)
+             (elected_weight)(timeshare_weight)(miner_weight)(witness_pay_normalization_factor)
              (median_props)(majority_version)
              (max_voted_witnesses)
              (max_miner_witnesses)

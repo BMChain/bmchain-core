@@ -61,7 +61,7 @@ namespace bmchain { namespace chain {
          asset       pending_rewarded_rep_shares = asset( 0, REP_SYMBOL );
          asset       pending_rewarded_rep_bmt    = asset( 0, BMT_SYMBOL );
 
-         price       get_rep_share_price() const
+         price       get_vesting_share_price() const
          {
             if ( total_rep_fund_bmt.amount == 0 || total_vesting_shares.amount == 0 )
                return price ( asset( 1000, BMT_SYMBOL ), asset( 1000000, REP_SYMBOL ) );
@@ -69,7 +69,7 @@ namespace bmchain { namespace chain {
             return price( total_vesting_shares, total_rep_fund_bmt );
          }
 
-         price get_reward_rep_share_price() const
+         price get_reward_vesting_share_price() const
          {
             return price( total_vesting_shares + pending_rewarded_rep_shares,
                total_rep_fund_bmt + pending_rewarded_rep_bmt );

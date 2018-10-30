@@ -191,9 +191,9 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
                ( "creator.rep_shares", creator.rep_shares )
                ( "creator.delegated_rep_shares", creator.delegated_rep_shares )( "required", o.delegation ) );
 
-   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_rep_share_price();
+   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_vesting_share_price();
 
-   auto current_delegation = asset( o.fee.amount * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_rep_share_price() + o.delegation;
+   auto current_delegation = asset( o.fee.amount * BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO, BMT_SYMBOL ) * props.get_vesting_share_price() + o.delegation;
 
    FC_ASSERT( current_delegation >= target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
                ("f", target_delegation )
@@ -1034,7 +1034,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
       const auto &props = _db.get_dynamic_global_properties();
       const witness_schedule_object &wso = _db.get_witness_schedule_object();
 
-      asset min_vests = wso.median_props.account_creation_fee * props.get_rep_share_price();
+      asset min_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
       min_vests.amount.value *= 10;
 
       FC_ASSERT(account.rep_shares > min_vests || o.rep_shares.amount == 0,
@@ -2110,8 +2110,8 @@ void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_
 
    const auto& wso = _db.get_witness_schedule_object();
    const auto& gpo = _db.get_dynamic_global_properties();
-   auto min_delegation = asset( wso.median_props.account_creation_fee.amount * 10, BMT_SYMBOL ) * gpo.get_rep_share_price();
-   auto min_update = wso.median_props.account_creation_fee * gpo.get_rep_share_price();
+   auto min_delegation = asset( wso.median_props.account_creation_fee.amount * 10, BMT_SYMBOL ) * gpo.get_vesting_share_price();
+   auto min_update = wso.median_props.account_creation_fee * gpo.get_vesting_share_price();
 
    // If delegation doesn't exist, create it
    if( delegation == nullptr )
