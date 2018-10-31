@@ -1040,7 +1040,7 @@ asset create_vesting2( database& db, const account_object& to_account, asset liq
       // Add new vesting to owner's balance.
       if( to_reward_balance )
       {
-         db.adjust_reward_balance( to_account, liquid, new_vesting );
+//         db.adjust_reward_balance( to_account, liquid, new_vesting );
       }
       else
       {
@@ -1063,11 +1063,11 @@ asset create_vesting2( database& db, const account_object& to_account, asset liq
          if( to_reward_balance )
          {
             props.pending_rewarded_vesting_shares += new_vesting;
-            props.pending_rewarded_vesting_steem += liquid;
+            props.pending_rewarded_vesting_bmt += liquid;
          }
          else
          {
-            props.total_vesting_fund_steem += liquid;
+//            props.total_vesting_fund_bmt += liquid;
             props.total_vesting_shares += new_vesting;
          }
       } );
@@ -1085,7 +1085,7 @@ asset create_vesting2( database& db, const account_object& to_account, asset liq
  * @param to_account - the account to receive the new vesting shares
  * @param BMT - BMT to be converted to vesting shares
  */
-asset database::create_rep( const account_object& to_account, asset bmt, bool to_reward_balance )
+asset database::create_vesting( const account_object& to_account, asset bmt, bool to_reward_balance )
 {
    try
    {
@@ -1408,7 +1408,7 @@ share_type database::pay_curators( const comment_object& c, share_type& max_rewa
             {
                unclaimed_rewards -= claim;
                const auto& voter = get(itr->voter);
-               auto reward = create_rep( voter, asset( claim, BMT_SYMBOL ), true );
+               auto reward = create_vesting( voter, asset( claim, BMT_SYMBOL ), true );
 
                push_virtual_operation( curation_reward_operation( voter.name, reward, c.author, to_string( c.permlink ) ) );
 
@@ -1463,7 +1463,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             for( auto& b : comment.beneficiaries )
             {
                auto benefactor_tokens = ( author_tokens * b.weight ) / BMCHAIN_100_PERCENT;
-               auto vest_created = create_rep( get_account( b.account ), benefactor_tokens, true );
+               auto vest_created = create_vesting( get_account( b.account ), benefactor_tokens, true );
                push_virtual_operation( comment_benefactor_reward_operation( b.account, comment.author, to_string( comment.permlink ), vest_created ) );
                total_beneficiary += benefactor_tokens;
             }
@@ -1475,7 +1475,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             auto rep_bmt = author_tokens - _bmt;
 
             const auto &author = get_account(comment.author);
-            auto vest_created = create_rep(author, rep_bmt);
+            auto vest_created = create_vesting(author, rep_bmt);
             adjust_balance( author, bmt );
 
             adjust_total_payout( comment, bmt + asset( rep_bmt, BMT_SYMBOL ), asset( curation_tokens, BMT_SYMBOL ), asset( total_beneficiary, BMT_SYMBOL ) );
@@ -1646,65 +1646,57 @@ void database::process_comment_cashout()
  */
 void database::process_funds()
 {
-   const auto& props = get_dynamic_global_properties();
-   const auto& wso = get_witness_schedule_object();
+   const auto &props = get_dynamic_global_properties();
+   const auto &wso = get_witness_schedule_object();
 
-   if( 1 )
-   {
+   if ( true ) {
       /**
        * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
        * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
        */
-      int64_t start_inflation_rate = int64_t( BMCHAIN_INFLATION_RATE_START_PERCENT );
-      int64_t inflation_rate_adjustment = int64_t( head_block_num() / BMCHAIN_INFLATION_NARROWING_PERIOD );
-      int64_t inflation_rate_floor = int64_t( BMCHAIN_INFLATION_RATE_STOP_PERCENT );
+      int64_t start_inflation_rate = int64_t(BMCHAIN_INFLATION_RATE_START_PERCENT);
+      int64_t inflation_rate_adjustment = int64_t(head_block_num() / BMCHAIN_INFLATION_NARROWING_PERIOD);
+      int64_t inflation_rate_floor = int64_t(BMCHAIN_INFLATION_RATE_STOP_PERCENT);
 
       // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-      int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
+      int64_t current_inflation_rate = std::max(start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor);
 
-      auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( BMCHAIN_100_PERCENT ) * int64_t( BMCHAIN_BLOCKS_PER_YEAR ) );
-      auto content_reward = ( new_steem * BMCHAIN_CONTENT_REWARD_PERCENT ) / BMCHAIN_100_PERCENT;
-      if( has_hardfork( 1 ) )
-         content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
-      auto vesting_reward = ( new_steem * BMCHAIN_VESTING_FUND_PERCENT ) / BMCHAIN_100_PERCENT; /// 15% to vesting fund
+      auto new_steem = (props.virtual_supply.amount * current_inflation_rate) /
+                       (int64_t(BMCHAIN_100_PERCENT) * int64_t(BMCHAIN_BLOCKS_PER_YEAR));
+      auto content_reward = (new_steem * BMCHAIN_CONTENT_REWARD_PERCENT) / BMCHAIN_100_PERCENT;
+      if ( true )
+         content_reward = pay_reward_funds(content_reward); /// 75% to content creator
+      auto vesting_reward = (new_steem * BMCHAIN_VESTING_FUND_PERCENT) / BMCHAIN_100_PERCENT; /// 15% to vesting fund
       auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
-      const auto& cwit = get_witness( props.current_witness );
+      const auto &cwit = get_witness(props.current_witness);
       witness_reward *= BMCHAIN_MAX_WITNESSES;
 
-      if( cwit.schedule == witness_object::timeshare )
+      if (cwit.schedule == witness_object::timeshare)
          witness_reward *= wso.timeshare_weight;
-      else if( cwit.schedule == witness_object::miner )
+      else if (cwit.schedule == witness_object::miner)
          witness_reward *= wso.miner_weight;
-      else if( cwit.schedule == witness_object::elected )
+      else if (cwit.schedule == witness_object::elected)
          witness_reward *= wso.elected_weight;
       else
-         wlog( "Encountered unknown witness type for witness: ${w}", ("w", cwit.owner) );
+         wlog("Encountered unknown witness type for witness: ${w}", ("w", cwit.owner));
 
       witness_reward /= wso.witness_pay_normalization_factor;
 
       new_steem = content_reward + vesting_reward + witness_reward;
 
-      modify( props, [&]( dynamic_global_property_object& p )
-      {
-         p.total_vesting_fund_steem += asset( vesting_reward, BMT_SYMBOL );
-         if( !has_hardfork( 1 ) )
-            p.total_reward_fund_bmt  += asset( content_reward, BMT_SYMBOL );
-         p.current_supply           += asset( new_steem, BMT_SYMBOL );
-         p.virtual_supply           += asset( new_steem, BMT_SYMBOL );
+      modify(props, [&](dynamic_global_property_object &p) {
+         p.total_vesting_fund_steem += asset(vesting_reward, BMT_SYMBOL);
+         if ( false )
+            p.total_reward_fund_bmt += asset(content_reward, BMT_SYMBOL);
+         p.current_supply += asset(new_steem, BMT_SYMBOL);
+         p.virtual_supply += asset(new_steem, BMT_SYMBOL);
       });
 
-      operation vop = producer_reward_operation( cwit.owner, asset( 0, REP_SYMBOL ) );
-      create_vesting2( *this, get_account( cwit.owner ), asset( witness_reward, BMT_SYMBOL ), false,
-         [&]( const asset& vesting_shares )
-         {
-            vop.get< producer_reward_operation >().rep_shares = vesting_shares;
-            pre_push_virtual_operation( vop );
-         } );
-      post_push_virtual_operation( vop );
-   }
-   else
-   {
+      const auto &producer_reward = create_vesting(get_account(cwit.owner), asset(witness_reward, BMT_SYMBOL));
+      push_virtual_operation(producer_reward_operation(cwit.owner, producer_reward));
+
+   } else {
       auto content_reward = get_content_reward();
       auto curate_reward = get_curation_reward();
       auto witness_pay = get_producer_reward();
@@ -1712,18 +1704,17 @@ void database::process_funds()
 
       content_reward = content_reward + curate_reward;
 
-      if( props.head_block_number < BMCHAIN_START_VESTING_BLOCK )
+      if (props.head_block_number < BMCHAIN_START_VESTING_BLOCK)
          vesting_reward.amount = 0;
       else
          vesting_reward.amount.value *= 9;
 
-      modify( props, [&]( dynamic_global_property_object& p )
-      {
-          p.total_vesting_fund_steem += vesting_reward;
-          p.total_reward_fund_bmt  += content_reward;
-          p.current_supply += content_reward + witness_pay + vesting_reward;
-          p.virtual_supply += content_reward + witness_pay + vesting_reward;
-      } );
+      modify(props, [&](dynamic_global_property_object &p) {
+         p.total_vesting_fund_steem += vesting_reward;
+         p.total_reward_fund_bmt += content_reward;
+         p.current_supply += content_reward + witness_pay + vesting_reward;
+         p.virtual_supply += content_reward + witness_pay + vesting_reward;
+      });
    }
 }
 
@@ -1809,7 +1800,7 @@ asset database::get_producer_reward()
    /// pay witness in vesting shares
    if( props.head_block_number >= BMCHAIN_START_MINER_VOTING_BLOCK || (witness_account.rep_shares.amount.value == 0) ) {
       // const auto& witness_obj = get_witness( props.current_witness );
-      const auto& producer_reward = create_rep( witness_account, pay );
+      const auto& producer_reward = create_vesting( witness_account, pay );
       push_virtual_operation( producer_reward_operation( witness_account.name, producer_reward ) );
    }
    else
@@ -2500,6 +2491,7 @@ void database::_apply_block( const signed_block& next_block )
    update_virtual_supply();
 
    clear_null_account_balance();
+   process_funds();
    process_comment_cashout();
    custom_tokens_emissions();
    process_savings_withdraws();

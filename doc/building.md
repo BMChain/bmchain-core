@@ -71,7 +71,7 @@ will build out of the box without further effort:
         perl
 
     git clone https://github.com/BMChain/bmchain-core
-    cd steem
+    cd bmchain-core
     git submodule update --init --recursive
     mkdir build
     cd build

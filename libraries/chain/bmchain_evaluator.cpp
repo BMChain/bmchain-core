@@ -165,10 +165,10 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
    });
 
    if( o.fee.amount > 0 )
-      _db.create_rep( new_account, o.fee );
+      _db.create_vesting( new_account, o.fee );
 
    auto new_bmt = asset(BMCHAIN_USER_EMISSION_RATE, BMT_SYMBOL);
-   _db.create_rep(new_account, new_bmt);
+   _db.create_vesting(new_account, new_bmt);
    _db.modify( props, [&]( dynamic_global_property_object& props )
    {
        props.virtual_supply += new_bmt;
@@ -265,7 +265,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
    }
 
    if( o.fee.amount > 0 )
-      _db.create_rep( new_account, o.fee );
+      _db.create_vesting( new_account, o.fee );
 }
 
 void account_update_evaluator::do_apply( const account_update_operation& o )
@@ -1018,7 +1018,7 @@ void transfer_to_rep_evaluator::do_apply( const transfer_to_rep_operation& o )
 
    FC_ASSERT( _db.get_balance( from_account, BMT_SYMBOL) >= o.amount, "Account does not have sufficient BMT for transfer." );
    _db.adjust_balance( from_account, -o.amount );
-   _db.create_rep( to_account, o.amount );
+   _db.create_vesting( to_account, o.amount );
 }
 
 void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
@@ -1649,7 +1649,7 @@ void pow_apply( database& db, Operation o )
    if( db.head_block_num() < BMCHAIN_START_MINER_VOTING_BLOCK )
       db.adjust_balance( inc_witness, pow_reward );
    else
-      db.create_rep( inc_witness, pow_reward );
+      db.create_vesting( inc_witness, pow_reward );
 }
 
 void pow_evaluator::do_apply( const pow_operation& o ) {
@@ -1805,7 +1805,7 @@ void challenge_authority_evaluator::do_apply( const challenge_authority_operatio
       FC_ASSERT( _db.head_block_time() - challenged.last_owner_proved > BMCHAIN_OWNER_CHALLENGE_COOLDOWN );
 
       _db.adjust_balance( challenger, - BMCHAIN_OWNER_CHALLENGE_FEE );
-      _db.create_rep( _db.get_account( o.challenged ), BMCHAIN_OWNER_CHALLENGE_FEE );
+      _db.create_vesting( _db.get_account( o.challenged ), BMCHAIN_OWNER_CHALLENGE_FEE );
 
       _db.modify( challenged, [&]( account_object& a )
       {
@@ -1819,7 +1819,7 @@ void challenge_authority_evaluator::do_apply( const challenge_authority_operatio
       FC_ASSERT( _db.head_block_time() - challenged.last_active_proved > BMCHAIN_ACTIVE_CHALLENGE_COOLDOWN, "Account cannot be challenged because it was recently challenged." );
 
       _db.adjust_balance( challenger, - BMCHAIN_ACTIVE_CHALLENGE_FEE );
-      _db.create_rep( _db.get_account( o.challenged ), BMCHAIN_ACTIVE_CHALLENGE_FEE );
+      _db.create_vesting( _db.get_account( o.challenged ), BMCHAIN_ACTIVE_CHALLENGE_FEE );
 
       _db.modify( challenged, [&]( account_object& a )
       {

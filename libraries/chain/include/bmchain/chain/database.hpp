@@ -281,7 +281,7 @@ namespace bmchain { namespace chain {
           */
          uint32_t get_slot_at_time(fc::time_point_sec when)const;
 
-         asset create_rep( const account_object& to_account, asset steem, bool to_reward_balance=false );
+         asset create_vesting( const account_object& to_account, asset steem, bool to_reward_balance=false );
          void adjust_total_payout(const comment_object &a, const asset &bmt, const asset &curator_bmt_value,
                                   const asset &beneficiary_value);
 
