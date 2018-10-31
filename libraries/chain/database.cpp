@@ -1046,13 +1046,13 @@ asset create_vesting2( database& db, const account_object& to_account, asset liq
       {
          if( db.has_hardfork( false ) )
          {
-            db.modify( to_account, [&]( account_object& a )
-            {
-               util::manabar_params params( util::get_effective_vesting_shares( a ), STEEM_VOTING_MANA_REGENERATION_SECONDS );
-               FC_TODO( "Set skip_cap_regen=true without breaking consensus" );
-               a.voting_manabar.regenerate_mana( params, db.head_block_time() );
-               a.voting_manabar.use_mana( -new_vesting.amount.value );
-            });
+//            db.modify( to_account, [&]( account_object& a )
+//            {
+//               util::manabar_params params( util::get_effective_vesting_shares( a ), BMCHAIN_VOTING_MANA_REGENERATION_SECONDS );
+//               FC_TODO( "Set skip_cap_regen=true without breaking consensus" );
+//               a.voting_manabar.regenerate_mana( params, db.head_block_time() );
+//               a.voting_manabar.use_mana( -new_vesting.amount.value );
+//            });
          }
 
          db.adjust_balance( to_account, new_vesting );
@@ -1092,7 +1092,7 @@ asset database::create_rep( const account_object& to_account, asset bmt, bool to
       const auto& cprops = get_dynamic_global_properties();
 
       /**
-       *  The ratio of total_vesting_shares / total_rep_fund_bmt should not
+       *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
        *  change as the result of the user adding funds
        *
        *  V / C  = (V+Vn) / (C+Cn)
@@ -1121,12 +1121,12 @@ asset database::create_rep( const account_object& to_account, asset bmt, bool to
       {
          if( to_reward_balance )
          {
-            props.pending_rewarded_rep_shares += new_rep;
-            props.pending_rewarded_rep_bmt += bmt;
+            props.pending_rewarded_vesting_shares += new_rep;
+            props.pending_rewarded_vesting_bmt += bmt;
          }
          else
          {
-            props.total_rep_fund_bmt += bmt;
+            props.total_vesting_fund_steem += bmt;
             props.total_vesting_shares += new_rep;
          }
       } );
@@ -1289,7 +1289,7 @@ void database::clear_null_account_balance()
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
          g.total_vesting_shares -= null_account.rep_shares;
-         g.total_rep_fund_bmt -= converted_bmt;
+         g.total_vesting_fund_steem -= converted_bmt;
       });
 
       modify( null_account, [&]( account_object& a )
@@ -1314,8 +1314,8 @@ void database::clear_null_account_balance()
 
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
-         g.pending_rewarded_rep_shares -= null_account.reward_rep_balance;
-         g.pending_rewarded_rep_bmt -= null_account.reward_rep_bmt;
+         g.pending_rewarded_vesting_shares -= null_account.reward_rep_balance;
+         g.pending_rewarded_vesting_bmt -= null_account.reward_rep_bmt;
       });
 
       modify( null_account, [&]( account_object& a )
@@ -1687,7 +1687,7 @@ void database::process_funds()
 
       modify( props, [&]( dynamic_global_property_object& p )
       {
-         p.total_rep_fund_bmt += asset( vesting_reward, BMT_SYMBOL );
+         p.total_vesting_fund_steem += asset( vesting_reward, BMT_SYMBOL );
          if( !has_hardfork( 1 ) )
             p.total_reward_fund_bmt  += asset( content_reward, BMT_SYMBOL );
          p.current_supply           += asset( new_steem, BMT_SYMBOL );
@@ -1719,7 +1719,7 @@ void database::process_funds()
 
       modify( props, [&]( dynamic_global_property_object& p )
       {
-          p.total_rep_fund_bmt += vesting_reward;
+          p.total_vesting_fund_steem += vesting_reward;
           p.total_reward_fund_bmt  += content_reward;
           p.current_supply += content_reward + witness_pay + vesting_reward;
           p.virtual_supply += content_reward + witness_pay + vesting_reward;
@@ -2241,7 +2241,7 @@ void database::init_genesis( uint64_t init_supply )
          p.current_supply = asset( init_supply + init_rep / 1000, BMT_SYMBOL );
          p.virtual_supply = p.current_supply;
          p.total_vesting_shares = asset( init_rep, REP_SYMBOL);
-         p.total_rep_fund_bmt = asset( init_rep / 1000, BMT_SYMBOL);
+         p.total_vesting_fund_steem = asset( init_rep / 1000, BMT_SYMBOL);
          p.maximum_block_size = BMCHAIN_MAX_BLOCK_SIZE;
       } );
 
@@ -3062,7 +3062,7 @@ void database::adjust_supply( const asset& delta, bool adjust_rep )
             asset new_rep( (adjust_rep && delta.amount > 0) ? delta.amount * 9 : 0, BMT_SYMBOL );
             props.current_supply += delta + new_rep;
             props.virtual_supply += delta + new_rep;
-            props.total_rep_fund_bmt += new_rep;
+            props.total_vesting_fund_steem += new_rep;
             assert( props.current_supply.amount.value >= 0 );
             break;
          }
@@ -3269,12 +3269,12 @@ void database::validate_invariants()const
            }
        }
 
-      total_supply += gpo.total_rep_fund_bmt + gpo.total_reward_fund_bmt + gpo.pending_rewarded_rep_bmt;
+      total_supply += gpo.total_vesting_fund_steem + gpo.total_reward_fund_bmt + gpo.pending_rewarded_vesting_bmt;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
-      FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_rep_shares == total_rep, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_rep",total_rep) );
+      FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_rep, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_rep",total_rep) );
       FC_ASSERT( gpo.total_vesting_shares.amount == total_vsf_votes, "", ("total_vesting_shares",gpo.total_vesting_shares)("total_vsf_votes",total_vsf_votes) );
-      FC_ASSERT( gpo.pending_rewarded_rep_bmt == pending_rep_bmt, "", ("pending_rewarded_rep_bmt",gpo.pending_rewarded_rep_bmt)("pending_rep_bmt", pending_rep_bmt));
+      FC_ASSERT( gpo.pending_rewarded_vesting_bmt == pending_rep_bmt, "", ("pending_rewarded_vesting_bmt",gpo.pending_rewarded_vesting_bmt)("pending_rep_bmt", pending_rep_bmt));
 
       FC_ASSERT( gpo.virtual_supply >= gpo.current_supply );
       if ( !get_feed_history().current_median_history.is_null() )

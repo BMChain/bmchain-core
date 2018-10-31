@@ -2091,10 +2091,10 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
    _db.modify( _db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
    {
       gpo.total_vesting_shares += op.reward_vests;
-      gpo.total_rep_fund_bmt += reward_rep_bmt_to_move;
+      gpo.total_vesting_fund_steem += reward_rep_bmt_to_move;
 
-      gpo.pending_rewarded_rep_shares -= op.reward_vests;
-      gpo.pending_rewarded_rep_bmt -= reward_rep_bmt_to_move;
+      gpo.pending_rewarded_vesting_shares -= op.reward_vests;
+      gpo.pending_rewarded_vesting_bmt -= reward_rep_bmt_to_move;
    });
 
    _db.adjust_proxied_witness_votes( acnt, op.reward_vests.amount );

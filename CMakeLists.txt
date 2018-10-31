@@ -1,5 +1,5 @@
 # Defines Steem library target.
-project( Steem )
+project( Bcmahin )
 cmake_minimum_required( VERSION 3.2 )
 
 set( BLOCKCHAIN_NAME "Steem" )
