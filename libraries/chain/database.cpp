@@ -1104,6 +1104,9 @@ asset database::create_vesting( const account_object& to_account, asset bmt, boo
        *
        *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
        */
+       auto price1 = cprops.get_reward_vesting_share_price();
+        auto price2 = cprops.get_vesting_share_price();
+        auto news = bmt * price2;
       asset new_rep = bmt * ( to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price() );
 
       modify( to_account, [&]( account_object& to )
@@ -3433,7 +3436,7 @@ void database::process_funds_bmchain(int64_t new_bmt)
     const auto& props = get_dynamic_global_properties();
 
     /// 90% in reward funds
-    share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT) ) / BMCHAIN_100_PERCENT;
+    share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT_NEW) ) / BMCHAIN_100_PERCENT;
     content_reward = pay_reward_funds( content_reward );
 
     /// 10% to wintess
