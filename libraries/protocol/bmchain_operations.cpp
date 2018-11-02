@@ -176,7 +176,7 @@ namespace bmchain { namespace protocol {
    void withdraw_vesting_operation::validate() const
    {
       validate_account_name( account );
-      FC_ASSERT( is_asset_type( rep_shares, REP_SYMBOL), "Amount must be VESTS"  );
+      FC_ASSERT( is_asset_type( vesting_shares, REP_SYMBOL), "Amount must be VESTS"  );
    }
 
    void set_withdraw_rep_route_operation::validate() const
@@ -510,8 +510,8 @@ namespace bmchain { namespace protocol {
       validate_account_name( delegator );
       validate_account_name( delegatee );
       FC_ASSERT( delegator != delegatee, "You cannot delegate VESTS to yourself" );
-      FC_ASSERT( is_asset_type( rep_shares, REP_SYMBOL ), "Delegation must be VESTS" );
-      FC_ASSERT( rep_shares >= asset( 0, REP_SYMBOL ), "Delegation cannot be negative" );
+      FC_ASSERT( is_asset_type( vesting_shares, REP_SYMBOL ), "Delegation must be VESTS" );
+      FC_ASSERT( vesting_shares >= asset( 0, REP_SYMBOL ), "Delegation cannot be negative" );
    }
 
    void content_order_create_operation::validate()const

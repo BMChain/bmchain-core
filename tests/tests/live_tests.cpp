@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
 
       while( acnt_itr != acnt_idx.end() )
       {
-         account_vests[acnt_itr->name] = acnt_itr->rep_shares.amount;
+         account_vests[acnt_itr->name] = acnt_itr->vesting_shares.amount;
          account_vsf_votes[acnt_itr->name] = acnt_itr->proxied_vsf_votes_total().value;
          acnt_itr++;
       }
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
       auto old_virtual_supply = db.get_dynamic_global_properties().virtual_supply;
       auto old_current_supply = db.get_dynamic_global_properties().current_supply;
       auto old_rep_fund = db.get_dynamic_global_properties().total_vesting_fund_steem;
-      auto old_rep_shares = db.get_dynamic_global_properties().total_vesting_shares;
+      auto old_vesting_shares = db.get_dynamic_global_properties().total_vesting_shares;
       auto old_rshares2 = db.get_dynamic_global_properties().total_reward_shares2;
       auto old_reward_fund = db.get_dynamic_global_properties().total_reward_fund_bmt;
 
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
       BOOST_REQUIRE( db.get_dynamic_global_properties().current_supply == old_current_supply );
       BOOST_REQUIRE( db.get_dynamic_global_properties().virtual_supply == old_virtual_supply );
       BOOST_REQUIRE( db.get_dynamic_global_properties().total_vesting_fund_steem == old_rep_fund );
-      BOOST_REQUIRE( db.get_dynamic_global_properties().total_vesting_shares.amount == old_rep_shares.amount * magnitude );
+      BOOST_REQUIRE( db.get_dynamic_global_properties().total_vesting_shares.amount == old_vesting_shares.amount * magnitude );
       BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_shares2 == total_rshares2 );
       BOOST_REQUIRE( db.get_dynamic_global_properties().total_reward_fund_bmt == old_reward_fund );
 
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
       acnt_itr = acnt_idx.begin();
       while( acnt_itr != acnt_idx.end() )
       {
-         BOOST_REQUIRE( acnt_itr->rep_shares.amount == account_vests[ acnt_itr->name ] * magnitude );
+         BOOST_REQUIRE( acnt_itr->vesting_shares.amount == account_vests[ acnt_itr->name ] * magnitude );
          BOOST_REQUIRE( acnt_itr->proxied_vsf_votes_total().value == account_vsf_votes[ acnt_itr->name ] * magnitude );
          acnt_itr++;
       }

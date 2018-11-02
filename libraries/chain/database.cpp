@@ -1104,9 +1104,6 @@ asset database::create_vesting( const account_object& to_account, asset bmt, boo
        *
        *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
        */
-       auto price1 = cprops.get_reward_vesting_share_price();
-        auto price2 = cprops.get_vesting_share_price();
-        auto news = bmt * price2;
       asset new_rep = bmt * ( to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price() );
 
       modify( to_account, [&]( account_object& to )
@@ -1117,7 +1114,7 @@ asset database::create_vesting( const account_object& to_account, asset bmt, boo
             to.reward_rep_bmt += bmt;
          }
          else
-            to.rep_shares += new_rep;
+            to.vesting_shares += new_rep;
       } );
 
       modify( cprops, [&]( dynamic_global_property_object& props )
@@ -1284,20 +1281,20 @@ void database::clear_null_account_balance()
       adjust_savings_balance( null_account, -null_account.savings_balance );
    }
 
-   if( null_account.rep_shares.amount > 0 )
+   if( null_account.vesting_shares.amount > 0 )
    {
       const auto& gpo = get_dynamic_global_properties();
-      auto converted_bmt = null_account.rep_shares * gpo.get_vesting_share_price();
+      auto converted_bmt = null_account.vesting_shares * gpo.get_vesting_share_price();
 
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
-         g.total_vesting_shares -= null_account.rep_shares;
+         g.total_vesting_shares -= null_account.vesting_shares;
          g.total_vesting_fund_steem -= converted_bmt;
       });
 
       modify( null_account, [&]( account_object& a )
       {
-         a.rep_shares.amount = 0;
+         a.vesting_shares.amount = 0;
       });
 
       total_bmt += converted_bmt;
@@ -1801,7 +1798,7 @@ asset database::get_producer_reward()
    const auto& witness_account = get_account( props.current_witness );
 
    /// pay witness in vesting shares
-   if( props.head_block_number >= BMCHAIN_START_MINER_VOTING_BLOCK || (witness_account.rep_shares.amount.value == 0) ) {
+   if( props.head_block_number >= BMCHAIN_START_MINER_VOTING_BLOCK || (witness_account.vesting_shares.amount.value == 0) ) {
       // const auto& witness_obj = get_witness( props.current_witness );
       const auto& producer_reward = create_vesting( witness_account, pay );
       push_virtual_operation( producer_reward_operation( witness_account.name, producer_reward ) );
@@ -1928,7 +1925,7 @@ void database::process_decline_voting_rights()
 
       /// remove all current votes
       std::array<share_type, BMCHAIN_MAX_PROXY_RECURSION_DEPTH+1> delta;
-      delta[0] = -account.rep_shares.amount;
+      delta[0] = -account.vesting_shares.amount;
       for( int i = 0; i < BMCHAIN_MAX_PROXY_RECURSION_DEPTH; ++i )
          delta[i+1] = -account.proxied_vsf_votes[i];
       adjust_proxied_witness_votes( account, delta );
@@ -2206,7 +2203,7 @@ void database::init_genesis( uint64_t init_supply )
             a.name = BMCHAIN_INIT_MINER_NAME + ( i ? fc::to_string( i ) : std::string() );
             a.memo_key = init_public_key;
             a.balance  = asset( i ? 0 : init_supply, BMT_SYMBOL );
-            a.rep_shares  = asset( i ? 0 : init_rep, REP_SYMBOL );
+            a.vesting_shares  = asset( i ? 0 : init_rep, REP_SYMBOL );
          } );
 
          create< account_authority_object >( [&]( account_authority_object& auth )
@@ -2983,10 +2980,10 @@ void database::clear_expired_delegations()
    {
       modify( get_account( itr->delegator ), [&]( account_object& a )
       {
-         a.delegated_rep_shares -= itr->rep_shares;
+         a.delegated_vesting_shares -= itr->vesting_shares;
       });
 
-      push_virtual_operation( return_rep_delegation_operation( itr->delegator, itr->rep_shares ) );
+      push_virtual_operation( return_rep_delegation_operation( itr->delegator, itr->vesting_shares ) );
 
       remove( *itr );
       itr = delegations_by_exp.begin();
@@ -3184,14 +3181,14 @@ void database::validate_invariants()const
          total_supply += itr->balance;
          total_supply += itr->savings_balance;
          total_supply += itr->reward_bmt_balance;
-         total_rep += itr->rep_shares;
+         total_rep += itr->vesting_shares;
          total_rep += itr->reward_rep_balance;
          pending_rep_bmt += itr->reward_rep_bmt;
          total_vsf_votes += ( itr->proxy == BMCHAIN_PROXY_TO_SELF_ACCOUNT ?
                                  itr->witness_vote_weight() :
                                  ( BMCHAIN_MAX_PROXY_RECURSION_DEPTH > 0 ?
                                       itr->proxied_vsf_votes[BMCHAIN_MAX_PROXY_RECURSION_DEPTH - 1] :
-                                      itr->rep_shares.amount ) );
+                                      itr->vesting_shares.amount ) );
       }
 
       const auto& convert_request_idx = get_index< convert_request_index >().indices();
@@ -3295,7 +3292,7 @@ void database::perform_rep_share_split( uint32_t magnitude )
       {
          modify( account, [&]( account_object& a )
          {
-            a.rep_shares.amount *= magnitude;
+            a.vesting_shares.amount *= magnitude;
             a.withdrawn             *= magnitude;
             a.to_withdraw           *= magnitude;
             if( a.rep_withdraw_rate.amount == 0 )

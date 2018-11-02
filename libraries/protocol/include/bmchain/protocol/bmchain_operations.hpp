@@ -356,8 +356,8 @@ namespace bmchain { namespace protocol {
     * vesting shares. A user may change the number of shares they wish to
     * cash out at any time between 0 and their total vesting stake.
     *
-    * After applying this operation, rep_shares will be withdrawn
-    * at a rate of rep_shares/104 per week for two years starting
+    * After applying this operation, vesting_shares will be withdrawn
+    * at a rate of vesting_shares/104 per week for two years starting
     * one week after this operation is included in the blockchain.
     *
     * This operation is not valid if the user has no vesting shares.
@@ -365,7 +365,7 @@ namespace bmchain { namespace protocol {
    struct withdraw_vesting_operation : public base_operation
    {
       account_name_type account;
-      asset             rep_shares;
+      asset             vesting_shares;
 
       void validate()const;
       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(account); }
@@ -944,7 +944,7 @@ namespace bmchain { namespace protocol {
    /**
     * Delegate vesting shares from one account to the other. The vesting shares are still owned
     * by the original account, but content voting rights and bandwidth allocation are transferred
-    * to the receiving account. This sets the delegation to `rep_shares`, increasing it or
+    * to the receiving account. This sets the delegation to `vesting_shares`, increasing it or
     * decreasing it as needed. (i.e. a delegation of 0 removes the delegation)
     *
     * When a delegation is removed the shares are placed in limbo for a week to prevent a satoshi
@@ -954,7 +954,7 @@ namespace bmchain { namespace protocol {
    {
       account_name_type delegator;        ///< The account delegating vesting shares
       account_name_type delegatee;        ///< The account receiving vesting shares
-      asset             rep_shares;   ///< The amount of vesting shares delegated
+      asset             vesting_shares;   ///< The amount of vesting shares delegated
 
       void get_required_active_authorities( flat_set< account_name_type >& a ) const { a.insert( delegator ); }
       void validate() const;
@@ -1065,7 +1065,7 @@ FC_REFLECT( bmchain::protocol::account_update_operation,
 
 FC_REFLECT( bmchain::protocol::transfer_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( bmchain::protocol::transfer_to_rep_operation, (from)(to)(amount) )
-FC_REFLECT( bmchain::protocol::withdraw_vesting_operation, (account)(rep_shares) )
+FC_REFLECT( bmchain::protocol::withdraw_vesting_operation, (account)(vesting_shares) )
 FC_REFLECT( bmchain::protocol::set_withdraw_rep_route_operation, (from_account)(to_account)(percent)(auto_vest) )
 FC_REFLECT( bmchain::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( bmchain::protocol::account_witness_vote_operation, (account)(witness)(approve) )
@@ -1098,7 +1098,7 @@ FC_REFLECT( bmchain::protocol::recover_account_operation, (account_to_recover)(n
 FC_REFLECT( bmchain::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) );
 FC_REFLECT( bmchain::protocol::decline_voting_rights_operation, (account)(decline) );
 FC_REFLECT( bmchain::protocol::claim_reward_balance_operation, (account)(reward_bmt)(reward_vests) )
-FC_REFLECT( bmchain::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(rep_shares) );
+FC_REFLECT( bmchain::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) );
 
 FC_REFLECT( bmchain::protocol::content_order_create_operation, (author)(permlink)(owner)(price)(json_metadata) )
 FC_REFLECT( bmchain::protocol::content_order_cancel_operation, (owner)(order_id)(json_metadata) );

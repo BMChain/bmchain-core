@@ -558,7 +558,7 @@ namespace bmchain {
 
         vector<best_author> database_api_impl::get_best_authors(uint32_t limit) const {
             FC_ASSERT(limit <= 1000);
-            const auto &accounts_by_rep = _db.get_index<account_index>().indices().get<by_rep_shares>();
+            const auto &accounts_by_rep = _db.get_index<account_index>().indices().get<by_vesting_shares>();
             const auto &comments_by_author = _db.get_index<comment_index>().indices().get<by_author_created>();
 
             vector<best_author> result;
@@ -572,7 +572,7 @@ namespace bmchain {
                 };
                 auto com_itr = std::find_if(comment_itr, comments_by_author.end(), pred);
                 best_author ba = {itr->name,
-                                  itr->rep_shares.amount.value,
+                                  itr->vesting_shares.amount.value,
                                   to_string(itr->json_metadata),
                                   to_string(com_itr->permlink),
                                   to_string(com_itr->title)};
@@ -2308,7 +2308,7 @@ namespace bmchain {
                                                                                          placeholders::_2)));
             if (distr_base != 0) {
                 for (auto rep : result) {
-                    rep.second = rep.second / distr_base * author.rep_shares.amount.value;
+                    rep.second = rep.second / distr_base * author.vesting_shares.amount.value;
                 }
             }
             return result;

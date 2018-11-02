@@ -80,11 +80,11 @@ namespace bmchain { namespace chain {
          share_type        curation_rewards = 0;
          share_type        posting_rewards = 0;
 
-         asset             rep_shares = asset( 0, REP_SYMBOL ); ///< total vesting shares held by this account, controls its voting power
-         asset             delegated_rep_shares = asset( 0, REP_SYMBOL );
-         asset             received_rep_shares = asset( 0, REP_SYMBOL );
+         asset             vesting_shares = asset( 0, REP_SYMBOL ); ///< total vesting shares held by this account, controls its voting power
+         asset             delegated_vesting_shares = asset( 0, REP_SYMBOL );
+         asset             received_vesting_shares = asset( 0, REP_SYMBOL );
 
-         asset             rep_withdraw_rate = asset( 0, REP_SYMBOL ); ///< at the time this is updated it can be at most rep_shares/104
+         asset             rep_withdraw_rate = asset( 0, REP_SYMBOL ); ///< at the time this is updated it can be at most vesting_shares/104
          time_point_sec    next_rep_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
          share_type        withdrawn = 0; /// Track how many shares have been withdrawn
          share_type        to_withdraw = 0; /// Might be able to look this up with operation history.
@@ -102,7 +102,7 @@ namespace bmchain { namespace chain {
          share_type        witness_vote_weight()const {
             return std::accumulate( proxied_vsf_votes.begin(),
                                     proxied_vsf_votes.end(),
-                                    rep_shares.amount );
+                                    vesting_shares.amount );
          }
          share_type        proxied_vsf_votes_total()const {
             return std::accumulate( proxied_vsf_votes.begin(),
@@ -110,7 +110,7 @@ namespace bmchain { namespace chain {
                                     share_type() );
          }
 
-         asset effective_rep_shares()const { return rep_shares - delegated_rep_shares + received_rep_shares; }
+         asset effective_vesting_shares()const { return vesting_shares - delegated_vesting_shares + received_vesting_shares; }
    };
 
    class account_authority_object : public object< account_authority_object_type, account_authority_object >
@@ -150,7 +150,7 @@ namespace bmchain { namespace chain {
          id_type           id;
          account_name_type delegator;
          account_name_type delegatee;
-         asset             rep_shares;
+         asset             vesting_shares;
          time_point_sec    min_delegation_time;
    };
 
@@ -167,7 +167,7 @@ namespace bmchain { namespace chain {
 
          id_type           id;
          account_name_type delegator;
-         asset             rep_shares;
+         asset             vesting_shares;
          time_point_sec    expiration;
    };
 
@@ -234,7 +234,7 @@ namespace bmchain { namespace chain {
    struct by_smd_balance;
    struct by_post_count;
    struct by_vote_count;
-   struct by_rep_shares;
+   struct by_vesting_shares;
 
    /**
     * @ingroup object_index
@@ -274,7 +274,7 @@ namespace bmchain { namespace chain {
          >,
          ordered_unique< tag< by_smp_balance >,
             composite_key< account_object,
-               member< account_object, asset, &account_object::rep_shares >,
+               member< account_object, asset, &account_object::vesting_shares >,
                member< account_object, account_id_type, &account_object::id >
             >,
             composite_key_compare< std::greater< asset >, std::less< account_id_type > >
@@ -299,9 +299,9 @@ namespace bmchain { namespace chain {
             >,
             composite_key_compare< std::greater< uint32_t >, std::less< account_id_type > >
          >,
-         ordered_unique< tag< by_rep_shares >,
+         ordered_unique< tag< by_vesting_shares >,
             composite_key< account_object,
-               member< account_object, asset, &account_object::rep_shares >,
+               member< account_object, asset, &account_object::vesting_shares >,
                member< account_object, account_id_type, &account_object::id >
             >,
             composite_key_compare< std::greater< asset >, std::less< account_id_type > >
@@ -461,7 +461,7 @@ FC_REFLECT( bmchain::chain::account_object,
              (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
              (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
              (reward_bmt_balance)(reward_sbd_balance)(reward_rep_balance)(reward_rep_bmt)
-             (rep_shares)(delegated_rep_shares)(received_rep_shares)
+             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
              (rep_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
@@ -476,11 +476,11 @@ FC_REFLECT( bmchain::chain::account_authority_object,
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::account_authority_object, bmchain::chain::account_authority_index )
 
 FC_REFLECT( bmchain::chain::vesting_delegation_object,
-            (id)(delegator)(delegatee)(rep_shares)(min_delegation_time) )
+            (id)(delegator)(delegatee)(vesting_shares)(min_delegation_time) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::vesting_delegation_object, bmchain::chain::rep_delegation_index )
 
 FC_REFLECT( bmchain::chain::rep_delegation_expiration_object,
-            (id)(delegator)(rep_shares)(expiration) )
+            (id)(delegator)(vesting_shares)(expiration) )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::rep_delegation_expiration_object, bmchain::chain::vesting_delegation_expiration_index )
 
 FC_REFLECT( bmchain::chain::owner_authority_history_object,

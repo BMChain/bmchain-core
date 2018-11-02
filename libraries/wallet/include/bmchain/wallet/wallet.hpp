@@ -505,10 +505,10 @@ class wallet_api
        *
        * @param delegator The name of the account delegating VESTS
        * @param delegatee The name of the account receiving VESTS
-       * @param rep_shares The amount of VESTS to delegate
+       * @param vesting_shares The amount of VESTS to delegate
        * @param broadcast true if you wish to broadcast the transaction
        */
-       annotated_signed_transaction delegate_rep_shares( string delegator, string delegatee, asset rep_shares, bool broadcast );
+       annotated_signed_transaction delegate_vesting_shares( string delegator, string delegatee, asset vesting_shares, bool broadcast );
 
 
       /**
@@ -1017,7 +1017,7 @@ FC_API( bmchain::wallet::wallet_api,
         (update_account_auth_threshold)
         (update_account_meta)
         (update_account_memo_key)
-        (delegate_rep_shares)
+        (delegate_vesting_shares)
         (update_witness)
         (set_voting_proxy)
         (vote_for_witness)

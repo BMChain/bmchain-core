@@ -735,10 +735,10 @@ public:
          asset total_vest(0, REP_SYMBOL );
          for( const auto& a : accounts ) {
              total_bmt += a.balance;
-            total_vest  += a.rep_shares;
+            total_vest  += a.vesting_shares;
             out << std::left << std::setw( 17 ) << std::string(a.name)
                 << std::right << std::setw(18) << fc::variant(a.balance).as_string() <<" "
-                << std::right << std::setw(26) << fc::variant(a.rep_shares).as_string() <<"\n";
+                << std::right << std::setw(26) << fc::variant(a.vesting_shares).as_string() <<"\n";
          }
          out << "-------------------------------------------------------------------------\n";
             out << std::left << std::setw( 17 ) << "TOTAL"
@@ -1558,7 +1558,7 @@ annotated_signed_transaction wallet_api::update_account_memo_key( string account
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::delegate_rep_shares( string delegator, string delegatee, asset rep_shares, bool broadcast )
+annotated_signed_transaction wallet_api::delegate_vesting_shares( string delegator, string delegatee, asset vesting_shares, bool broadcast )
 {
    FC_ASSERT( !is_locked() );
 
@@ -1570,7 +1570,7 @@ annotated_signed_transaction wallet_api::delegate_rep_shares( string delegator, 
    delegate_vesting_shares_operation op;
    op.delegator = delegator;
    op.delegatee = delegatee;
-   op.rep_shares = rep_shares;
+   op.vesting_shares = vesting_shares;
 
    signed_transaction tx;
    tx.operations.push_back( op );
