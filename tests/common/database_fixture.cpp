@@ -376,7 +376,7 @@ void database_fixture::vest( const string& from, const share_type& amount )
 {
    try
    {
-      transfer_to_rep_operation op;
+      transfer_to_vesting_operation op;
       op.from = from;
       op.to = "";
       op.amount = asset( amount, BMT_SYMBOL );

@@ -341,7 +341,7 @@ namespace bmchain { namespace protocol {
     *  give another account vesting shares so that faucets can
     *  pre-fund new accounts with vesting shares.
     */
-   struct transfer_to_rep_operation : public base_operation
+   struct transfer_to_vesting_operation : public base_operation
    {
       account_name_type from;
       account_name_type to; ///< if null, then same as from
@@ -1064,7 +1064,7 @@ FC_REFLECT( bmchain::protocol::account_update_operation,
             (json_metadata) )
 
 FC_REFLECT( bmchain::protocol::transfer_operation, (from)(to)(amount)(memo) )
-FC_REFLECT( bmchain::protocol::transfer_to_rep_operation, (from)(to)(amount) )
+FC_REFLECT( bmchain::protocol::transfer_to_vesting_operation, (from)(to)(amount) )
 FC_REFLECT( bmchain::protocol::withdraw_vesting_operation, (account)(vesting_shares) )
 FC_REFLECT( bmchain::protocol::set_withdraw_rep_route_operation, (from_account)(to_account)(percent)(auto_vest) )
 FC_REFLECT( bmchain::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )

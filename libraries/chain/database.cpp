@@ -1975,7 +1975,7 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< comment_options_evaluator                >();
    _my->_evaluator_registry.register_evaluator< delete_comment_evaluator                 >();
    _my->_evaluator_registry.register_evaluator< transfer_evaluator                       >();
-   _my->_evaluator_registry.register_evaluator< transfer_to_rep_evaluator                >();
+   _my->_evaluator_registry.register_evaluator< transfer_to_vesting_evaluator            >();
    _my->_evaluator_registry.register_evaluator< withdraw_vesting_evaluator               >();
    _my->_evaluator_registry.register_evaluator< set_withdraw_rep_route_evaluator         >();
    _my->_evaluator_registry.register_evaluator< account_create_evaluator                 >();

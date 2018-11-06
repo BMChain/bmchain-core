@@ -165,7 +165,7 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( fc::is_utf8( memo ), "Memo is not UTF8" );
    } FC_CAPTURE_AND_RETHROW( (*this) ) }
 
-   void transfer_to_rep_operation::validate() const
+   void transfer_to_vesting_operation::validate() const
    {
       validate_account_name( from );
       FC_ASSERT( is_asset_type( amount, BMT_SYMBOL ), "Amount must be BMT" );

@@ -114,7 +114,7 @@ struct get_impacted_account_visitor
       _impacted.insert( op.agent );
    }
 
-   void operator()( const transfer_to_rep_operation& op )
+   void operator()( const transfer_to_vesting_operation& op )
    {
       _impacted.insert( op.from );
 

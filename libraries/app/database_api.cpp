@@ -1771,7 +1771,7 @@ namespace bmchain {
                             auto history = get_account_history(acnt, uint64_t(-1), 10000);
                             for (auto &item : history) {
                                 switch (item.second.op.which()) {
-                                    case operation::tag<transfer_to_rep_operation>::value:
+                                    case operation::tag<transfer_to_vesting_operation>::value:
                                     case operation::tag<withdraw_vesting_operation>::value:
                                     case operation::tag<interest_operation>::value:
                                     case operation::tag<transfer_operation>::value:

@@ -1275,7 +1275,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 
            BOOST_TEST_MESSAGE( "Testing: transfer_to_vesting_authorities" );
 
-           transfer_to_rep_operation op;
+           transfer_to_vesting_operation op;
            op.from = "alice";
            op.to = "bob";
            op.amount = ASSET( "2.500 TESTS" );
@@ -1331,7 +1331,7 @@ BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
            auto alice_shares = alice.vesting_shares;
            auto bob_shares = bob.vesting_shares;
 
-           transfer_to_rep_operation op;
+           transfer_to_vesting_operation op;
            op.from = "alice";
            op.to = "";
            op.amount = ASSET( "7.500 TESTS" );
