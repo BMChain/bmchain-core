@@ -144,10 +144,10 @@ namespace bmchain { namespace protocol {
       string            permlink;
    };
 
-   struct return_rep_delegation_operation : public virtual_operation
+   struct return_vesting_delegation_operation : public virtual_operation
    {
-      return_rep_delegation_operation() {}
-      return_rep_delegation_operation( const account_name_type& a, const asset& v ) : account( a ), vesting_shares( v ) {}
+      return_vesting_delegation_operation() {}
+      return_vesting_delegation_operation( const account_name_type& a, const asset& v ) : account( a ), vesting_shares( v ) {}
 
       account_name_type account;
       asset             vesting_shares;
@@ -189,6 +189,6 @@ FC_REFLECT( bmchain::protocol::fill_order_operation, (current_owner)(current_ord
 FC_REFLECT( bmchain::protocol::fill_transfer_from_savings_operation, (from)(to)(amount)(request_id)(memo) )
 FC_REFLECT( bmchain::protocol::hardfork_operation, (hardfork_id) )
 FC_REFLECT( bmchain::protocol::comment_payout_update_operation, (author)(permlink) )
-FC_REFLECT( bmchain::protocol::return_rep_delegation_operation, (account)(vesting_shares) )
+FC_REFLECT( bmchain::protocol::return_vesting_delegation_operation, (account)(vesting_shares) )
 FC_REFLECT( bmchain::protocol::comment_benefactor_reward_operation, (benefactor)(author)(permlink)(reward) )
 FC_REFLECT( bmchain::protocol::producer_reward_operation, (producer)(vesting_shares) )

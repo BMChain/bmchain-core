@@ -40,7 +40,7 @@ namespace bmchain { namespace protocol {
             delete_comment_operation,
             custom_json_operation,
             comment_options_operation,
-            set_withdraw_rep_route_operation,
+            set_withdraw_vesting_route_operation,
             limit_order_create2_operation,
             challenge_authority_operation,
             prove_authority_operation,
@@ -82,7 +82,7 @@ namespace bmchain { namespace protocol {
             fill_transfer_from_savings_operation,
             hardfork_operation,
             comment_payout_update_operation,
-            return_rep_delegation_operation,
+            return_vesting_delegation_operation,
             comment_benefactor_reward_operation,
             producer_reward_operation,
 

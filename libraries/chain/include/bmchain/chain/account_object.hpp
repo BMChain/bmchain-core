@@ -371,7 +371,7 @@ namespace bmchain { namespace chain {
          >
       >,
       allocator< vesting_delegation_object >
-   > rep_delegation_index;
+   > vesting_delegation_index;
 
    struct by_expiration;
    struct by_account_expiration;
@@ -477,7 +477,7 @@ CHAINBASE_SET_INDEX_TYPE( bmchain::chain::account_authority_object, bmchain::cha
 
 FC_REFLECT( bmchain::chain::vesting_delegation_object,
             (id)(delegator)(delegatee)(vesting_shares)(min_delegation_time) )
-CHAINBASE_SET_INDEX_TYPE( bmchain::chain::vesting_delegation_object, bmchain::chain::rep_delegation_index )
+CHAINBASE_SET_INDEX_TYPE( bmchain::chain::vesting_delegation_object, bmchain::chain::vesting_delegation_index )
 
 FC_REFLECT( bmchain::chain::rep_delegation_expiration_object,
             (id)(delegator)(vesting_shares)(expiration) )

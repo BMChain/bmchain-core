@@ -1977,7 +1977,7 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< transfer_evaluator                       >();
    _my->_evaluator_registry.register_evaluator< transfer_to_vesting_evaluator            >();
    _my->_evaluator_registry.register_evaluator< withdraw_vesting_evaluator               >();
-   _my->_evaluator_registry.register_evaluator< set_withdraw_rep_route_evaluator         >();
+   _my->_evaluator_registry.register_evaluator< set_withdraw_vesting_route_evaluator     >();
    _my->_evaluator_registry.register_evaluator< account_create_evaluator                 >();
    _my->_evaluator_registry.register_evaluator< account_update_evaluator                 >();
    _my->_evaluator_registry.register_evaluator< witness_update_evaluator                 >();
@@ -2056,7 +2056,7 @@ void database::initialize_indexes()
    add_core_index< operation_index                         >(*this);
    add_core_index< account_history_index                   >(*this);
    add_core_index< hardfork_property_index                 >(*this);
-   add_core_index< withdraw_rep_route_index                >(*this);
+   add_core_index< withdraw_vesting_route_index            >(*this);
    add_core_index< owner_authority_history_index           >(*this);
    add_core_index< account_recovery_request_index          >(*this);
    add_core_index< change_recovery_account_request_index   >(*this);
@@ -2064,7 +2064,7 @@ void database::initialize_indexes()
    add_core_index< savings_withdraw_index                  >(*this);
    add_core_index< decline_voting_rights_request_index     >(*this);
    add_core_index< reward_fund_index                       >(*this);
-   add_core_index< rep_delegation_index                    >(*this);
+   add_core_index< vesting_delegation_index                >(*this);
    add_core_index< vesting_delegation_expiration_index     >(*this);
    add_core_index< content_order_index                     >(*this);
    add_core_index< custom_token_index                      >(*this);
@@ -2983,7 +2983,7 @@ void database::clear_expired_delegations()
          a.delegated_vesting_shares -= itr->vesting_shares;
       });
 
-      push_virtual_operation( return_rep_delegation_operation( itr->delegator, itr->vesting_shares ) );
+      push_virtual_operation( return_vesting_delegation_operation( itr->delegator, itr->vesting_shares ) );
 
       remove( *itr );
       itr = delegations_by_exp.begin();
@@ -3038,12 +3038,12 @@ void database::adjust_reward_balance( const account_object& a, const asset& delt
 }
 
 
-void database::adjust_supply( const asset& delta, bool adjust_rep )
+void database::adjust_supply( const asset& delta, bool adjust_vesting )
 {
 
    const auto& props = get_dynamic_global_properties();
    if( props.head_block_number < BMCHAIN_BLOCKS_PER_DAY*7 )
-      adjust_rep = false;
+      adjust_vesting = false;
 
    modify( props, [&]( dynamic_global_property_object& props )
    {
@@ -3051,10 +3051,10 @@ void database::adjust_supply( const asset& delta, bool adjust_rep )
       {
          case BMT_SYMBOL:
          {
-            asset new_rep( (adjust_rep && delta.amount > 0) ? delta.amount * 9 : 0, BMT_SYMBOL );
-            props.current_supply += delta + new_rep;
-            props.virtual_supply += delta + new_rep;
-            props.total_vesting_fund_steem += new_rep;
+            asset new_vesting( (adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, BMT_SYMBOL );
+            props.current_supply += delta + new_vesting;
+            props.virtual_supply += delta + new_vesting;
+            props.total_vesting_fund_steem += new_vesting;
             assert( props.current_supply.amount.value >= 0 );
             break;
          }

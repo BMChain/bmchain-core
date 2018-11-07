@@ -499,7 +499,7 @@ namespace bmchain {
                 const auto &acc = my->_db.get_account(account);
 
                 if (type == outgoing || type == all) {
-                    const auto &by_route = my->_db.get_index<withdraw_rep_route_index>().indices().get<by_withdraw_route>();
+                    const auto &by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
                     auto route = by_route.lower_bound(acc.id);
 
                     while (route != by_route.end() && route->from_account == acc.id) {
@@ -516,7 +516,7 @@ namespace bmchain {
                 }
 
                 if (type == incoming || type == all) {
-                    const auto &by_dest = my->_db.get_index<withdraw_rep_route_index>().indices().get<by_destination>();
+                    const auto &by_dest = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_destination>();
                     auto route = by_dest.lower_bound(acc.id);
 
                     while (route != by_dest.end() && route->to_account == acc.id) {
@@ -1697,7 +1697,7 @@ namespace bmchain {
                 vector<rep_delegation_api_obj> result;
                 result.reserve(limit);
 
-                const auto &delegation_idx = my->_db.get_index<rep_delegation_index, by_delegation>();
+                const auto &delegation_idx = my->_db.get_index<vesting_delegation_index, by_delegation>();
                 auto itr = delegation_idx.lower_bound(boost::make_tuple(account, from));
                 while (result.size() < limit && itr != delegation_idx.end() && itr->delegator == account) {
                     result.push_back(*itr);

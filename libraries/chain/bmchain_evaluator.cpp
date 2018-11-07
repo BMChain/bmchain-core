@@ -1072,13 +1072,13 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
    }
 }
 
-void set_withdraw_rep_route_evaluator::do_apply( const set_withdraw_rep_route_operation& o )
+void set_withdraw_vesting_route_evaluator::do_apply( const set_withdraw_vesting_route_operation& o )
 {
    try
    {
    const auto& from_account = _db.get_account( o.from_account );
    const auto& to_account = _db.get_account( o.to_account );
-   const auto& wd_idx = _db.get_index< withdraw_rep_route_index >().indices().get< by_withdraw_route >();
+   const auto& wd_idx = _db.get_index< withdraw_vesting_route_index >().indices().get< by_withdraw_route >();
    auto itr = wd_idx.find( boost::make_tuple( from_account.id, to_account.id ) );
 
    if( itr == wd_idx.end() )
