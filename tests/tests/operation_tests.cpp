@@ -27,6 +27,127 @@ using fc::string;
 
 BOOST_FIXTURE_TEST_SUITE( operation_tests, clean_database_fixture )
 
+BOOST_AUTO_TEST_CASE( new_emission_bmchain )
+{
+try
+  {
+      BOOST_TEST_MESSAGE("Testing: new emission bmchain");
+      std::cout << "Testing: new emission bmchain" << std::endl;
+
+      ACTORS((alice)(bob)(sam))
+      generate_blocks(60 / BMCHAIN_BLOCK_INTERVAL);
+
+      comment_operation op;
+      op.author = "alice";
+      op.permlink = "emission-post";
+      op.parent_author = "";
+      op.parent_permlink = "emission";
+      op.title = "Emission bmchain for post";
+      op.body = "Emission bmchain for post";
+      op.json_metadata = "{\"foo\":\"bar\"}";
+
+      signed_transaction tx;
+      tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+
+      BOOST_TEST_MESSAGE("--- Test Alice posting a root comment");
+      tx.operations.push_back(op);
+      tx.sign(alice_private_key, db.get_chain_id());
+      db.push_transaction(tx, 0);
+
+      const comment_object &alice_comment = db.get_comment("alice", string("emission_01"));
+
+      BOOST_REQUIRE(alice_comment.author == op.author);
+      BOOST_REQUIRE(to_string(alice_comment.permlink) == op.permlink);
+      BOOST_REQUIRE(to_string(alice_comment.parent_permlink) == op.parent_permlink);
+      BOOST_REQUIRE(alice_comment.last_update == db.head_block_time());
+      BOOST_REQUIRE(alice_comment.created == db.head_block_time());
+      BOOST_REQUIRE(alice_comment.net_rshares.value == 0);
+      BOOST_REQUIRE(alice_comment.abs_rshares.value == 0);
+      BOOST_REQUIRE(alice_comment.cashout_time ==
+                    fc::time_point_sec(db.head_block_time() + fc::seconds(BMCHAIN_CASHOUT_WINDOW_SECONDS)));
+
+      validate_database();
+      std::cout << "Testing: new emission bmchain" << std::endl;
+
+      BOOST_TEST_MESSAGE("--- Test Bob posting a comment on Alice's post");
+      op.author = "bob";
+      op.permlink = "emission-comment-00";
+      op.parent_author = "alice";
+      op.parent_permlink = "emission-post";
+
+      tx.signatures.clear();
+      tx.operations.clear();
+      tx.operations.push_back(op);
+      tx.sign(bob_private_key, db.get_chain_id());
+      BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
+
+      BOOST_TEST_MESSAGE("--- Test Sam posting a comment on Bob's comment");
+
+      op.author = "sam";
+      op.permlink = "emmisiton-comment-01";
+      op.parent_author = "bob";
+      op.parent_permlink = "emission-post";
+
+      tx.signatures.clear();
+      tx.operations.clear();
+      tx.operations.push_back(op);
+      tx.sign(sam_private_key, db.get_chain_id());
+      db.push_transaction(tx, 0);
+
+      const comment_object &sam_comment = db.get_comment("sam", string("emmisiton-comment-01"));
+
+      BOOST_REQUIRE(sam_comment.author == op.author);
+      BOOST_REQUIRE(to_string(sam_comment.permlink) == op.permlink);
+      BOOST_REQUIRE(sam_comment.parent_author == op.parent_author);
+      BOOST_REQUIRE(to_string(sam_comment.parent_permlink) == op.parent_permlink);
+      BOOST_REQUIRE(sam_comment.last_update == db.head_block_time());
+      BOOST_REQUIRE(sam_comment.created == db.head_block_time());
+      BOOST_REQUIRE(sam_comment.net_rshares.value == 0);
+      BOOST_REQUIRE(sam_comment.abs_rshares.value == 0);
+      BOOST_REQUIRE(sam_comment.cashout_time == sam_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+      BOOST_REQUIRE(sam_comment.root_comment == alice_comment.id);
+      validate_database();
+
+      generate_blocks(60 * 5 / BMCHAIN_BLOCK_INTERVAL + 1);
+
+      BOOST_TEST_MESSAGE("--- Test modifying a comment");
+      const auto &mod_sam_comment = db.get_comment("sam", string("emmisiton-comment-01"));
+      const auto &mod_bob_comment = db.get_comment("bob", string("emmisiton-comment-02"));
+      const auto &mod_alice_comment = db.get_comment("alice", string("emmisiton-post"));
+      fc::time_point_sec created = mod_sam_comment.created;
+
+      db.modify(mod_sam_comment, [&](comment_object &com) {
+          com.net_rshares = 10;
+          com.abs_rshares = 10;
+      });
+
+      db.modify(db.get_dynamic_global_properties(), [&](dynamic_global_property_object &o) {
+          o.total_reward_shares2 = bmchain::chain::util::evaluate_reward_curve(10);
+      });
+
+      tx.signatures.clear();
+      tx.operations.clear();
+      op.title = "foo";
+      op.body = "bar";
+      op.json_metadata = "{\"bar\":\"foo\"}";
+      tx.operations.push_back(op);
+      tx.set_expiration(db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION);
+      tx.sign(sam_private_key, db.get_chain_id());
+      db.push_transaction(tx, 0);
+
+      BOOST_REQUIRE(mod_sam_comment.author == op.author);
+      BOOST_REQUIRE(to_string(mod_sam_comment.permlink) == op.permlink);
+      BOOST_REQUIRE(mod_sam_comment.parent_author == op.parent_author);
+      BOOST_REQUIRE(to_string(mod_sam_comment.parent_permlink) == op.parent_permlink);
+      BOOST_REQUIRE(mod_sam_comment.last_update == db.head_block_time());
+      BOOST_REQUIRE(mod_sam_comment.created == created);
+      BOOST_REQUIRE(mod_sam_comment.cashout_time == mod_sam_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
+      validate_database();
+
+}
+FC_LOG_AND_RETHROW()
+}
+
    BOOST_AUTO_TEST_CASE( account_create_validate )
    {
        try

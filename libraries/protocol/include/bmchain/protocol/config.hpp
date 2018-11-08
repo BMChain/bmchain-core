@@ -12,6 +12,7 @@
 
 #define REP_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define BMT_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< BMT with 3 digits of precision
+#define SBD_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24))
 
 #define BMCHAIN_SYMBOL                          "TEST"
 #define BMCHAIN_ADDRESS_PREFIX                  "TST"

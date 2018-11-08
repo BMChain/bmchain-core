@@ -59,7 +59,7 @@ inline void validate_permlink_0_1( const string& permlink )
          case '-':
             break;
          default:
-            FC_ASSERT( false, "Invalid permlink character: ${s}", ("s", std::string() + c ) );
+            FC_ASSERT( false, "Invalid permlink character: ${s} in " + permlink, ("s", std::string() + c ));
       }
    }
 }
