@@ -2491,7 +2491,7 @@ void database::_apply_block( const signed_block& next_block )
    update_virtual_supply();
 
    clear_null_account_balance();
-   process_funds();
+//   process_funds();
    process_comment_cashout();
    custom_tokens_emissions();
    process_savings_withdraws();

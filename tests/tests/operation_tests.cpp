@@ -37,6 +37,8 @@ try
       ACTORS((alice)(bob)(sam))
       generate_blocks(60 / BMCHAIN_BLOCK_INTERVAL);
 
+      auto gbo1 = db.get_dynamic_global_properties();
+
       comment_operation op;
       op.author = "alice";
       op.permlink = "emission-post";
@@ -54,7 +56,7 @@ try
       tx.sign(alice_private_key, db.get_chain_id());
       db.push_transaction(tx, 0);
 
-      const comment_object &alice_comment = db.get_comment("alice", string("emission_01"));
+      const comment_object &alice_comment = db.get_comment("alice", string("emission-post"));
 
       BOOST_REQUIRE(alice_comment.author == op.author);
       BOOST_REQUIRE(to_string(alice_comment.permlink) == op.permlink);
@@ -67,9 +69,14 @@ try
                     fc::time_point_sec(db.head_block_time() + fc::seconds(BMCHAIN_CASHOUT_WINDOW_SECONDS)));
 
       validate_database();
-      std::cout << "Testing: new emission bmchain" << std::endl;
+
+      auto gbo2 = db.get_dynamic_global_properties();
+      BOOST_REQUIRE(gbo2.current_supply.amount.value == gbo1.current_supply.amount.value + BMCHAIN_POST_EMISSION_RATE);
+      BOOST_REQUIRE(gbo2.virtual_supply.amount.value == gbo1.virtual_supply.amount.value + BMCHAIN_POST_EMISSION_RATE);
 
       BOOST_TEST_MESSAGE("--- Test Bob posting a comment on Alice's post");
+      gbo1 = db.get_dynamic_global_properties();
+
       op.author = "bob";
       op.permlink = "emission-comment-00";
       op.parent_author = "alice";
@@ -81,7 +88,12 @@ try
       tx.sign(bob_private_key, db.get_chain_id());
       BMCHAIN_REQUIRE_THROW(db.push_transaction(tx, 0), fc::exception);
 
+      gbo2 = db.get_dynamic_global_properties();
+      BOOST_REQUIRE(gbo2.current_supply.amount.value == gbo1.current_supply.amount.value + BMCHAIN_COMMENT_EMISSION_RATE);
+      BOOST_REQUIRE(gbo2.virtual_supply.amount.value == gbo1.virtual_supply.amount.value + BMCHAIN_COMMENT_EMISSION_RATE);
+
       BOOST_TEST_MESSAGE("--- Test Sam posting a comment on Bob's comment");
+      gbo1 = db.get_dynamic_global_properties();
 
       op.author = "sam";
       op.permlink = "emmisiton-comment-01";
@@ -107,6 +119,10 @@ try
       BOOST_REQUIRE(sam_comment.cashout_time == sam_comment.created + BMCHAIN_CASHOUT_WINDOW_SECONDS);
       BOOST_REQUIRE(sam_comment.root_comment == alice_comment.id);
       validate_database();
+
+      gbo2 = db.get_dynamic_global_properties();
+      BOOST_REQUIRE(gbo2.current_supply.amount.value == gbo1.current_supply.amount.value + BMCHAIN_COMMENT_EMISSION_RATE);
+      BOOST_REQUIRE(gbo2.virtual_supply.amount.value == gbo1.virtual_supply.amount.value + BMCHAIN_COMMENT_EMISSION_RATE);
 
       generate_blocks(60 * 5 / BMCHAIN_BLOCK_INTERVAL + 1);
 
@@ -148,45 +164,44 @@ try
 FC_LOG_AND_RETHROW()
 }
 
-   BOOST_AUTO_TEST_CASE( account_create_validate )
-   {
-       try
-       {
+BOOST_AUTO_TEST_CASE( account_create_validate )
+{
+  try
+  {
 
-       }
-       FC_LOG_AND_RETHROW()
-   }
+  }
+  FC_LOG_AND_RETHROW()
+}
 
-   BOOST_AUTO_TEST_CASE( account_create_authorities )
-   {
-       try
-       {
-           BOOST_TEST_MESSAGE( "Testing: account_create_authorities" );
+BOOST_AUTO_TEST_CASE( account_create_authorities )
+{
+    try {
+        BOOST_TEST_MESSAGE("Testing: account_create_authorities");
 
-           account_create_operation op;
-           op.creator = "alice";
-           op.new_account_name = "bob";
+        account_create_operation op;
+        op.creator = "alice";
+        op.new_account_name = "bob";
 
-           flat_set< account_name_type > auths;
-           flat_set< account_name_type > expected;
+        flat_set<account_name_type> auths;
+        flat_set<account_name_type> expected;
 
-           BOOST_TEST_MESSAGE( "--- Testing owner authority" );
-           op.get_required_owner_authorities( auths );
-           BOOST_REQUIRE( auths == expected );
+        BOOST_TEST_MESSAGE("--- Testing owner authority");
+        op.get_required_owner_authorities(auths);
+        BOOST_REQUIRE(auths == expected);
 
-           BOOST_TEST_MESSAGE( "--- Testing active authority" );
-           expected.insert( "alice" );
-           op.get_required_active_authorities( auths );
-           BOOST_REQUIRE( auths == expected );
+        BOOST_TEST_MESSAGE("--- Testing active authority");
+        expected.insert("alice");
+        op.get_required_active_authorities(auths);
+        BOOST_REQUIRE(auths == expected);
 
-           BOOST_TEST_MESSAGE( "--- Testing posting authority" );
-           expected.clear();
-           auths.clear();
-           op.get_required_posting_authorities( auths );
-           BOOST_REQUIRE( auths == expected );
-       }
-       FC_LOG_AND_RETHROW()
-   }
+        BOOST_TEST_MESSAGE("--- Testing posting authority");
+        expected.clear();
+        auths.clear();
+        op.get_required_posting_authorities(auths);
+        BOOST_REQUIRE(auths == expected);
+    }
+    FC_LOG_AND_RETHROW()
+}
 
    BOOST_AUTO_TEST_CASE( account_create_apply )
    {
