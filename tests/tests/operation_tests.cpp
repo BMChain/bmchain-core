@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
        const account_authority_object &acct_auth = db.get<account_authority_object, by_account>("alice");
 
        //auto vest_shares = gpo.total_vesting_shares;
-       //auto vests = gpo.total_vesting_fund_steem;
+       //auto vests = gpo.total_vesting_fund_bmt;
 
        BOOST_REQUIRE(acct.name == "alice");
        BOOST_REQUIRE(acct_auth.owner == authority(1, priv_key.get_public_key(), 1));
@@ -1454,7 +1454,7 @@ BOOST_AUTO_TEST_CASE( comment_apply )
            BOOST_REQUIRE( alice.balance == ASSET( "10.000 TESTS" ) );
 
            auto shares = asset( gpo.total_vesting_shares.amount, REP_SYMBOL );
-           auto vests = asset( gpo.total_vesting_fund_steem.amount, BMT_SYMBOL );
+           auto vests = asset( gpo.total_vesting_fund_bmt.amount, BMT_SYMBOL );
            auto alice_shares = alice.vesting_shares;
            auto bob_shares = bob.vesting_shares;
 
@@ -1476,7 +1476,7 @@ BOOST_AUTO_TEST_CASE( comment_apply )
 
            BOOST_REQUIRE( alice.balance.amount.value == ASSET( "2.500 TESTS" ).amount.value );
            BOOST_REQUIRE( alice.vesting_shares.amount.value == alice_shares.amount.value );
-           BOOST_REQUIRE( gpo.total_vesting_fund_steem.amount.value == vests.amount.value );
+           BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == vests.amount.value );
            BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == shares.amount.value );
            validate_database();
 
@@ -1498,7 +1498,7 @@ BOOST_AUTO_TEST_CASE( comment_apply )
            BOOST_REQUIRE( alice.vesting_shares.amount.value == alice_shares.amount.value );
            BOOST_REQUIRE( bob.balance.amount.value == ASSET( "0.000 TESTS" ).amount.value );
            BOOST_REQUIRE( bob.vesting_shares.amount.value == bob_shares.amount.value );
-           BOOST_REQUIRE( gpo.total_vesting_fund_steem.amount.value == vests.amount.value );
+           BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == vests.amount.value );
            BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == shares.amount.value );
            validate_database();
 
@@ -1508,7 +1508,7 @@ BOOST_AUTO_TEST_CASE( comment_apply )
            BOOST_REQUIRE( alice.vesting_shares.amount.value == alice_shares.amount.value );
            BOOST_REQUIRE( bob.balance.amount.value == ASSET( "0.000 TESTS" ).amount.value );
            BOOST_REQUIRE( bob.vesting_shares.amount.value == bob_shares.amount.value );
-           BOOST_REQUIRE( gpo.total_vesting_fund_steem.amount.value == vests.amount.value );
+           BOOST_REQUIRE( gpo.total_vesting_fund_bmt.amount.value == vests.amount.value );
            BOOST_REQUIRE( gpo.total_vesting_shares.amount.value == shares.amount.value );
            validate_database();
        }
@@ -1674,8 +1674,8 @@ BOOST_AUTO_TEST_CASE( comment_apply )
 
                                        db.modify( db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
                                        {
-                                          gpo.current_supply += wso.median_props.account_creation_fee - ASSET( "0.001 TESTS" ) - gpo.total_vesting_fund_steem;
-                                          gpo.total_vesting_fund_steem = wso.median_props.account_creation_fee - ASSET( "0.001 TESTS" );
+                                          gpo.current_supply += wso.median_props.account_creation_fee - ASSET( "0.001 TESTS" ) - gpo.total_vesting_fund_bmt;
+                                          gpo.total_vesting_fund_bmt = wso.median_props.account_creation_fee - ASSET( "0.001 TESTS" );
                                        });
 
                                        db.update_virtual_supply();

@@ -976,7 +976,7 @@ asset create_vesting2( database& db, const account_object& to_account, asset liq
       auto calculate_new_vesting = [ liquid ] ( price vesting_share_price ) -> asset
          {
          /**
-          *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
+          *  The ratio of total_vesting_shares / total_vesting_fund_bmt should not
           *  change as the result of the user adding funds
           *
           *  V / C  = (V+Vn) / (C+Cn)
@@ -1092,7 +1092,7 @@ asset database::create_vesting( const account_object& to_account, asset bmt, boo
       const auto& cprops = get_dynamic_global_properties();
 
       /**
-       *  The ratio of total_vesting_shares / total_vesting_fund_steem should not
+       *  The ratio of total_vesting_shares / total_vesting_fund_bmt should not
        *  change as the result of the user adding funds
        *
        *  V / C  = (V+Vn) / (C+Cn)
@@ -1126,7 +1126,7 @@ asset database::create_vesting( const account_object& to_account, asset bmt, boo
          }
          else
          {
-            props.total_vesting_fund_steem += bmt;
+            props.total_vesting_fund_bmt += bmt;
             props.total_vesting_shares += new_rep;
          }
       } );
@@ -1289,7 +1289,7 @@ void database::clear_null_account_balance()
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
          g.total_vesting_shares -= null_account.vesting_shares;
-         g.total_vesting_fund_steem -= converted_bmt;
+         g.total_vesting_fund_bmt -= converted_bmt;
       });
 
       modify( null_account, [&]( account_object& a )
@@ -1686,7 +1686,7 @@ void database::process_funds()
       new_steem = content_reward + vesting_reward + witness_reward;
 
       modify(props, [&](dynamic_global_property_object &p) {
-         p.total_vesting_fund_steem += asset(vesting_reward, BMT_SYMBOL);
+         p.total_vesting_fund_bmt += asset(vesting_reward, BMT_SYMBOL);
          if ( false )
             p.total_reward_fund_bmt += asset(content_reward, BMT_SYMBOL);
          p.current_supply += asset(new_steem, BMT_SYMBOL);
@@ -1710,7 +1710,7 @@ void database::process_funds()
          vesting_reward.amount.value *= 9;
 
       modify(props, [&](dynamic_global_property_object &p) {
-         p.total_vesting_fund_steem += vesting_reward;
+         p.total_vesting_fund_bmt += vesting_reward;
          p.total_reward_fund_bmt += content_reward;
          p.current_supply += content_reward + witness_pay + vesting_reward;
          p.virtual_supply += content_reward + witness_pay + vesting_reward;
@@ -2232,7 +2232,7 @@ void database::init_genesis( uint64_t init_supply )
          p.current_supply = asset( init_supply + init_rep / 1000, BMT_SYMBOL );
          p.virtual_supply = p.current_supply;
          p.total_vesting_shares = asset( init_rep, REP_SYMBOL);
-         p.total_vesting_fund_steem = asset( init_rep / 1000, BMT_SYMBOL);
+         p.total_vesting_fund_bmt = asset( init_rep / 1000, BMT_SYMBOL);
          p.maximum_block_size = BMCHAIN_MAX_BLOCK_SIZE;
       } );
 
@@ -3054,7 +3054,7 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
             asset new_vesting( (adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, BMT_SYMBOL );
             props.current_supply += delta + new_vesting;
             props.virtual_supply += delta + new_vesting;
-            props.total_vesting_fund_steem += new_vesting;
+            props.total_vesting_fund_bmt += new_vesting;
             assert( props.current_supply.amount.value >= 0 );
             break;
          }
@@ -3261,7 +3261,7 @@ void database::validate_invariants()const
            }
        }
 
-      total_supply += gpo.total_vesting_fund_steem + gpo.total_reward_fund_bmt + gpo.pending_rewarded_vesting_bmt;
+      total_supply += gpo.total_vesting_fund_bmt + gpo.total_reward_fund_bmt + gpo.pending_rewarded_vesting_bmt;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
       FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_rep, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_rep",total_rep) );
@@ -3433,11 +3433,13 @@ void database::process_funds_bmchain(int64_t new_bmt)
     const auto& props = get_dynamic_global_properties();
 
     /// 90% in reward funds
-    share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT_NEW) ) / BMCHAIN_100_PERCENT;
+    share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT) ) / BMCHAIN_100_PERCENT;
     content_reward = pay_reward_funds( content_reward );
-
+    /// 15% to vesting fund
+    auto vesting_reward = ( new_bmt * BMCHAIN_VESTING_FUND_PERCENT ) / BMCHAIN_100_PERCENT;
     /// 10% to wintess
-    auto witness_reward = new_bmt - content_reward;
+    auto witness_reward = new_bmt - content_reward - vesting_reward; /// Remaining 10% to witness pay
+    
     const auto& cwit = get_witness( props.current_witness );
     modify( get_account( cwit.owner ), [&]( account_object& acnt ){
         acnt.balance += asset( witness_reward, BMT_SYMBOL );
@@ -3447,8 +3449,9 @@ void database::process_funds_bmchain(int64_t new_bmt)
     /// global properties
     modify( props, [&]( dynamic_global_property_object& p )
     {
-        p.current_supply += asset( new_bmt, BMT_SYMBOL );
-        p.virtual_supply += asset( new_bmt, BMT_SYMBOL );
+        p.total_vesting_fund_bmt += asset( vesting_reward, BMT_SYMBOL );       
+        p.current_supply += asset( content_reward + witness_reward + vesting_reward, BMT_SYMBOL );
+        p.virtual_supply += asset( content_reward + witness_reward + vesting_reward, BMT_SYMBOL );
     });
 }
 
