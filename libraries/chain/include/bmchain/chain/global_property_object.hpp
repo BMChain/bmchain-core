@@ -55,16 +55,16 @@ namespace bmchain { namespace chain {
          asset       current_sbd_supply          = asset( 0, SBD_SYMBOL );
          asset       confidential_sbd_supply     = asset( 0, SBD_SYMBOL ); ///< total asset held in confidential balances
          asset       total_vesting_fund_bmt      = asset( 0, BMT_SYMBOL );
-         asset       total_vesting_shares        = asset( 0, REP_SYMBOL );
+         asset       total_vesting_shares        = asset( 0, VESTS_SYMBOL );
          asset       total_reward_fund_bmt       = asset( 0, BMT_SYMBOL );
          fc::uint128 total_reward_shares2        = 0; ///< the running total of REWARD^2
-         asset       pending_rewarded_vesting_shares = asset( 0, REP_SYMBOL );
+         asset       pending_rewarded_vesting_shares = asset( 0, VESTS_SYMBOL );
          asset       pending_rewarded_vesting_bmt    = asset( 0, BMT_SYMBOL );
 
          price       get_vesting_share_price() const
          {
             if ( total_vesting_fund_bmt.amount == 0 || total_vesting_shares.amount == 0 )
-               return price ( asset( 1000, BMT_SYMBOL ), asset( 1000000, REP_SYMBOL ) );
+               return price ( asset( 1000, BMT_SYMBOL ), asset( 1000000, VESTS_SYMBOL ) );
 
             return price( total_vesting_shares, total_vesting_fund_bmt );
          }

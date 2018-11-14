@@ -30,7 +30,7 @@ namespace bmchain { namespace protocol {
       validate_account_name( new_account_name );
       validate_account_name( creator );
       FC_ASSERT( is_asset_type( fee, BMT_SYMBOL ), "Account creation fee must be BMT" );
-      FC_ASSERT( is_asset_type( delegation, REP_SYMBOL ), "Delegation must be VESTS" );
+      FC_ASSERT( is_asset_type( delegation, VESTS_SYMBOL ), "Delegation must be VESTS" );
 
       owner.validate();
       active.validate();
@@ -43,7 +43,7 @@ namespace bmchain { namespace protocol {
       }
 
       FC_ASSERT( fee >= asset( 0, BMT_SYMBOL ), "Account creation fee cannot be negative" );
-      FC_ASSERT( delegation >= asset( 0, REP_SYMBOL ), "Delegation cannot be negative" );
+      FC_ASSERT( delegation >= asset( 0, VESTS_SYMBOL ), "Delegation cannot be negative" );
    }
 
    void account_update_operation::validate() const
@@ -159,7 +159,7 @@ namespace bmchain { namespace protocol {
       validate_account_name( from );
       validate_account_name( to );
 
-      //FC_ASSERT(amount.symbol != REP_SYMBOL, "transferring of REP (STMP) is not allowed.");
+      //FC_ASSERT(amount.symbol != VESTS_SYMBOL, "transferring of REP (STMP) is not allowed.");
       FC_ASSERT( amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)" );
       FC_ASSERT( memo.size() < BMCHAIN_MAX_MEMO_SIZE, "Memo is too large" );
       FC_ASSERT( fc::is_utf8( memo ), "Memo is not UTF8" );
@@ -176,7 +176,7 @@ namespace bmchain { namespace protocol {
    void withdraw_vesting_operation::validate() const
    {
       validate_account_name( account );
-      FC_ASSERT( is_asset_type( vesting_shares, REP_SYMBOL), "Amount must be VESTS"  );
+      FC_ASSERT( is_asset_type( vesting_shares, VESTS_SYMBOL), "Amount must be VESTS"  );
    }
 
    void set_withdraw_vesting_route_operation::validate() const
@@ -499,7 +499,7 @@ namespace bmchain { namespace protocol {
    {
       validate_account_name( account );
       FC_ASSERT( is_asset_type( reward_bmt, BMT_SYMBOL ), "Reward Steem must be BMT" );
-      FC_ASSERT( is_asset_type( reward_vests, REP_SYMBOL ), "Reward Steem must be REP" );
+      FC_ASSERT( is_asset_type( reward_vests, VESTS_SYMBOL ), "Reward Steem must be REP" );
       FC_ASSERT( reward_bmt.amount >= 0, "Cannot claim a negative amount" );
       FC_ASSERT( reward_vests.amount >= 0, "Cannot claim a negative amount" );
       FC_ASSERT( reward_bmt.amount > 0 || reward_vests.amount > 0, "Must claim something." );
@@ -510,8 +510,8 @@ namespace bmchain { namespace protocol {
       validate_account_name( delegator );
       validate_account_name( delegatee );
       FC_ASSERT( delegator != delegatee, "You cannot delegate VESTS to yourself" );
-      FC_ASSERT( is_asset_type( vesting_shares, REP_SYMBOL ), "Delegation must be VESTS" );
-      FC_ASSERT( vesting_shares >= asset( 0, REP_SYMBOL ), "Delegation cannot be negative" );
+      FC_ASSERT( is_asset_type( vesting_shares, VESTS_SYMBOL ), "Delegation must be VESTS" );
+      FC_ASSERT( vesting_shares >= asset( 0, VESTS_SYMBOL ), "Delegation cannot be negative" );
    }
 
    void content_order_create_operation::validate()const

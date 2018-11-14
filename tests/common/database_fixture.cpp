@@ -227,7 +227,7 @@ const account_object& database_fixture::account_create(
       op.new_account_name = name;
       op.creator = creator;
       op.fee = asset( fee, BMT_SYMBOL );
-      op.delegation = asset( 0, REP_SYMBOL );
+      op.delegation = asset( 0, VESTS_SYMBOL );
       op.owner = authority( 1, key, 1 );
       op.active = authority( 1, key, 1 );
       op.posting = authority( 1, post_key, 1 );

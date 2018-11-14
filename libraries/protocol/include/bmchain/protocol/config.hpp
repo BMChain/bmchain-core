@@ -10,7 +10,7 @@
 #define BMCHAIN_INIT_PUBLIC_KEY_STR             (std::string( bmchain::protocol::public_key_type(BMCHAIN_INIT_PRIVATE_KEY.get_public_key()) ))
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("testnet"))
 
-#define REP_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
+#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define BMT_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< BMT with 3 digits of precision
 #define SBD_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24))
 
@@ -35,7 +35,7 @@
 #define BMCHAIN_INIT_PRIVATE_KEY                (*(graphene::utilities::wif_to_key("5KJAwdBWVqX8yNKxVEYgYnA4tJUbiBYmxCWkSyojUYUrquguz73")))
 #define BMCHAIN_INIT_PUBLIC_KEY_STR             (std::string( bmchain::protocol::public_key_type( BMCHAIN_INIT_PRIVATE_KEY.get_public_key() )))
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain"))
-#define REP_SYMBOL  (uint64_t(6) | (uint64_t('R') << 8) | (uint64_t('E') << 16) | (uint64_t('P') << 24)) ///< RPT with 6 digits of precision
+#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24)) ///< RPT with 6 digits of precision
 #define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precisionDollars with 3 digits of precision
 #define SBD_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24))
 #define BMCHAIN_SYMBOL                          "BMT"
@@ -45,7 +45,7 @@
 //#define STEEM_SYMBOL  (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_STEEM ) )
 //#define SBD_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_SBD ) )
 //#define BMT_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_BMT ) )
-//#define REP_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_REP ) )
+//#define VESTS_SYMBOL    (bmchain::protocol::asset_symbol_type::from_asset_num( STEEM_ASSET_NUM_REP ) )
 
 #define BMCHAIN_GENESIS_TIME                    (fc::time_point_sec(1510655500)) /// 11/14/2017
 #define BMCHAIN_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
@@ -106,7 +106,7 @@
 #define BMCHAIN_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
 #define BMCHAIN_CONTENT_REWARD_PERCENT          (75*BMCHAIN_1_PERCENT)
 #define BMCHAIN_CONTENT_REWARD_PERCENT_NEW      (90*BMCHAIN_1_PERCENT)
-#define BMCHAIN_VESTING_FUND_PERCENT            (15*BMCHAIN_1_PERCENT) //15% of inflation, 1.425% inflation
+#define BMCHAIN_VESTING_FUND_PERCENT            (5*BMCHAIN_1_PERCENT) //15% of inflation, 1.425% inflation
 
 #define BMCHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define BMCHAIN_BANDWIDTH_PRECISION             (uint64_t(1000000)) ///< 1 million

@@ -732,7 +732,7 @@ public:
 
          auto accounts = result.as<vector<account_api_obj>>();
          asset total_bmt;
-         asset total_vest(0, REP_SYMBOL );
+         asset total_vest(0, VESTS_SYMBOL );
          for( const auto& a : accounts ) {
              total_bmt += a.balance;
             total_vest  += a.vesting_shares;

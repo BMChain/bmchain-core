@@ -187,7 +187,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
                ( "creator.balance", creator.balance )
                ( "required", o.fee ) );
 
-   FC_ASSERT( creator.vesting_shares - creator.delegated_vesting_shares - asset( creator.to_withdraw - creator.withdrawn, REP_SYMBOL ) >= o.delegation, "Insufficient vesting shares to delegate to new account.",
+   FC_ASSERT( creator.vesting_shares - creator.delegated_vesting_shares - asset( creator.to_withdraw - creator.withdrawn, VESTS_SYMBOL ) >= o.delegation, "Insufficient vesting shares to delegate to new account.",
                ( "creator.vesting_shares", creator.vesting_shares )
                ( "creator.delegated_vesting_shares", creator.delegated_vesting_shares )( "required", o.delegation ) );
 
@@ -1025,7 +1025,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 {
    const auto &account = _db.get_account(o.account);
 
-   FC_ASSERT(account.vesting_shares >= asset(0, REP_SYMBOL),
+   FC_ASSERT(account.vesting_shares >= asset(0, VESTS_SYMBOL),
              "Account does not have sufficient Steem Power for withdraw.");
    FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares,
              "Account does not have sufficient Steem Power for withdraw.");
@@ -1046,7 +1046,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
                 "This operation would not change the vesting withdraw rate.");
 
       _db.modify(account, [&](account_object &a) {
-         a.rep_withdraw_rate = asset(0, REP_SYMBOL);
+         a.rep_withdraw_rate = asset(0, VESTS_SYMBOL);
          a.next_rep_withdrawal = time_point_sec::maximum();
          a.to_withdraw = 0;
          a.withdrawn = 0;
@@ -1056,7 +1056,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
       vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
       _db.modify(account, [&](account_object &a) {
-         auto new_rep_withdraw_rate = asset(o.vesting_shares.amount / vesting_withdraw_intervals, REP_SYMBOL);
+         auto new_rep_withdraw_rate = asset(o.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL);
 
          if (new_rep_withdraw_rate.amount == 0)
             new_rep_withdraw_rate.amount = 1;
@@ -2106,7 +2106,7 @@ void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_
    const auto& delegatee = _db.get_account( op.delegatee );
    auto delegation = _db.find< vesting_delegation_object, by_delegation >( boost::make_tuple( op.delegator, op.delegatee ) );
 
-   auto available_shares = delegator.vesting_shares - delegator.delegated_vesting_shares - asset( delegator.to_withdraw - delegator.withdrawn, REP_SYMBOL );
+   auto available_shares = delegator.vesting_shares - delegator.delegated_vesting_shares - asset( delegator.to_withdraw - delegator.withdrawn, VESTS_SYMBOL );
 
    const auto& wso = _db.get_witness_schedule_object();
    const auto& gpo = _db.get_dynamic_global_properties();

@@ -2203,7 +2203,7 @@ void database::init_genesis( uint64_t init_supply )
             a.name = BMCHAIN_INIT_MINER_NAME + ( i ? fc::to_string( i ) : std::string() );
             a.memo_key = init_public_key;
             a.balance  = asset( i ? 0 : init_supply, BMT_SYMBOL );
-            a.vesting_shares  = asset( i ? 0 : init_rep, REP_SYMBOL );
+            a.vesting_shares  = asset( i ? 0 : init_rep, VESTS_SYMBOL );
          } );
 
          create< account_authority_object >( [&]( account_authority_object& auth )
@@ -2231,7 +2231,7 @@ void database::init_genesis( uint64_t init_supply )
          p.participation_count = 128;
          p.current_supply = asset( init_supply + init_rep / 1000, BMT_SYMBOL );
          p.virtual_supply = p.current_supply;
-         p.total_vesting_shares = asset( init_rep, REP_SYMBOL);
+         p.total_vesting_shares = asset( init_rep, VESTS_SYMBOL);
          p.total_vesting_fund_bmt = asset( init_rep / 1000, BMT_SYMBOL);
          p.maximum_block_size = BMCHAIN_MAX_BLOCK_SIZE;
       } );
@@ -3165,7 +3165,7 @@ void database::validate_invariants()const
    {
       const auto& account_idx = get_index<account_index>().indices().get<by_name>();
       asset total_supply = asset( 0, BMT_SYMBOL );
-      asset total_rep = asset( 0, REP_SYMBOL );
+      asset total_rep = asset( 0, VESTS_SYMBOL );
       asset pending_rep_bmt = asset( 0, BMT_SYMBOL );
       share_type total_vsf_votes = share_type( 0 );
 
@@ -3433,7 +3433,7 @@ void database::process_funds_bmchain(int64_t new_bmt)
     const auto& props = get_dynamic_global_properties();
 
     /// 90% in reward funds
-    share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT) ) / BMCHAIN_100_PERCENT;
+    share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT_NEW) ) / BMCHAIN_100_PERCENT;
     content_reward = pay_reward_funds( content_reward );
     /// 15% to vesting fund
     auto vesting_reward = ( new_bmt * BMCHAIN_VESTING_FUND_PERCENT ) / BMCHAIN_100_PERCENT;
