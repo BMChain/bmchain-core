@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE( vests_stock_split )
 
       BOOST_TEST_MESSAGE( "Perform split" );
       fc::time_point start = fc::time_point::now();
-      db.perform_rep_share_split( magnitude );
+      db.perform_vesting_share_split( magnitude );
       fc::time_point end = fc::time_point::now();
       ilog( "Vesting split execution time: ${t} us", ("t",end - start) );
 

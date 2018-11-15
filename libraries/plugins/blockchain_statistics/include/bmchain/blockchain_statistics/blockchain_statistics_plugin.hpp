@@ -87,7 +87,7 @@ struct bucket_object : public object< bucket_object_type, bucket_object >
    uint32_t             replies_deleted = 0;                         ///< Replies deleted
    uint32_t             new_root_votes = 0;                          ///< New votes on root comments
    uint32_t             changed_root_votes = 0;                      ///< Changed votes on root comments
-   uint32_t             new_reply_votes = 0;                         ///< New votes on replies
+   uint32_t             new_vestingly_votes = 0;                         ///< New votes on replies
    uint32_t             changed_reply_votes = 0;                     ///< Changed votes on replies
    uint32_t             payouts = 0;                                 ///< Number of comment payouts
    share_type           vests_paid_to_authors = 0;                   ///< Ammount of VESS paid to authors
@@ -95,9 +95,9 @@ struct bucket_object : public object< bucket_object_type, bucket_object >
    share_type           liquidity_rewards_paid = 0;                  ///< Ammount of BMT paid to market makers
    uint32_t             transfers_to_rep = 0;                    ///< Transfers of BMT into VESTS
    share_type           bmt_vested = 0;                              ///< Ammount of BMT vested
-   uint32_t             new_rep_withdrawal_requests = 0;         ///< New vesting withdrawal requests
+   uint32_t             new_vesting_withdrawal_requests = 0;         ///< New vesting withdrawal requests
    uint32_t             modified_rep_withdrawal_requests = 0;    ///< Changes to vesting withdrawal requests
-   share_type           rep_withdraw_rate_delta = 0;
+   share_type           vesting_withdraw_rate_delta = 0;
    uint32_t             rep_withdrawals_processed = 0;           ///< Number of vesting withdrawals
    uint32_t             finished_rep_withdrawals = 0;            ///< Processed vesting withdrawals that are now finished
    share_type           vests_withdrawn = 0;                         ///< Ammount of VESTS withdrawn to BMT
@@ -150,7 +150,7 @@ FC_REFLECT( bmchain::blockchain_statistics::bucket_object,
    (replies_deleted)
    (new_root_votes)
    (changed_root_votes)
-   (new_reply_votes)
+   (new_vestingly_votes)
    (changed_reply_votes)
    (payouts)
    (vests_paid_to_authors)
@@ -158,9 +158,9 @@ FC_REFLECT( bmchain::blockchain_statistics::bucket_object,
    (liquidity_rewards_paid)
    (transfers_to_rep)
    (bmt_vested)
-   (new_rep_withdrawal_requests)
+   (new_vesting_withdrawal_requests)
    (modified_rep_withdrawal_requests)
-   (rep_withdraw_rate_delta)
+   (vesting_withdraw_rate_delta)
    (rep_withdrawals_processed)
    (finished_rep_withdrawals)
    (vests_withdrawn)

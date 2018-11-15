@@ -223,14 +223,14 @@ struct account_api_obj
       savings_withdraw_requests( a.savings_withdraw_requests ),
       reward_sbd_balance( a.reward_sbd_balance ),
       reward_bmt_balance( a.reward_bmt_balance ),
-      reward_rep_balance( a.reward_rep_balance ),
-      reward_rep_bmt( a.reward_rep_bmt ),
+      reward_vesting_balance( a.reward_vesting_balance ),
+      reward_vesting_bmt( a.reward_vesting_bmt ),
       curation_rewards( a.curation_rewards ),
       posting_rewards( a.posting_rewards ),
       vesting_shares( a.vesting_shares ),
       delegated_vesting_shares( a.delegated_vesting_shares ),
       received_vesting_shares( a.received_vesting_shares ),
-      rep_withdraw_rate( a.rep_withdraw_rate ),
+      vesting_withdraw_rate( a.vesting_withdraw_rate ),
       next_rep_withdrawal( a.next_rep_withdrawal ),
       withdrawn( a.withdrawn ),
       to_withdraw( a.to_withdraw ),
@@ -323,8 +323,8 @@ struct account_api_obj
 
    asset             reward_sbd_balance;
    asset             reward_bmt_balance;
-   asset             reward_rep_balance;
-   asset             reward_rep_bmt;
+   asset             reward_vesting_balance;
+   asset             reward_vesting_bmt;
 
    share_type        curation_rewards;
    share_type        posting_rewards;
@@ -332,7 +332,7 @@ struct account_api_obj
    asset             vesting_shares;
    asset             delegated_vesting_shares;
    asset             received_vesting_shares;
-   asset             rep_withdraw_rate;
+   asset             vesting_withdraw_rate;
    time_point_sec    next_rep_withdrawal;
    share_type        withdrawn;
    share_type        to_withdraw;
@@ -614,8 +614,8 @@ FC_REFLECT( bmchain::app::account_api_obj,
              (savings_balance)
              (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
              (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
-             (reward_sbd_balance)(reward_bmt_balance)(reward_rep_balance)(reward_rep_bmt)
-             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(rep_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+             (reward_sbd_balance)(reward_bmt_balance)(reward_vesting_balance)(reward_vesting_bmt)
+             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)

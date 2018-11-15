@@ -74,8 +74,8 @@ namespace bmchain { namespace chain {
 
          asset             reward_sbd_balance = asset( 0, SBD_SYMBOL );
          asset             reward_bmt_balance = asset( 0, BMT_SYMBOL );
-         asset             reward_rep_balance = asset( 0, VESTS_SYMBOL );
-         asset             reward_rep_bmt = asset( 0, BMT_SYMBOL );
+         asset             reward_vesting_balance = asset( 0, VESTS_SYMBOL );
+         asset             reward_vesting_bmt = asset( 0, BMT_SYMBOL );
 
          share_type        curation_rewards = 0;
          share_type        posting_rewards = 0;
@@ -84,7 +84,7 @@ namespace bmchain { namespace chain {
          asset             delegated_vesting_shares = asset( 0, VESTS_SYMBOL );
          asset             received_vesting_shares = asset( 0, VESTS_SYMBOL );
 
-         asset             rep_withdraw_rate = asset( 0, VESTS_SYMBOL ); ///< at the time this is updated it can be at most vesting_shares/104
+         asset             vesting_withdraw_rate = asset( 0, VESTS_SYMBOL ); ///< at the time this is updated it can be at most vesting_shares/104
          time_point_sec    next_rep_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
          share_type        withdrawn = 0; /// Track how many shares have been withdrawn
          share_type        to_withdraw = 0; /// Might be able to look this up with operation history.
@@ -460,9 +460,9 @@ FC_REFLECT( bmchain::chain::account_object,
              (savings_balance)
              (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
              (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
-             (reward_bmt_balance)(reward_sbd_balance)(reward_rep_balance)(reward_rep_bmt)
+             (reward_bmt_balance)(reward_sbd_balance)(reward_vesting_balance)(reward_vesting_bmt)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
-             (rep_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+             (vesting_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)

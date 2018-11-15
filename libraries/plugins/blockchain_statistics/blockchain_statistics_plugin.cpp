@@ -129,7 +129,7 @@ struct operation_process
          if( itr->num_changes )
          {
             if( comment.parent_author.size() )
-               b.new_reply_votes++;
+               b.new_vestingly_votes++;
             else
                b.new_root_votes++;
          }
@@ -189,7 +189,7 @@ struct operation_process
          else
             b.vests_transferred += op.withdrawn.amount;
 
-         if( account.rep_withdraw_rate.amount == 0 )
+         if( account.vesting_withdraw_rate.amount == 0 )
             b.finished_rep_withdrawals++;
       });
    }

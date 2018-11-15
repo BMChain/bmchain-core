@@ -1104,37 +1104,37 @@ asset database::create_vesting( const account_object& to_account, asset bmt, boo
        *
        *  128 bit math is requred due to multiplying of 64 bit numbers. This is done in asset and price.
        */
-      asset new_rep = bmt * ( to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price() );
+      asset new_vesting = bmt * ( to_reward_balance ? cprops.get_reward_vesting_share_price() : cprops.get_vesting_share_price() );
 
       modify( to_account, [&]( account_object& to )
       {
          if( to_reward_balance )
          {
-            to.reward_rep_balance += new_rep;
-            to.reward_rep_bmt += bmt;
+            to.reward_vesting_balance += new_vesting;
+            to.reward_vesting_bmt += bmt;
          }
          else
-            to.vesting_shares += new_rep;
+            to.vesting_shares += new_vesting;
       } );
 
       modify( cprops, [&]( dynamic_global_property_object& props )
       {
          if( to_reward_balance )
          {
-            props.pending_rewarded_vesting_shares += new_rep;
+            props.pending_rewarded_vesting_shares += new_vesting;
             props.pending_rewarded_vesting_bmt += bmt;
          }
          else
          {
             props.total_vesting_fund_bmt += bmt;
-            props.total_vesting_shares += new_rep;
+            props.total_vesting_shares += new_vesting;
          }
       } );
 
       if( !to_reward_balance )
-         adjust_proxied_witness_votes( to_account, new_rep.amount );
+         adjust_proxied_witness_votes( to_account, new_vesting.amount );
 
-      return new_rep;
+      return new_vesting;
    }
    FC_CAPTURE_AND_RETHROW( (to_account.name)(bmt) )
 }
@@ -1306,22 +1306,22 @@ void database::clear_null_account_balance()
       adjust_reward_balance( null_account, -null_account.reward_bmt_balance );
    }
 
-   if( null_account.reward_rep_balance.amount > 0 )
+   if( null_account.reward_vesting_balance.amount > 0 )
    {
       const auto& gpo = get_dynamic_global_properties();
 
-      total_bmt += null_account.reward_rep_bmt;
+      total_bmt += null_account.reward_vesting_bmt;
 
       modify( gpo, [&]( dynamic_global_property_object& g )
       {
-         g.pending_rewarded_vesting_shares -= null_account.reward_rep_balance;
-         g.pending_rewarded_vesting_bmt -= null_account.reward_rep_bmt;
+         g.pending_rewarded_vesting_shares -= null_account.reward_vesting_balance;
+         g.pending_rewarded_vesting_bmt -= null_account.reward_vesting_bmt;
       });
 
       modify( null_account, [&]( account_object& a )
       {
-         a.reward_rep_bmt.amount = 0;
-         a.reward_rep_balance.amount = 0;
+         a.reward_vesting_bmt.amount = 0;
+         a.reward_vesting_balance.amount = 0;
       });
    }
 
@@ -1472,13 +1472,13 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             auto _bmt = (author_tokens * comment.percent_bmt_dollars) / (2 * BMCHAIN_100_PERCENT);
             auto bmt = asset( _bmt, BMT_SYMBOL);
-            auto rep_bmt = author_tokens - _bmt;
+            auto vesting_bmt = author_tokens - _bmt;
 
             const auto &author = get_account(comment.author);
-            auto vest_created = create_vesting(author, rep_bmt);
+            auto vest_created = create_vesting(author, vesting_bmt);
             adjust_balance( author, bmt );
 
-            adjust_total_payout( comment, bmt + asset( rep_bmt, BMT_SYMBOL ), asset( curation_tokens, BMT_SYMBOL ), asset( total_beneficiary, BMT_SYMBOL ) );
+            adjust_total_payout( comment, bmt + asset( vesting_bmt, BMT_SYMBOL ), asset( curation_tokens, BMT_SYMBOL ), asset( total_beneficiary, BMT_SYMBOL ) );
 
             push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, BMT_SYMBOL ), bmt, vest_created ) );
             push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, BMT_SYMBOL ) ) );
@@ -2252,7 +2252,7 @@ void database::init_genesis( uint64_t init_supply )
          wso.current_shuffled_witnesses[0] = BMCHAIN_INIT_MINER_NAME;
       } );
 
-       //perform_rep_share_split(1000000);
+       //perform_vesting_share_split(1000000);
        const auto &gpo = get_dynamic_global_properties();
 
        create<reward_fund_object>([&](reward_fund_object &rfo) {
@@ -3165,8 +3165,8 @@ void database::validate_invariants()const
    {
       const auto& account_idx = get_index<account_index>().indices().get<by_name>();
       asset total_supply = asset( 0, BMT_SYMBOL );
-      asset total_rep = asset( 0, VESTS_SYMBOL );
-      asset pending_rep_bmt = asset( 0, BMT_SYMBOL );
+      asset total_vesting = asset( 0, VESTS_SYMBOL );
+      asset pending_vesting_bmt = asset( 0, BMT_SYMBOL );
       share_type total_vsf_votes = share_type( 0 );
 
       auto gpo = get_dynamic_global_properties();
@@ -3181,9 +3181,9 @@ void database::validate_invariants()const
          total_supply += itr->balance;
          total_supply += itr->savings_balance;
          total_supply += itr->reward_bmt_balance;
-         total_rep += itr->vesting_shares;
-         total_rep += itr->reward_rep_balance;
-         pending_rep_bmt += itr->reward_rep_bmt;
+         total_vesting += itr->vesting_shares;
+         total_vesting += itr->reward_vesting_balance;
+         pending_vesting_bmt += itr->reward_vesting_bmt;
          total_vsf_votes += ( itr->proxy == BMCHAIN_PROXY_TO_SELF_ACCOUNT ?
                                  itr->witness_vote_weight() :
                                  ( BMCHAIN_MAX_PROXY_RECURSION_DEPTH > 0 ?
@@ -3264,9 +3264,9 @@ void database::validate_invariants()const
       total_supply += gpo.total_vesting_fund_bmt + gpo.total_reward_fund_bmt + gpo.pending_rewarded_vesting_bmt;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
-      FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_rep, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_rep",total_rep) );
+      FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_vesting, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_vesting",total_vesting) );
       FC_ASSERT( gpo.total_vesting_shares.amount == total_vsf_votes, "", ("total_vesting_shares",gpo.total_vesting_shares)("total_vsf_votes",total_vsf_votes) );
-      FC_ASSERT( gpo.pending_rewarded_vesting_bmt == pending_rep_bmt, "", ("pending_rewarded_vesting_bmt",gpo.pending_rewarded_vesting_bmt)("pending_rep_bmt", pending_rep_bmt));
+      FC_ASSERT( gpo.pending_rewarded_vesting_bmt == pending_vesting_bmt, "", ("pending_rewarded_vesting_bmt",gpo.pending_rewarded_vesting_bmt)("pending_vesting_bmt", pending_vesting_bmt));
 
       FC_ASSERT( gpo.virtual_supply >= gpo.current_supply );
       if ( !get_feed_history().current_median_history.is_null() )
@@ -3277,7 +3277,7 @@ void database::validate_invariants()const
    FC_CAPTURE_LOG_AND_RETHROW( (head_block_num()) );
 }
 
-void database::perform_rep_share_split( uint32_t magnitude )
+void database::perform_vesting_share_split( uint32_t magnitude )
 {
    try
    {
@@ -3295,8 +3295,8 @@ void database::perform_rep_share_split( uint32_t magnitude )
             a.vesting_shares.amount *= magnitude;
             a.withdrawn             *= magnitude;
             a.to_withdraw           *= magnitude;
-            if( a.rep_withdraw_rate.amount == 0 )
-               a.rep_withdraw_rate.amount = 1;
+            if( a.vesting_withdraw_rate.amount == 0 )
+               a.vesting_withdraw_rate.amount = 1;
 
             for( uint32_t i = 0; i < BMCHAIN_MAX_PROXY_RECURSION_DEPTH; ++i )
                a.proxied_vsf_votes[i] *= magnitude;

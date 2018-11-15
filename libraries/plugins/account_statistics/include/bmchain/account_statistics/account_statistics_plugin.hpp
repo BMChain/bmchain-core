@@ -60,7 +60,7 @@ struct account_stats_bucket_object : public object< account_stats_bucket_object_
    uint32_t             replies_deleted = 0;                      ///< Replies deleted
    uint32_t             new_root_votes = 0;                       ///< New votes on root comments
    uint32_t             changed_root_votes = 0;                   ///< Changed votes for root comments
-   uint32_t             new_reply_votes = 0;                      ///< New votes on replies
+   uint32_t             new_vestingly_votes = 0;                      ///< New votes on replies
    uint32_t             changed_reply_votes = 0;                  ///< Changed votes for replies
    uint32_t             author_reward_payouts = 0;                ///< Number of author reward payouts
    share_type           author_rewards_vests = 0;                 ///< REP paid for author rewards
@@ -77,7 +77,7 @@ struct account_stats_bucket_object : public object< account_stats_bucket_object_
    uint32_t             transfers_to_rep = 0;                 ///< Transfers to vesting by this account. Note: Transfer to vesting from A to B counts as a transfer from A to B followed by a vesting deposit by B.
    share_type           bmt_vested = 0;                           ///< BMT vested by the account
    share_type           new_vests = 0;                            ///< New REP by vesting transfers
-   uint32_t             new_rep_withdrawal_requests = 0;      ///< New vesting withdrawal requests
+   uint32_t             new_vesting_withdrawal_requests = 0;      ///< New vesting withdrawal requests
    uint32_t             modified_rep_withdrawal_requests = 0; ///< Changes to vesting withdraw requests
    uint32_t             rep_withdrawals_processed = 0;        ///< Vesting withdrawals processed for this account
    uint32_t             finished_rep_withdrawals = 0;         ///< Processed vesting withdrawals that are now finished
@@ -166,7 +166,7 @@ FC_REFLECT( bmchain::account_statistics::account_stats_bucket_object,
    (replies_deleted)
    (new_root_votes)
    (changed_root_votes)
-   (new_reply_votes)
+   (new_vestingly_votes)
    (changed_reply_votes)
    (author_reward_payouts)
    (author_rewards_vests)
@@ -183,7 +183,7 @@ FC_REFLECT( bmchain::account_statistics::account_stats_bucket_object,
    (transfers_to_rep)
    (bmt_vested)
    (new_vests)
-   (new_rep_withdrawal_requests)
+   (new_vesting_withdrawal_requests)
    (modified_rep_withdrawal_requests)
    (rep_withdrawals_processed)
    (finished_rep_withdrawals)

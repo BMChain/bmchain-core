@@ -1042,11 +1042,11 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
    }
 
    if (o.vesting_shares.amount == 0) {
-      FC_ASSERT(account.rep_withdraw_rate.amount != 0,
+      FC_ASSERT(account.vesting_withdraw_rate.amount != 0,
                 "This operation would not change the vesting withdraw rate.");
 
       _db.modify(account, [&](account_object &a) {
-         a.rep_withdraw_rate = asset(0, VESTS_SYMBOL);
+         a.vesting_withdraw_rate = asset(0, VESTS_SYMBOL);
          a.next_rep_withdrawal = time_point_sec::maximum();
          a.to_withdraw = 0;
          a.withdrawn = 0;
@@ -1056,15 +1056,15 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
       vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
       _db.modify(account, [&](account_object &a) {
-         auto new_rep_withdraw_rate = asset(o.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL);
+         auto new_vesting_withdraw_rate = asset(o.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL);
 
-         if (new_rep_withdraw_rate.amount == 0)
-            new_rep_withdraw_rate.amount = 1;
+         if (new_vesting_withdraw_rate.amount == 0)
+            new_vesting_withdraw_rate.amount = 1;
 
-         FC_ASSERT(account.rep_withdraw_rate != new_rep_withdraw_rate,
+         FC_ASSERT(account.vesting_withdraw_rate != new_vesting_withdraw_rate,
                    "This operation would not change the vesting withdraw rate.");
 
-         a.rep_withdraw_rate = new_rep_withdraw_rate;
+         a.vesting_withdraw_rate = new_vesting_withdraw_rate;
          a.next_rep_withdrawal = _db.head_block_time() + fc::seconds(BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS);
          a.to_withdraw = o.vesting_shares.amount;
          a.withdrawn = 0;
@@ -2068,15 +2068,15 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
 
    FC_ASSERT( op.reward_bmt <= acnt.reward_bmt_balance, "Cannot claim that much BMT. Claim: ${c} Actual: ${a}",
       ("c", op.reward_bmt)("a", acnt.reward_bmt_balance) );
-   FC_ASSERT( op.reward_vests <= acnt.reward_rep_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
-      ("c", op.reward_vests)("a", acnt.reward_rep_balance) );
+   FC_ASSERT( op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
+      ("c", op.reward_vests)("a", acnt.reward_vesting_balance) );
 
-   asset reward_rep_bmt_to_move = asset( 0, BMT_SYMBOL );
-   if( op.reward_vests == acnt.reward_rep_balance )
-      reward_rep_bmt_to_move = acnt.reward_rep_bmt;
+   asset reward_vesting_bmt_to_move = asset( 0, BMT_SYMBOL );
+   if( op.reward_vests == acnt.reward_vesting_balance )
+      reward_vesting_bmt_to_move = acnt.reward_vesting_bmt;
    else
-      reward_rep_bmt_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_rep_bmt.amount.value ) )
-         / uint128_t( acnt.reward_rep_balance.amount.value ) ).to_uint64(), BMT_SYMBOL );
+      reward_vesting_bmt_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_vesting_bmt.amount.value ) )
+         / uint128_t( acnt.reward_vesting_balance.amount.value ) ).to_uint64(), BMT_SYMBOL );
 
    _db.adjust_reward_balance( acnt, -op.reward_bmt );
    _db.adjust_balance( acnt, op.reward_bmt );
@@ -2084,17 +2084,17 @@ void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operat
    _db.modify( acnt, [&]( account_object& a )
    {
       a.vesting_shares += op.reward_vests;
-      a.reward_rep_balance -= op.reward_vests;
-      a.reward_rep_bmt -= reward_rep_bmt_to_move;
+      a.reward_vesting_balance -= op.reward_vests;
+      a.reward_vesting_bmt -= reward_vesting_bmt_to_move;
    });
 
    _db.modify( _db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
    {
       gpo.total_vesting_shares += op.reward_vests;
-      gpo.total_vesting_fund_bmt += reward_rep_bmt_to_move;
+      gpo.total_vesting_fund_bmt += reward_vesting_bmt_to_move;
 
       gpo.pending_rewarded_vesting_shares -= op.reward_vests;
-      gpo.pending_rewarded_vesting_bmt -= reward_rep_bmt_to_move;
+      gpo.pending_rewarded_vesting_bmt -= reward_vesting_bmt_to_move;
    });
 
    _db.adjust_proxied_witness_votes( acnt, op.reward_vests.amount );
