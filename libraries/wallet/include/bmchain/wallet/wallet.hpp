@@ -684,6 +684,18 @@ class wallet_api
                            asset bmt_amount, bool broadcast);
 
       /**
+      * Transfer STEEM into a vesting fund represented by vesting shares (VESTS). VESTS are required to vesting
+      * for a minimum of one coin year and can be withdrawn once a week over a two year withdraw period.
+      * VESTS are protected against dilution up until 90% of STEEM is vesting.
+      *
+      * @param from The account the STEEM is coming from
+      * @param to The account getting the VESTS
+      * @param amount The amount of STEEM to vest i.e. "100.00 STEEM"
+      * @param broadcast true if you wish to broadcast the transaction
+      */
+      annotated_signed_transaction transfer_to_vesting(string from, string to, asset amount, bool broadcast = false);
+
+      /**
        *  Transfers into savings happen immediately, transfers from savings take 72 hours
        */
       annotated_signed_transaction transfer_to_savings( string from, string to, asset amount, string memo, bool broadcast = false );
@@ -699,6 +711,30 @@ class wallet_api
        *  @param broadcast true if you wish to broadcast the transaction
        */
       annotated_signed_transaction cancel_transfer_from_savings( string from, uint32_t request_id, bool broadcast = false );
+
+      /**
+      * Set up a vesting withdraw request. The request is fulfilled once a week over the next two year (104 weeks).
+      *
+      * @param from The account the VESTS are withdrawn from
+      * @param vesting_shares The amount of VESTS to withdraw over the next two years. Each week (amount/104) shares are
+      *    withdrawn and deposited back as STEEM. i.e. "10.000000 VESTS"
+      * @param broadcast true if you wish to broadcast the transaction
+      */
+      annotated_signed_transaction withdraw_vesting( string from, asset vesting_shares, bool broadcast = false );
+
+      /**
+      * Set up a vesting withdraw route. When vesting shares are withdrawn, they will be routed to these accounts
+      * based on the specified weights.
+      *
+      * @param from The account the VESTS are withdrawn from.
+      * @param to   The account receiving either VESTS or STEEM.
+      * @param percent The percent of the withdraw to go to the 'to' account. This is denoted in hundreths of a percent.
+      *    i.e. 100 is 1% and 10000 is 100%. This value must be between 1 and 100000
+      * @param auto_vest Set to true if the from account should receive the VESTS as VESTS, or false if it should receive
+      *    them as STEEM.
+      * @param broadcast true if you wish to broadcast the transaction.
+      */
+      annotated_signed_transaction set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
 
       /**
        * A witness can public a price feed for the BMT:SBD market. The median price feed is used
@@ -1027,6 +1063,9 @@ FC_API( bmchain::wallet::wallet_api,
         (escrow_approve)
         (escrow_dispute)
         (escrow_release)
+        (transfer_to_vesting)
+        (withdraw_vesting)
+        (set_withdraw_vesting_route)
         (publish_feed)
         (post_comment)
         (vote)

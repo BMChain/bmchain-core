@@ -1928,6 +1928,48 @@ annotated_signed_transaction wallet_api::cancel_transfer_from_savings( string fr
    return my->sign_transaction( tx, broadcast );
 }
 
+annotated_signed_transaction wallet_api::transfer_to_vesting(string from, string to, asset amount, bool broadcast ) {
+   FC_ASSERT(!is_locked());
+   transfer_to_vesting_operation op;
+   op.from = from;
+   op.to = (to == from ? "" : to);
+   op.amount = amount;
+
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
+
+annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset vesting_shares, bool broadcast ) {
+   FC_ASSERT(!is_locked());
+   withdraw_vesting_operation op;
+   op.account = from;
+   op.vesting_shares = vesting_shares;
+
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
+
+annotated_signed_transaction wallet_api::set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast ) {
+    FC_ASSERT(!is_locked());
+    set_withdraw_vesting_route_operation op;
+    op.from_account = from;
+    op.to_account = to;
+    op.percent = percent;
+    op.auto_vest = auto_vest;
+
+    signed_transaction tx;
+    tx.operations.push_back(op);
+    tx.validate();
+
+    return my->sign_transaction(tx, broadcast);
+}
+
 annotated_signed_transaction wallet_api::publish_feed(string witness, price exchange_rate, bool broadcast )
 {
    FC_ASSERT( !is_locked() );
@@ -2336,7 +2378,7 @@ vector<discussion> wallet_api::get_discussions_by_feed( string author, uint32_t 
    auto discussions = my->_remote_db->get_discussions_by_feed(q);
    return discussions;
 }
-      
+
 statistic wallet_api::get_statistic(const string & begin, const string & end)const{
     auto result = my->_remote_db->get_statistic(begin, end);
     return result;
