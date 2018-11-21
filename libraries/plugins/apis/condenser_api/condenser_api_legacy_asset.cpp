@@ -1,4 +1,5 @@
 #include <bmchain/plugins/condenser_api/condenser_api_legacy_asset.hpp>
+#include <bmchain/protocol/asset_symbol.hpp>
 
 namespace bmchain { namespace plugins { namespace condenser_api {
 
@@ -93,7 +94,7 @@ std::string asset_num_to_string( uint32_t asset_num )
          return "TBD";
 #else
       case STEEM_ASSET_NUM_STEEM:
-         return "STEEM";
+         return "BMT";
       case STEEM_ASSET_NUM_SBD:
          return "SBD";
 #endif

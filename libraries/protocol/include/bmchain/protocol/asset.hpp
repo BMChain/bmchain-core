@@ -1,4 +1,5 @@
 #pragma once
+
 #include <bmchain/protocol/types.hpp>
 #include <bmchain/protocol/config.hpp>
 
