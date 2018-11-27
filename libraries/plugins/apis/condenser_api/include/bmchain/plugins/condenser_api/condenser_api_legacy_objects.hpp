@@ -24,6 +24,16 @@ struct legacy_signed_transaction
       ref_block_prefix( t.ref_block_prefix ),
       expiration( t.expiration )
    {
+      for( const auto& o : t.operations )
+      {
+         legacy_operation op;
+         o.visit( legacy_operation_conversion_visitor( op ) );
+         operations.push_back( op );
+      }
+
+      // Signed transaction extensions field exists, but must be empty
+      // Don't worry about copying them.
+
       signatures.insert( signatures.end(), t.signatures.begin(), t.signatures.end() );
    }
 
@@ -35,6 +45,13 @@ struct legacy_signed_transaction
       block_num( t.block_num ),
       transaction_num( t.transaction_num )
    {
+      for( const auto& o : t.operations )
+      {
+         legacy_operation op;
+         o.visit( legacy_operation_conversion_visitor( op ) );
+         operations.push_back( op );
+      }
+
       // Signed transaction extensions field exists, but must be empty
       // Don't worry about copying them.
 
@@ -48,6 +65,11 @@ struct legacy_signed_transaction
       tx.ref_block_prefix = ref_block_prefix;
       tx.expiration = expiration;
 
+      convert_from_legacy_operation_visitor v;
+      for( const auto& o : operations )
+      {
+         tx.operations.push_back( o.visit( v ) );
+      }
 
       tx.signatures.insert( tx.signatures.end(), signatures.begin(), signatures.end() );
 
@@ -77,6 +99,13 @@ struct legacy_signed_block
       block_id( b.block_id ),
       signing_key( b.signing_key )
    {
+      for( const auto& e : b.extensions )
+      {
+         legacy_block_header_extensions ext;
+         e.visit( convert_to_legacy_static_variant< legacy_block_header_extensions >( ext ) );
+         extensions.push_back( ext );
+      }
+
       for( const auto& t : b.transactions )
       {
          transactions.push_back( legacy_signed_transaction( t ) );
@@ -91,8 +120,14 @@ struct legacy_signed_block
       b.previous = previous;
       b.timestamp = timestamp;
       b.witness = witness;
+      b.transaction_merkle_root = transaction_merkle_root;
       b.extensions.insert( extensions.begin(), extensions.end() );
       b.witness_signature = witness_signature;
+
+      for( const auto& t : transactions )
+      {
+         b.transactions.push_back( signed_transaction( t ) );
+      }
 
       return b;
    }
@@ -117,3 +152,9 @@ void to_variant( const bmchain::plugins::condenser_api::legacy_block_header_exte
 void from_variant( const fc::variant&, bmchain::plugins::condenser_api::legacy_block_header_extensions& );
 
 }
+
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_signed_transaction,
+            (ref_block_num)(ref_block_prefix)(expiration)(operations)(extensions)(signatures)(transaction_id)(block_num)(transaction_num) )
+
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_signed_block,
+            (previous)(timestamp)(witness)(transaction_merkle_root)(extensions)(witness_signature)(transactions)(block_id)(signing_key)(transaction_ids) )
