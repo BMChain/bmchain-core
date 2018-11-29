@@ -39,10 +39,21 @@ namespace bmchain { namespace plugins { namespace condenser_api {
 
    using namespace steem::protocol;
 
+   typedef account_update_operation               legacy_account_update_operation;
+   typedef comment_operation                      legacy_comment_operation;
+   typedef create_claimed_account_operation       legacy_create_claimed_account_operation;
+   typedef delete_comment_operation               legacy_delete_comment_operation;
+   typedef vote_operation                         legacy_vote_operation;
    typedef escrow_approve_operation               legacy_escrow_approve_operation;
    typedef escrow_dispute_operation               legacy_escrow_dispute_operation;
    typedef set_withdraw_vesting_route_operation   legacy_set_withdraw_vesting_route_operation;
    typedef witness_set_properties_operation       legacy_witness_set_properties_operation;
+   typedef account_witness_vote_operation         legacy_account_witness_vote_operation;
+   typedef account_witness_proxy_operation        legacy_account_witness_proxy_operation;
+   typedef custom_operation                       legacy_custom_operation;
+   typedef custom_json_operation                  legacy_custom_json_operation;
+   typedef custom_binary_operation                legacy_custom_binary_operation;
+   typedef limit_order_cancel_operation           legacy_limit_order_cancel_operation;
    typedef pow_operation                          legacy_pow_operation;
    typedef report_over_production_operation       legacy_report_over_production_operation;
    typedef request_account_recovery_operation     legacy_request_account_recovery_operation;
@@ -181,8 +192,46 @@ namespace bmchain { namespace plugins { namespace condenser_api {
       extensions_type   extensions;
    };
 
+   struct legacy_comment_options_operation
+   {
+      legacy_comment_options_operation() {}
+      legacy_comment_options_operation( const comment_options_operation& op ) :
+         author( op.author ),
+         permlink( op.permlink ),
+         max_accepted_payout( legacy_asset::from_asset( op.max_accepted_payout ) ),
+         percent_steem_dollars( op.percent_steem_dollars ),
+         allow_votes( op.allow_votes ),
+         allow_curation_rewards( op.allow_curation_rewards )
+      {
+         for( const auto& e : op.extensions )
+         {
+            legacy_comment_options_extensions ext;
+            e.visit( convert_to_legacy_static_variant< legacy_comment_options_extensions >( ext ) );
+            extensions.push_back( e );
+         }
+      }
+
+      operator comment_options_operation()const
+      {
+         comment_options_operation op;
+         op.author = author;
+         op.permlink = permlink;
+         op.max_accepted_payout = max_accepted_payout;
+         op.percent_steem_dollars = percent_steem_dollars;
+         op.allow_curation_rewards = allow_curation_rewards;
+         op.extensions.insert( extensions.begin(), extensions.end() );
+         return op;
+      }
+
+      account_name_type author;
+      string            permlink;
+
+      legacy_asset      max_accepted_payout;
+      uint16_t          percent_steem_dollars;
+      bool              allow_votes;
+      bool              allow_curation_rewards;
+      legacy_comment_options_extensions_type extensions;
+   };
 
 
 } } } // steem::plugins::condenser_api
-
-
