@@ -234,4 +234,49 @@ namespace bmchain { namespace plugins { namespace condenser_api {
    };
 
 
+   struct legacy_transfer_operation
+   {
+      legacy_transfer_operation() {}
+      legacy_transfer_operation( const transfer_operation& op ) :
+         from( op.from ),
+         to( op.to ),
+         amount( legacy_asset::from_asset( op.amount ) ),
+         memo( op.memo )
+      {}
+
+      operator transfer_operation()const
+      {
+         transfer_operation op;
+         op.from = from;
+         op.to = to;
+         op.amount = amount;
+         op.memo = memo;
+         return op;
+      }
+
+      account_name_type from;
+      account_name_type to;
+      legacy_asset      amount;
+      string            memo;
+   };
+
+
+
 } } } // steem::plugins::condenser_api
+
+namespace fc {
+
+void to_variant( const steem::plugins::condenser_api::legacy_operation&, fc::variant& );
+void from_variant( const fc::variant&, steem::plugins::condenser_api::legacy_operation& );
+
+void to_variant( const steem::plugins::condenser_api::legacy_comment_options_extensions&, fc::variant& );
+void from_variant( const fc::variant&, steem::plugins::condenser_api::legacy_comment_options_extensions& );
+
+void to_variant( const steem::plugins::condenser_api::legacy_pow2_work&, fc::variant& );
+void from_variant( const fc::variant&, steem::plugins::condenser_api::legacy_pow2_work& );
+
+
+
+}
+
+
