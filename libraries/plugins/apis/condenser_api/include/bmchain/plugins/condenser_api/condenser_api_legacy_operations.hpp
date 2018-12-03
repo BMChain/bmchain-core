@@ -260,6 +260,92 @@ namespace bmchain { namespace plugins { namespace condenser_api {
       string            memo;
    };
 
+   struct legacy_escrow_transfer_operation
+   {
+      legacy_escrow_transfer_operation() {}
+      legacy_escrow_transfer_operation( const escrow_transfer_operation& op ) :
+         from( op.from ),
+         to( op.to ),
+         agent( op.agent ),
+         escrow_id( op.escrow_id ),
+         sbd_amount( legacy_asset::from_asset( op.sbd_amount ) ),
+         steem_amount( legacy_asset::from_asset( op.steem_amount ) ),
+         fee( legacy_asset::from_asset( op.fee ) ),
+         ratification_deadline( op.ratification_deadline ),
+         escrow_expiration( op.escrow_expiration ),
+         json_meta( op.json_meta )
+      {}
+
+      operator escrow_transfer_operation()const
+      {
+         escrow_transfer_operation op;
+         op.from = from;
+         op.to = to;
+         op.agent = agent;
+         op.escrow_id = escrow_id;
+         op.sbd_amount = sbd_amount;
+         op.steem_amount = steem_amount;
+         op.fee = fee;
+         op.ratification_deadline = ratification_deadline;
+         op.escrow_expiration = escrow_expiration;
+         op.json_meta = json_meta;
+         return op;
+      }
+
+      account_name_type from;
+      account_name_type to;
+      account_name_type agent;
+      uint32_t          escrow_id;
+
+      legacy_asset      sbd_amount;
+      legacy_asset      steem_amount;
+      legacy_asset      fee;
+
+      time_point_sec    ratification_deadline;
+      time_point_sec    escrow_expiration;
+
+      string            json_meta;
+   };
+
+   struct legacy_escrow_release_operation
+   {
+      legacy_escrow_release_operation() {}
+      legacy_escrow_release_operation( const escrow_release_operation& op ) :
+         from( op.from ),
+         to( op.to ),
+         agent( op.agent ),
+         who( op.who ),
+         receiver( op.receiver ),
+         escrow_id( op.escrow_id ),
+         sbd_amount( legacy_asset::from_asset( op.sbd_amount ) ),
+         steem_amount( legacy_asset::from_asset( op.steem_amount ) )
+      {}
+
+      operator escrow_release_operation()const
+      {
+         escrow_release_operation op;
+         op.from = from;
+         op.to = to;
+         op.agent = agent;
+         op.who = who;
+         op.receiver = receiver;
+         op.escrow_id = escrow_id;
+         op.sbd_amount = sbd_amount;
+         op.steem_amount = steem_amount;
+         return op;
+      }
+
+      account_name_type from;
+      account_name_type to;
+      account_name_type agent;
+      account_name_type who;
+      account_name_type receiver;
+
+      uint32_t          escrow_id;
+      legacy_asset      sbd_amount;
+      legacy_asset      steem_amount;
+   };
+
 
 
 } } } // steem::plugins::condenser_api
@@ -275,8 +361,22 @@ void from_variant( const fc::variant&, steem::plugins::condenser_api::legacy_com
 void to_variant( const steem::plugins::condenser_api::legacy_pow2_work&, fc::variant& );
 void from_variant( const fc::variant&, steem::plugins::condenser_api::legacy_pow2_work& );
 
+struct from_old_static_variant
+{
+   variant& var;
+   from_old_static_variant( variant& dv ):var(dv){}
+
+   typedef void result_type;
+   template<typename T> void operator()( const T& v )const
+   {
+      to_variant( v, var );
+   }
+};
 
 
 }
 
+FC_REFLECT( bmchain::plugins::condenser_api::api_chain_properties,
+            (account_creation_fee)(maximum_block_size)(sbd_interest_rate)(account_subsidy_budget)(account_subsidy_decay)
+          )
 
