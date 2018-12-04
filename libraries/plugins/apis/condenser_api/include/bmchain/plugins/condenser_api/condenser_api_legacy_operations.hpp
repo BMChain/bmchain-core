@@ -346,6 +346,56 @@ namespace bmchain { namespace plugins { namespace condenser_api {
       legacy_asset      steem_amount;
    };
 
+   struct legacy_pow2_operation
+   {
+      legacy_pow2_operation() {}
+      legacy_pow2_operation( const pow2_operation& op ) :
+         new_owner_key( op.new_owner_key )
+      {
+         op.work.visit( convert_to_legacy_static_variant< legacy_pow2_work >( work ) );
+         props.account_creation_fee = legacy_asset::from_asset( op.props.account_creation_fee.to_asset< false >() );
+         props.maximum_block_size = op.props.maximum_block_size;
+         props.sbd_interest_rate = op.props.sbd_interest_rate;
+      }
+
+      operator pow2_operation()const
+      {
+         pow2_operation op;
+         work.visit( convert_to_legacy_static_variant< pow2_work >( op.work ) );
+         op.new_owner_key = new_owner_key;
+         op.props.account_creation_fee = legacy_steem_asset::from_asset( asset( props.account_creation_fee ) );
+         op.props.maximum_block_size = props.maximum_block_size;
+         op.props.sbd_interest_rate = props.sbd_interest_rate;
+         return op;
+      }
+
+      legacy_pow2_work              work;
+      optional< public_key_type >   new_owner_key;
+      api_chain_properties          props;
+   };
+
+   struct legacy_transfer_to_vesting_operation
+   {
+      legacy_transfer_to_vesting_operation() {}
+      legacy_transfer_to_vesting_operation( const transfer_to_vesting_operation& op ) :
+         from( op.from ),
+         to( op.to ),
+         amount( legacy_asset::from_asset( op.amount ) )
+      {}
+
+      operator transfer_to_vesting_operation()const
+      {
+         transfer_to_vesting_operation op;
+         op.from = from;
+         op.to = to;
+         op.amount = amount;
+         return op;
+      }
+
+      account_name_type from;
+      account_name_type to;
+      legacy_asset      amount;
+   };
 
 
 } } } // steem::plugins::condenser_api
@@ -373,10 +423,25 @@ struct from_old_static_variant
    }
 };
 
+struct to_old_static_variant
+{
+   const variant& var;
+   to_old_static_variant( const variant& dv ):var(dv){}
 
+   typedef void result_type;
+   template<typename T> void operator()( T& v )const
+   {
+      from_variant( var, v );
+   }
+};
+
+template< typename T >
+void old_sv_to_variant( const T& sv, fc::variant& v )
+{
+   variant tmp;
+   variants vars(2);
+   vars[0] = sv.which();
+   sv.visit( from_old_static_variant(vars[1]) );
+   v = std::move(vars);
 }
-
-FC_REFLECT( bmchain::plugins::condenser_api::api_chain_properties,
-            (account_creation_fee)(maximum_block_size)(sbd_interest_rate)(account_subsidy_budget)(account_subsidy_decay)
-          )
 
