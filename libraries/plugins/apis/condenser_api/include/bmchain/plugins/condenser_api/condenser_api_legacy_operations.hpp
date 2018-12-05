@@ -397,51 +397,118 @@ namespace bmchain { namespace plugins { namespace condenser_api {
       legacy_asset      amount;
    };
 
+   struct legacy_withdraw_vesting_operation
+   {
+       legacy_withdraw_vesting_operation() {}
+
+       legacy_withdraw_vesting_operation(const withdraw_vesting_operation &op) :
+               account(op.account),
+               vesting_shares(legacy_asset::from_asset(op.vesting_shares)) {}
+
+       operator withdraw_vesting_operation() const {
+           withdraw_vesting_operation
+           op;
+           op.account = account;
+           op.vesting_shares = vesting_shares;
+           return op;
+       }
+
+       account_name_type account;
+       legacy_asset      vesting_shares;
+   };
+
+   struct legacy_witness_update_operation
+   {
+       legacy_witness_update_operation() {}
+
+       legacy_witness_update_operation(const witness_update_operation &op) :
+               owner(op.owner),
+               url(op.url),
+               block_signing_key(op.block_signing_key),
+               fee(legacy_asset::from_asset(op.fee)) {
+           props.account_creation_fee = legacy_asset::from_asset(op.props.account_creation_fee.to_asset<false>());
+           props.maximum_block_size = op.props.maximum_block_size;
+           props.sbd_interest_rate = op.props.sbd_interest_rate;
+       }
+
+       operator witness_update_operation() const {
+           witness_update_operation
+           op;
+           op.owner = owner;
+           op.url = url;
+           op.block_signing_key = block_signing_key;
+           op.props.account_creation_fee = legacy_steem_asset::from_asset(asset(props.account_creation_fee));
+           op.props.maximum_block_size = props.maximum_block_size;
+           op.props.sbd_interest_rate = props.sbd_interest_rate;
+           op.fee = fee;
+           return op;
+       }
+
+       account_name_type owner;
+       string url;
+       public_key_type block_signing_key;
+       api_chain_properties props;
+       legacy_asset fee;
+   };
 
 } } } // steem::plugins::condenser_api
 
 namespace fc {
 
-void to_variant( const steem::plugins::condenser_api::legacy_operation&, fc::variant& );
-void from_variant( const fc::variant&, steem::plugins::condenser_api::legacy_operation& );
+    void to_variant(const steem::plugins::condenser_api::legacy_operation &, fc::variant &);
 
-void to_variant( const steem::plugins::condenser_api::legacy_comment_options_extensions&, fc::variant& );
-void from_variant( const fc::variant&, steem::plugins::condenser_api::legacy_comment_options_extensions& );
+    void from_variant(const fc::variant &, steem::plugins::condenser_api::legacy_operation &);
 
-void to_variant( const steem::plugins::condenser_api::legacy_pow2_work&, fc::variant& );
-void from_variant( const fc::variant&, steem::plugins::condenser_api::legacy_pow2_work& );
+    void to_variant(const steem::plugins::condenser_api::legacy_comment_options_extensions &, fc::variant &);
 
-struct from_old_static_variant
-{
-   variant& var;
-   from_old_static_variant( variant& dv ):var(dv){}
+    void from_variant(const fc::variant &, steem::plugins::condenser_api::legacy_comment_options_extensions &);
 
-   typedef void result_type;
-   template<typename T> void operator()( const T& v )const
-   {
-      to_variant( v, var );
-   }
-};
+    void to_variant(const steem::plugins::condenser_api::legacy_pow2_work &, fc::variant &);
 
-struct to_old_static_variant
-{
-   const variant& var;
-   to_old_static_variant( const variant& dv ):var(dv){}
+    void from_variant(const fc::variant &, steem::plugins::condenser_api::legacy_pow2_work &);
 
-   typedef void result_type;
-   template<typename T> void operator()( T& v )const
-   {
-      from_variant( var, v );
-   }
-};
+    struct from_old_static_variant {
+        variant &var;
 
-template< typename T >
-void old_sv_to_variant( const T& sv, fc::variant& v )
-{
-   variant tmp;
-   variants vars(2);
-   vars[0] = sv.which();
-   sv.visit( from_old_static_variant(vars[1]) );
-   v = std::move(vars);
+        from_old_static_variant(variant &dv) : var(dv) {}
+
+        typedef void result_type;
+
+        template<typename T>
+        void operator()(const T &v) const {
+           to_variant(v, var);
+        }
+    };
+
+    struct to_old_static_variant {
+        const variant &var;
+
+        to_old_static_variant(const variant &dv) : var(dv) {}
+
+        typedef void result_type;
+
+        template<typename T>
+        void operator()(T &v) const {
+           from_variant(var, v);
+        }
+    };
+
+    template<typename T>
+    void old_sv_to_variant(const T &sv, fc::variant &v) {
+       variant tmp;
+       variants vars(2);
+       vars[0] = sv.which();
+       sv.visit(from_old_static_variant(vars[1]));
+       v = std::move(vars);
+    }
+
+    template<typename T>
+    void old_sv_from_variant(const fc::variant &v, T &sv) {
+       auto ar = v.get_array();
+       if (ar.size() < 2) return;
+       sv.set_which(static_cast< int64_t >( ar[0].as_uint64()));
+       sv.visit(to_old_static_variant(ar[1]));
+    }
+
 }
 
