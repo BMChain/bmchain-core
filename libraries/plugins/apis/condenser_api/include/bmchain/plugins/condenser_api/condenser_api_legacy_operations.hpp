@@ -451,6 +451,49 @@ namespace bmchain { namespace plugins { namespace condenser_api {
        legacy_asset fee;
    };
 
+   struct legacy_feed_publish_operation
+   {
+       legacy_feed_publish_operation() {}
+
+       legacy_feed_publish_operation(const feed_publish_operation &op) :
+               publisher(op.publisher),
+               exchange_rate(legacy_price(op.exchange_rate)) {}
+
+       operator feed_publish_operation() const {
+           feed_publish_operation
+           op;
+           op.publisher = publisher;
+           op.exchange_rate = exchange_rate;
+           return op;
+       }
+
+       account_name_type publisher;
+       legacy_price      exchange_rate;
+   };
+
+   struct legacy_convert_operation
+   {
+       legacy_convert_operation() {}
+
+       legacy_convert_operation(const convert_operation &op) :
+               owner(op.owner),
+               requestid(op.requestid),
+               amount(legacy_asset::from_asset(op.amount)) {}
+
+       operator convert_operation() const {
+           convert_operation
+           op;
+           op.owner = owner;
+           op.requestid = requestid;
+           op.amount = amount;
+           return op;
+       }
+
+       account_name_type owner;
+       uint32_t requestid = 0;
+       legacy_asset      amount;
+   };
+
 } } } // steem::plugins::condenser_api
 
 namespace fc {
@@ -512,3 +555,9 @@ namespace fc {
 
 }
 
+FC_REFLECT( steem::plugins::condenser_api::api_chain_properties,
+(account_creation_fee)(maximum_block_size)(sbd_interest_rate)(account_subsidy_budget)(account_subsidy_decay)
+)
+
+FC_REFLECT( steem::plugins::condenser_api::legacy_price, (base)(quote) )
+FC_REFLECT( steem::plugins::condenser_api::legacy_transfer_to_savings_operation, (from)(to)(amount)(memo) )
