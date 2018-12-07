@@ -494,6 +494,70 @@ namespace bmchain { namespace plugins { namespace condenser_api {
        legacy_asset      amount;
    };
 
+   struct legacy_limit_order_create_operation
+   {
+       legacy_limit_order_create_operation() {}
+
+       legacy_limit_order_create_operation(const limit_order_create_operation &op) :
+               owner(op.owner),
+               orderid(op.orderid),
+               amount_to_sell(legacy_asset::from_asset(op.amount_to_sell)),
+               min_to_receive(legacy_asset::from_asset(op.min_to_receive)),
+               fill_or_kill(op.fill_or_kill),
+               expiration(op.expiration) {}
+
+       operator limit_order_create_operation() const {
+           limit_order_create_operation
+           op;
+           op.owner = owner;
+           op.orderid = orderid;
+           op.amount_to_sell = amount_to_sell;
+           op.min_to_receive = min_to_receive;
+           op.fill_or_kill = fill_or_kill;
+           op.expiration = expiration;
+           return op;
+       }
+
+       account_name_type owner;
+       uint32_t orderid;
+       legacy_asset amount_to_sell;
+       legacy_asset min_to_receive;
+       bool fill_or_kill;
+       time_point_sec    expiration;
+   };
+
+   struct legacy_limit_order_create2_operation
+   {
+       legacy_limit_order_create2_operation() {}
+
+       legacy_limit_order_create2_operation(const limit_order_create2_operation &op) :
+               owner(op.owner),
+               orderid(op.orderid),
+               amount_to_sell(legacy_asset::from_asset(op.amount_to_sell)),
+               fill_or_kill(op.fill_or_kill),
+               exchange_rate(op.exchange_rate),
+               expiration(op.expiration) {}
+
+       operator limit_order_create2_operation() const {
+           limit_order_create2_operation
+           op;
+           op.owner = owner;
+           op.orderid = orderid;
+           op.amount_to_sell = amount_to_sell;
+           op.fill_or_kill = fill_or_kill;
+           op.exchange_rate = exchange_rate;
+           op.expiration = expiration;
+           return op;
+       }
+
+       account_name_type owner;
+       uint32_t orderid;
+       legacy_asset amount_to_sell;
+       bool fill_or_kill;
+       legacy_price exchange_rate;
+       time_point_sec    expiration;
+   };
+
 } } } // steem::plugins::condenser_api
 
 namespace fc {
@@ -555,9 +619,12 @@ namespace fc {
 
 }
 
-FC_REFLECT( steem::plugins::condenser_api::api_chain_properties,
+FC_REFLECT( bmchain::plugins::condenser_api::api_chain_properties,
 (account_creation_fee)(maximum_block_size)(sbd_interest_rate)(account_subsidy_budget)(account_subsidy_decay)
 )
 
-FC_REFLECT( steem::plugins::condenser_api::legacy_price, (base)(quote) )
-FC_REFLECT( steem::plugins::condenser_api::legacy_transfer_to_savings_operation, (from)(to)(amount)(memo) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_price, (base)(quote) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_to_savings_operation, (from)(to)(amount)(memo) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_from_savings_operation, (from)(request_id)(to)(amount)(memo) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_convert_operation, (owner)(requestid)(amount) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_feed_publish_operation, (publisher)(exchange_rate) )
