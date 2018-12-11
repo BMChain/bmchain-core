@@ -613,6 +613,55 @@ namespace bmchain { namespace plugins { namespace condenser_api {
        string            memo;
    };
 
+   struct legacy_claim_reward_balance_operation
+   {
+       legacy_claim_reward_balance_operation() {}
+
+       legacy_claim_reward_balance_operation(const claim_reward_balance_operation &op) :
+               account(op.account),
+               reward_steem(legacy_asset::from_asset(op.reward_steem)),
+               reward_sbd(legacy_asset::from_asset(op.reward_sbd)),
+               reward_vests(legacy_asset::from_asset(op.reward_vests)) {}
+
+       operator claim_reward_balance_operation() const {
+           claim_reward_balance_operation
+           op;
+           op.account = account;
+           op.reward_steem = reward_steem;
+           op.reward_sbd = reward_sbd;
+           op.reward_vests = reward_vests;
+           return op;
+       }
+
+       account_name_type account;
+       legacy_asset reward_steem;
+       legacy_asset reward_sbd;
+       legacy_asset reward_vests;
+   };
+
+   struct legacy_delegate_vesting_shares_operation
+   {
+       legacy_delegate_vesting_shares_operation() {}
+
+       legacy_delegate_vesting_shares_operation(const delegate_vesting_shares_operation &op) :
+               delegator(op.delegator),
+               delegatee(op.delegatee),
+               vesting_shares(legacy_asset::from_asset(op.vesting_shares)) {}
+
+       operator delegate_vesting_shares_operation() const {
+           delegate_vesting_shares_operation
+           op;
+           op.delegator = delegator;
+           op.delegatee = delegatee;
+           op.vesting_shares = vesting_shares;
+           return op;
+       }
+
+       account_name_type delegator;
+       account_name_type delegatee;
+       legacy_asset      vesting_shares;
+   };
+
 } } } // steem::plugins::condenser_api
 
 namespace fc {
@@ -683,3 +732,6 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_to_savings_operatio
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_from_savings_operation, (from)(request_id)(to)(amount)(memo) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_convert_operation, (owner)(requestid)(amount) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_feed_publish_operation, (publisher)(exchange_rate) )
+
+FC_REFLECT( steem::plugins::condenser_api::legacy_account_create_operation,
+    (fee)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata))
