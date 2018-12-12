@@ -662,6 +662,35 @@ namespace bmchain { namespace plugins { namespace condenser_api {
        legacy_asset      vesting_shares;
    };
 
+   struct legacy_author_reward_operation
+   {
+       legacy_author_reward_operation() {}
+
+       legacy_author_reward_operation(const author_reward_operation &op) :
+               author(op.author),
+               permlink(op.permlink),
+               sbd_payout(legacy_asset::from_asset(op.sbd_payout)),
+               steem_payout(legacy_asset::from_asset(op.steem_payout)),
+               vesting_payout(legacy_asset::from_asset(op.vesting_payout)) {}
+
+       operator author_reward_operation() const {
+           author_reward_operation
+           op;
+           op.author = author;
+           op.permlink = permlink;
+           op.sbd_payout = sbd_payout;
+           op.steem_payout = steem_payout;
+           op.vesting_payout = vesting_payout;
+           return op;
+       }
+
+       account_name_type author;
+       string permlink;
+       legacy_asset sbd_payout;
+       legacy_asset steem_payout;
+       legacy_asset vesting_payout;
+    };
+
 } } } // steem::plugins::condenser_api
 
 namespace fc {
@@ -735,3 +764,6 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_feed_publish_operation, (pub
 
 FC_REFLECT( steem::plugins::condenser_api::legacy_account_create_operation,
     (fee)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata))
+
+FC_REFLECT( steem::plugins::condenser_api::legacy_account_create_with_delegation_operation,
+(fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(extensions) )
