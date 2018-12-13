@@ -689,6 +689,55 @@ namespace bmchain { namespace plugins { namespace condenser_api {
        legacy_asset sbd_payout;
        legacy_asset steem_payout;
        legacy_asset vesting_payout;
+   };
+
+    struct legacy_curation_reward_operation
+    {
+        legacy_curation_reward_operation() {}
+
+        legacy_curation_reward_operation(const curation_reward_operation &op) :
+                curator(op.curator),
+                reward(legacy_asset::from_asset(op.reward)),
+                comment_author(op.comment_author),
+                comment_permlink(op.comment_permlink) {}
+
+        operator curation_reward_operation() const {
+            curation_reward_operation
+            op;
+            op.curator = curator;
+            op.reward = reward;
+            op.comment_author = comment_author;
+            op.comment_permlink = comment_permlink;
+            return op;
+        }
+
+        account_name_type curator;
+        legacy_asset reward;
+        account_name_type comment_author;
+        string            comment_permlink;
+    };
+
+    struct legacy_comment_reward_operation
+    {
+        legacy_comment_reward_operation() {}
+
+        legacy_comment_reward_operation(const comment_reward_operation &op) :
+                author(op.author),
+                permlink(op.permlink),
+                payout(legacy_asset::from_asset(op.payout)) {}
+
+        operator comment_reward_operation() const {
+            comment_reward_operation
+            op;
+            op.author = author;
+            op.permlink = permlink;
+            op.payout = payout;
+            return op;
+        }
+
+        account_name_type author;
+        string permlink;
+        legacy_asset payout;
     };
 
 } } } // steem::plugins::condenser_api
@@ -762,8 +811,11 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_from_savings_operat
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_convert_operation, (owner)(requestid)(amount) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_feed_publish_operation, (publisher)(exchange_rate) )
 
-FC_REFLECT( steem::plugins::condenser_api::legacy_account_create_operation,
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_account_create_operation,
     (fee)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata))
 
-FC_REFLECT( steem::plugins::condenser_api::legacy_account_create_with_delegation_operation,
-(fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(extensions) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_account_create_with_delegation_operation,
+    (fee)(delegation)(creator)(new_account_name)(owner)(active)(posting)(memo_key)(json_metadata)(extensions) )
+
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_operation, (from)(to)(amount)(memo) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_to_vesting_operation, (from)(to)(amount) )
