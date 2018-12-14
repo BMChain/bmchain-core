@@ -740,6 +740,46 @@ namespace bmchain { namespace plugins { namespace condenser_api {
         legacy_asset payout;
     };
 
+    struct legacy_liquidity_reward_operation
+    {
+        legacy_liquidity_reward_operation() {}
+
+        legacy_liquidity_reward_operation(const liquidity_reward_operation &op) :
+                owner(op.owner),
+                payout(legacy_asset::from_asset(op.payout)) {}
+
+        operator liquidity_reward_operation() const {
+            liquidity_reward_operation
+            op;
+            op.owner = owner;
+            op.payout = payout;
+            return op;
+        }
+
+        account_name_type owner;
+        legacy_asset      payout;
+    };
+
+    struct legacy_interest_operation
+    {
+        legacy_interest_operation() {}
+
+        legacy_interest_operation(const interest_operation &op) :
+                owner(op.owner),
+                interest(legacy_asset::from_asset(op.interest)) {}
+
+        operator interest_operation() const {
+            interest_operation
+            op;
+            op.owner = owner;
+            op.interest = interest;
+            return op;
+        }
+
+        account_name_type owner;
+        legacy_asset      interest;
+    };
+
 } } } // steem::plugins::condenser_api
 
 namespace fc {
@@ -819,3 +859,5 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_account_create_with_delegati
 
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_to_vesting_operation, (from)(to)(amount) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_withdraw_vesting_operation, (account)(vesting_shares) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
