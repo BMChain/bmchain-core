@@ -780,7 +780,59 @@ namespace bmchain { namespace plugins { namespace condenser_api {
         legacy_asset      interest;
     };
 
-} } } // steem::plugins::condenser_api
+    struct legacy_fill_convert_request_operation
+    {
+        legacy_fill_convert_request_operation() {}
+
+        legacy_fill_convert_request_operation(const fill_convert_request_operation &op) :
+                owner(op.owner),
+                requestid(op.requestid),
+                amount_in(legacy_asset::from_asset(op.amount_in)),
+                amount_out(legacy_asset::from_asset(op.amount_out)) {}
+
+        operator fill_convert_request_operation() const {
+            fill_convert_request_operation
+            op;
+            op.owner = owner;
+            op.requestid = requestid;
+            op.amount_in = amount_in;
+            op.amount_out = amount_out;
+            return op;
+        }
+
+        account_name_type owner;
+        uint32_t requestid;
+        legacy_asset amount_in;
+        legacy_asset amount_out;
+    };
+
+    struct legacy_fill_vesting_withdraw_operation
+    {
+        legacy_fill_vesting_withdraw_operation() {}
+
+        legacy_fill_vesting_withdraw_operation(const fill_vesting_withdraw_operation &op) :
+                from_account(op.from_account),
+                to_account(op.to_account),
+                withdrawn(legacy_asset::from_asset(op.withdrawn)),
+                deposited(legacy_asset::from_asset(op.deposited)) {}
+
+        operator fill_vesting_withdraw_operation() const {
+            fill_vesting_withdraw_operation
+            op;
+            op.from_account = from_account;
+            op.to_account = to_account;
+            op.withdrawn = withdrawn;
+            op.deposited = deposited;
+            return op;
+        }
+
+        account_name_type from_account;
+        account_name_type to_account;
+        legacy_asset withdrawn;
+        legacy_asset deposited;
+    };
+
+} } } // bmchain::plugins::condenser_api
 
 namespace fc {
 
@@ -861,3 +913,6 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_operation, (from)(t
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_to_vesting_operation, (from)(to)(amount) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_withdraw_vesting_operation, (account)(vesting_shares) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create_operation, (owner)(orderid)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
