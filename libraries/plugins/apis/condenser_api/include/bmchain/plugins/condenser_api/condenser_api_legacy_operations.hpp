@@ -832,6 +832,67 @@ namespace bmchain { namespace plugins { namespace condenser_api {
         legacy_asset deposited;
     };
 
+    struct legacy_fill_order_operation
+    {
+        legacy_fill_order_operation() {}
+
+        legacy_fill_order_operation(const fill_order_operation &op) :
+                current_owner(op.current_owner),
+                current_orderid(op.current_orderid),
+                current_pays(legacy_asset::from_asset(op.current_pays)),
+                open_owner(op.open_owner),
+                open_orderid(op.open_orderid),
+                open_pays(legacy_asset::from_asset(op.open_pays)) {}
+
+        operator fill_order_operation() const {
+            fill_order_operation
+            op;
+            op.current_owner = current_owner;
+            op.current_orderid = current_orderid;
+            op.current_pays = current_pays;
+            op.open_owner = open_owner;
+            op.open_orderid = open_orderid;
+            op.open_pays = open_pays;
+            return op;
+        }
+
+        account_name_type current_owner;
+        uint32_t current_orderid;
+        legacy_asset current_pays;
+        account_name_type open_owner;
+        uint32_t open_orderid;
+        legacy_asset open_pays;
+    };
+
+    struct legacy_fill_transfer_from_savings_operation
+    {
+        legacy_fill_transfer_from_savings_operation() {}
+
+        legacy_fill_transfer_from_savings_operation(const fill_transfer_from_savings_operation &op) :
+                from(op.from),
+                to(op.to),
+                amount(legacy_asset::from_asset(op.amount)),
+                request_id(op.request_id),
+                memo(op.memo) {}
+
+        operator fill_transfer_from_savings_operation() const {
+            fill_transfer_from_savings_operation
+            op;
+            op.from = from;
+            op.to = to;
+            op.amount = amount;
+            op.request_id = request_id;
+            op.memo = memo;
+            return op;
+        }
+
+        account_name_type from;
+        account_name_type to;
+        legacy_asset amount;
+        uint32_t request_id = 0;
+        string            memo;
+    };
+
 } } } // bmchain::plugins::condenser_api
 
 namespace fc {
@@ -915,4 +976,3 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_withdraw_vesting_operation, 
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create_operation, (owner)(orderid)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration) )
-FC_REFLECT( bmchain::plugins::condenser_api::legacy_comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
