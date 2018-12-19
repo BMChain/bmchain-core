@@ -446,8 +446,8 @@ namespace bmchain { namespace plugins { namespace condenser_api {
 
        account_name_type owner;
        string url;
-       public_key_type block_signing_key;
-       api_chain_properties props;
+//       public_key_type block_signing_key;
+//       api_chain_properties props;
        legacy_asset fee;
    };
 
@@ -498,13 +498,7 @@ namespace bmchain { namespace plugins { namespace condenser_api {
    {
        legacy_limit_order_create_operation() {}
 
-       legacy_limit_order_create_operation(const limit_order_create_operation &op) :
-               owner(op.owner),
-               orderid(op.orderid),
-               amount_to_sell(legacy_asset::from_asset(op.amount_to_sell)),
-               min_to_receive(legacy_asset::from_asset(op.min_to_receive)),
-               fill_or_kill(op.fill_or_kill),
-               expiration(op.expiration) {}
+
 
        operator limit_order_create_operation() const {
            limit_order_create_operation
@@ -607,8 +601,8 @@ namespace bmchain { namespace plugins { namespace condenser_api {
        }
 
        account_name_type from;
-       uint32_t request_id;
-       account_name_type to;
+//       uint32_t request_id;
+//       account_name_type to;
        legacy_asset amount;
        string            memo;
    };
@@ -893,6 +887,58 @@ namespace bmchain { namespace plugins { namespace condenser_api {
         string            memo;
     };
 
+    struct legacy_return_vesting_delegation_operation
+    {
+        legacy_return_vesting_delegation_operation() {}
+
+        legacy_return_vesting_delegation_operation(const return_vesting_delegation_operation &op) :
+                account(op.account),
+                vesting_shares(legacy_asset::from_asset(op.vesting_shares)) {}
+
+        operator return_vesting_delegation_operation() const {
+            return_vesting_delegation_operation
+            op;
+            op.account = account;
+            op.vesting_shares = vesting_shares;
+            return op;
+        }
+
+        account_name_type account;
+        legacy_asset      vesting_shares;
+    };
+
+    struct legacy_comment_benefactor_reward_operation
+    {
+        legacy_comment_benefactor_reward_operation() {}
+
+        legacy_comment_benefactor_reward_operation(const comment_benefactor_reward_operation &op) :
+                benefactor(op.benefactor),
+                author(op.author),
+                permlink(op.permlink),
+                sbd_payout(legacy_asset::from_asset(op.sbd_payout)),
+                steem_payout(legacy_asset::from_asset(op.steem_payout)),
+                vesting_payout(legacy_asset::from_asset(op.vesting_payout)) {}
+
+        operator comment_benefactor_reward_operation() const {
+            comment_benefactor_reward_operation
+            op;
+            op.benefactor = benefactor;
+            op.author = author;
+            op.permlink = permlink;
+            op.sbd_payout = sbd_payout;
+            op.steem_payout = steem_payout;
+            op.vesting_payout = vesting_payout;
+            return op;
+        }
+
+        account_name_type benefactor;
+        account_name_type author;
+        string permlink;
+        legacy_asset sbd_payout;
+        legacy_asset steem_payout;
+        legacy_asset vesting_payout;
+    };
+
 } } } // bmchain::plugins::condenser_api
 
 namespace fc {
@@ -976,3 +1022,4 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_withdraw_vesting_operation, 
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create_operation, (owner)(orderid)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration) )
+FC_REFLECT( steem::plugins::condenser_api::legacy_comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
