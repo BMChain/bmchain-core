@@ -446,8 +446,8 @@ namespace bmchain { namespace plugins { namespace condenser_api {
 
        account_name_type owner;
        string url;
-//       public_key_type block_signing_key;
-//       api_chain_properties props;
+       public_key_type block_signing_key;
+       api_chain_properties props;
        legacy_asset fee;
    };
 
@@ -498,7 +498,13 @@ namespace bmchain { namespace plugins { namespace condenser_api {
    {
        legacy_limit_order_create_operation() {}
 
-
+       legacy_limit_order_create_operation(const limit_order_create_operation &op) :
+               owner(op.owner),
+               orderid(op.orderid),
+               amount_to_sell(legacy_asset::from_asset(op.amount_to_sell)),
+               min_to_receive(legacy_asset::from_asset(op.min_to_receive)),
+               fill_or_kill(op.fill_or_kill),
+               expiration(op.expiration) {}
 
        operator limit_order_create_operation() const {
            limit_order_create_operation
@@ -601,8 +607,8 @@ namespace bmchain { namespace plugins { namespace condenser_api {
        }
 
        account_name_type from;
-//       uint32_t request_id;
-//       account_name_type to;
+       uint32_t request_id;
+       account_name_type to;
        legacy_asset amount;
        string            memo;
    };
@@ -939,6 +945,50 @@ namespace bmchain { namespace plugins { namespace condenser_api {
         legacy_asset vesting_payout;
     };
 
+    struct legacy_producer_reward_operation
+    {
+        legacy_producer_reward_operation() {}
+
+        legacy_producer_reward_operation(const producer_reward_operation &op) :
+                producer(op.producer),
+                vesting_shares(legacy_asset::from_asset(op.vesting_shares)) {}
+
+        operator producer_reward_operation() const {
+            producer_reward_operation
+            op;
+            op.producer = producer;
+            op.vesting_shares = vesting_shares;
+            return op;
+        }
+
+        account_name_type producer;
+        legacy_asset vesting_shares;
+    };
+
+    struct legacy_claim_account_operation
+    {
+        legacy_claim_account_operation() {}
+
+        legacy_claim_account_operation(const claim_account_operation &op) :
+                creator(op.creator),
+                fee(legacy_asset::from_asset(op.fee)) {
+            extensions.insert(op.extensions.begin(), op.extensions.end());
+        }
+
+        operator claim_account_operation() const {
+            claim_account_operation
+            op;
+            op.creator = creator;
+            op.fee = fee;
+            op.extensions.insert(extensions.begin(), extensions.end());
+            return op;
+        }
+
+        account_name_type creator;
+        legacy_asset fee;
+        extensions_type extensions;
+    };
+
 } } } // bmchain::plugins::condenser_api
 
 namespace fc {
@@ -1022,4 +1072,5 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_withdraw_vesting_operation, 
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create_operation, (owner)(orderid)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration) )
-FC_REFLECT( steem::plugins::condenser_api::legacy_comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_escrow_transfer_operation, (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) );
