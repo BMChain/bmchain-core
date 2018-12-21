@@ -989,6 +989,42 @@ namespace bmchain { namespace plugins { namespace condenser_api {
         extensions_type extensions;
     };
 
+    typedef fc::static_variant<
+    legacy_vote_operation,
+    legacy_comment_operation,
+    legacy_transfer_operation,
+    legacy_transfer_to_vesting_operation,
+    legacy_withdraw_vesting_operation,
+    legacy_limit_order_create_operation,
+    legacy_limit_order_cancel_operation,
+    legacy_feed_publish_operation,
+    legacy_convert_operation,
+    legacy_account_create_operation,
+    legacy_account_update_operation,
+    legacy_witness_update_operation,
+    legacy_account_witness_vote_operation,
+    legacy_account_witness_proxy_operation,
+    legacy_pow_operation,
+    legacy_custom_operation,
+    legacy_report_over_production_operation,
+    legacy_delete_comment_operation,
+    legacy_custom_json_operation,
+    legacy_producer_reward_operation
+    > legacy_operation;
+
+    struct legacy_operation_conversion_visitor {
+        legacy_operation_conversion_visitor(legacy_operation &legacy_op) : l_op(legacy_op) {}
+
+        typedef bool result_type;
+
+        legacy_operation &l_op;
+
+        bool operator()(const account_update_operation &op) const {
+            l_op = op;
+            return true;
+        }
+    }
+
 } } } // bmchain::plugins::condenser_api
 
 namespace fc {

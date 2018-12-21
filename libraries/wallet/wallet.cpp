@@ -2792,8 +2792,8 @@ annotated_signed_transaction wallet_api::create_custom_token( string control_acc
 
    custom_token_create_operation op;
    op.control_account = control_account;
-//   op.current_supply  = init_supply;
-//   op.custom_token_creation_fee = props.custom_token_creation_fee;
+   op.current_supply  = init_supply;
+   op.custom_token_creation_fee = props.custom_token_creation_fee;
 
    signed_transaction tx;
    tx.operations.push_back(op);
@@ -2810,7 +2810,9 @@ annotated_signed_transaction wallet_api::transfer_custom_token( string from, str
    op.to     = to;
    op.amount = amount;
 
-
+   signed_transaction tx;
+   tx.operations.push_back(op);
+   tx.validate();
 
    return my->sign_transaction(tx, broadcast);
 }
@@ -2837,7 +2839,7 @@ annotated_signed_transaction wallet_api::setup_emissions( string control_account
 }
 
 vector< custom_token_api_obj > wallet_api::get_custom_tokens( uint32_t limit ) const {
-
+   FC_ASSERT( !is_locked() );
    return my->_remote_db->get_custom_tokens( limit );
 }
 
