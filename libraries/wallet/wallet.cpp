@@ -2818,15 +2818,14 @@ annotated_signed_transaction wallet_api::transfer_custom_token( string from, str
 }
 
 annotated_signed_transaction wallet_api::setup_emissions( string control_account, asset symbol, fc::time_point schedule_time,
-                                                          uint16_t inflation_rate, uint32_t interval_seconds, uint32_t interval_count,
-                                                          custom_token_emissions_unit emissions_unit, bool broadcast ) {
+                                                          uint16_t inflation_rate, uint32_t interval_seconds, uint32_t interval_count, bool broadcast ) {
    FC_ASSERT( !is_locked() );
 
    custom_token_setup_emissions_operation op;
    op.control_account  = control_account;
    op.symbol           = symbol;
    op.schedule_time    = schedule_time;
-   op.emissions_unit   = emissions_unit;
+//   op.emissions_unit   = emissions_unit;
    op.inflation_rate   = inflation_rate;
    op.interval_seconds = interval_seconds;
    op.interval_count   = interval_count;

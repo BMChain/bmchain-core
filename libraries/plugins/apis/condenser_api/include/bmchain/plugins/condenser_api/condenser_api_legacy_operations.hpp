@@ -990,7 +990,7 @@ namespace bmchain { namespace plugins { namespace condenser_api {
     };
 
     typedef fc::static_variant<
-    legacy_vote_operation,
+            legacy_vote_operation,
     legacy_comment_operation,
     legacy_transfer_operation,
     legacy_transfer_to_vesting_operation,
@@ -1009,10 +1009,49 @@ namespace bmchain { namespace plugins { namespace condenser_api {
     legacy_report_over_production_operation,
     legacy_delete_comment_operation,
     legacy_custom_json_operation,
+    legacy_comment_options_operation,
+    legacy_set_withdraw_vesting_route_operation,
+    legacy_limit_order_create2_operation,
+    legacy_claim_account_operation,
+    legacy_create_claimed_account_operation,
+    legacy_request_account_recovery_operation,
+    legacy_recover_account_operation,
+    legacy_change_recovery_account_operation,
+    legacy_escrow_transfer_operation,
+    legacy_escrow_dispute_operation,
+    legacy_escrow_release_operation,
+    legacy_pow2_operation,
+    legacy_escrow_approve_operation,
+    legacy_transfer_to_savings_operation,
+    legacy_transfer_from_savings_operation,
+    legacy_cancel_transfer_from_savings_operation,
+    legacy_custom_binary_operation,
+    legacy_decline_voting_rights_operation,
+    legacy_reset_account_operation,
+    legacy_set_reset_account_operation,
+    legacy_claim_reward_balance_operation,
+    legacy_delegate_vesting_shares_operation,
+    legacy_account_create_with_delegation_operation,
+    legacy_witness_set_properties_operation,
+    legacy_fill_convert_request_operation,
+    legacy_author_reward_operation,
+    legacy_curation_reward_operation,
+    legacy_comment_reward_operation,
+    legacy_liquidity_reward_operation,
+    legacy_interest_operation,
+    legacy_fill_vesting_withdraw_operation,
+    legacy_fill_order_operation,
+    legacy_shutdown_witness_operation,
+    legacy_fill_transfer_from_savings_operation,
+    legacy_hardfork_operation,
+    legacy_comment_payout_update_operation,
+    legacy_return_vesting_delegation_operation,
+    legacy_comment_benefactor_reward_operation,
     legacy_producer_reward_operation
     > legacy_operation;
 
-    struct legacy_operation_conversion_visitor {
+    struct legacy_operation_conversion_visitor
+    {
         legacy_operation_conversion_visitor(legacy_operation &legacy_op) : l_op(legacy_op) {}
 
         typedef bool result_type;
@@ -1023,7 +1062,297 @@ namespace bmchain { namespace plugins { namespace condenser_api {
             l_op = op;
             return true;
         }
-    }
+
+        bool operator()(const comment_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const create_claimed_account_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const delete_comment_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const vote_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const escrow_approve_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const escrow_dispute_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const set_withdraw_vesting_route_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const witness_set_properties_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const account_witness_vote_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const account_witness_proxy_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const custom_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const custom_json_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const custom_binary_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const limit_order_cancel_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const pow_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const report_over_production_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const request_account_recovery_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const recover_account_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const reset_account_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const set_reset_account_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const change_recovery_account_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const cancel_transfer_from_savings_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const decline_voting_rights_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const shutdown_witness_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const hardfork_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const comment_payout_update_operation &op) const {
+            l_op = op;
+            return true;
+        }
+
+        bool operator()(const transfer_operation &op) const {
+            l_op = legacy_transfer_operation(op);
+            return true;
+        }
+
+        bool operator()(const transfer_to_vesting_operation &op) const {
+            l_op = legacy_transfer_to_vesting_operation(op);
+            return true;
+        }
+
+        bool operator()(const withdraw_vesting_operation &op) const {
+            l_op = legacy_withdraw_vesting_operation(op);
+            return true;
+        }
+
+        bool operator()(const limit_order_create_operation &op) const {
+            l_op = legacy_limit_order_create_operation(op);
+            return true;
+        }
+
+        bool operator()(const feed_publish_operation &op) const {
+            l_op = legacy_feed_publish_operation(op);
+            return true;
+        }
+
+        bool operator()(const convert_operation &op) const {
+            l_op = legacy_convert_operation(op);
+            return true;
+        }
+
+        bool operator()(const account_create_operation &op) const {
+            l_op = legacy_account_create_operation(op);
+            return true;
+        }
+
+        bool operator()(const witness_update_operation &op) const {
+            l_op = legacy_witness_update_operation(op);
+            return true;
+        }
+
+        bool operator()(const comment_options_operation &op) const {
+            l_op = legacy_comment_options_operation(op);
+            return true;
+        }
+
+        bool operator()(const limit_order_create2_operation &op) const {
+            l_op = legacy_limit_order_create2_operation(op);
+            return true;
+        }
+
+        bool operator()(const escrow_transfer_operation &op) const {
+            l_op = legacy_escrow_transfer_operation(op);
+            return true;
+        }
+
+        bool operator()(const escrow_release_operation &op) const {
+            l_op = legacy_escrow_release_operation(op);
+            return true;
+        }
+
+        bool operator()(const pow2_operation &op) const {
+            l_op = legacy_pow2_operation(op);
+            return true;
+        }
+
+        bool operator()(const transfer_to_savings_operation &op) const {
+            l_op = legacy_transfer_to_savings_operation(op);
+            return true;
+        }
+
+        bool operator()(const transfer_from_savings_operation &op) const {
+            l_op = legacy_transfer_from_savings_operation(op);
+            return true;
+        }
+
+        bool operator()(const claim_reward_balance_operation &op) const {
+            l_op = legacy_claim_reward_balance_operation(op);
+            return true;
+        }
+
+        bool operator()(const delegate_vesting_shares_operation &op) const {
+            l_op = legacy_delegate_vesting_shares_operation(op);
+            return true;
+        }
+
+        bool operator()(const account_create_with_delegation_operation &op) const {
+            l_op = legacy_account_create_with_delegation_operation(op);
+            return true;
+        }
+
+        bool operator()(const fill_convert_request_operation &op) const {
+            l_op = legacy_fill_convert_request_operation(op);
+            return true;
+        }
+
+        bool operator()(const author_reward_operation &op) const {
+            l_op = legacy_author_reward_operation(op);
+            return true;
+        }
+
+        bool operator()(const curation_reward_operation &op) const {
+            l_op = legacy_curation_reward_operation(op);
+            return true;
+        }
+
+        bool operator()(const comment_reward_operation &op) const {
+            l_op = legacy_comment_reward_operation(op);
+            return true;
+        }
+
+        bool operator()(const liquidity_reward_operation &op) const {
+            l_op = legacy_liquidity_reward_operation(op);
+            return true;
+        }
+
+        bool operator()(const interest_operation &op) const {
+            l_op = legacy_interest_operation(op);
+            return true;
+        }
+
+        bool operator()(const fill_vesting_withdraw_operation &op) const {
+            l_op = legacy_fill_vesting_withdraw_operation(op);
+            return true;
+        }
+
+        bool operator()(const fill_order_operation &op) const {
+            l_op = legacy_fill_order_operation(op);
+            return true;
+        }
+
+        bool operator()(const fill_transfer_from_savings_operation &op) const {
+            l_op = legacy_fill_transfer_from_savings_operation(op);
+            return true;
+        }
+
+        bool operator()(const return_vesting_delegation_operation &op) const {
+            l_op = legacy_return_vesting_delegation_operation(op);
+            return true;
+        }
+
+        bool operator()(const comment_benefactor_reward_operation &op) const {
+            l_op = legacy_comment_benefactor_reward_operation(op);
+            return true;
+        }
+
+        bool operator()(const producer_reward_operation &op) const {
+            l_op = legacy_producer_reward_operation(op);
+            return true;
+        }
+
+        bool operator()(const claim_account_operation &op) const {
+            l_op = legacy_claim_account_operation(op);
+            return true;
+        }
+
+
+        // Should only be SMT ops
+        template<typename T>
+        bool operator()(const T &) const { return false; }
+    };
 
 } } } // bmchain::plugins::condenser_api
 
