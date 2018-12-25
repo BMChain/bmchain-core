@@ -1354,6 +1354,142 @@ namespace bmchain { namespace plugins { namespace condenser_api {
         bool operator()(const T &) const { return false; }
     };
 
+    struct convert_from_legacy_operation_visitor
+    {
+        convert_from_legacy_operation_visitor() {}
+
+        typedef operation result_type;
+
+        operation operator()(const legacy_transfer_operation &op) const {
+            return operation(transfer_operation(op));
+        }
+
+        operation operator()(const legacy_transfer_to_vesting_operation &op) const {
+            return operation(transfer_to_vesting_operation(op));
+        }
+
+        operation operator()(const legacy_withdraw_vesting_operation &op) const {
+            return operation(withdraw_vesting_operation(op));
+        }
+
+        operation operator()(const legacy_limit_order_create_operation &op) const {
+            return operation(limit_order_create_operation(op));
+        }
+
+        operation operator()(const legacy_feed_publish_operation &op) const {
+            return operation(feed_publish_operation(op));
+        }
+
+        operation operator()(const legacy_convert_operation &op) const {
+            return operation(convert_operation(op));
+        }
+
+        operation operator()(const legacy_account_create_operation &op) const {
+            return operation(account_create_operation(op));
+        }
+
+        operation operator()(const legacy_witness_update_operation &op) const {
+            return operation(witness_update_operation(op));
+        }
+
+        operation operator()(const legacy_comment_options_operation &op) const {
+            return operation(comment_options_operation(op));
+        }
+
+        operation operator()(const legacy_limit_order_create2_operation &op) const {
+            return operation(limit_order_create2_operation(op));
+        }
+
+        operation operator()(const legacy_escrow_transfer_operation &op) const {
+            return operation(escrow_transfer_operation(op));
+        }
+
+        operation operator()(const legacy_escrow_release_operation &op) const {
+            return operation(escrow_release_operation(op));
+        }
+
+        operation operator()(const legacy_pow2_operation &op) const {
+            return operation(pow2_operation(op));
+        }
+
+        operation operator()(const legacy_transfer_to_savings_operation &op) const {
+            return operation(transfer_to_savings_operation(op));
+        }
+
+        operation operator()(const legacy_transfer_from_savings_operation &op) const {
+            return operation(transfer_from_savings_operation(op));
+        }
+
+        operation operator()(const legacy_claim_reward_balance_operation &op) const {
+            return operation(claim_reward_balance_operation(op));
+        }
+
+        operation operator()(const legacy_delegate_vesting_shares_operation &op) const {
+            return operation(delegate_vesting_shares_operation(op));
+        }
+
+        operation operator()(const legacy_account_create_with_delegation_operation &op) const {
+            return operation(account_create_with_delegation_operation(op));
+        }
+
+        operation operator()(const legacy_fill_convert_request_operation &op) const {
+            return operation(fill_convert_request_operation(op));
+        }
+
+        operation operator()(const legacy_author_reward_operation &op) const {
+            return operation(author_reward_operation(op));
+        }
+
+        operation operator()(const legacy_curation_reward_operation &op) const {
+            return operation(curation_reward_operation(op));
+        }
+
+        operation operator()(const legacy_comment_reward_operation &op) const {
+            return operation(comment_reward_operation(op));
+        }
+
+        operation operator()(const legacy_liquidity_reward_operation &op) const {
+            return operation(liquidity_reward_operation(op));
+        }
+
+        operation operator()(const legacy_interest_operation &op) const {
+            return operation(interest_operation(op));
+        }
+
+        operation operator()(const legacy_fill_vesting_withdraw_operation &op) const {
+            return operation(fill_vesting_withdraw_operation(op));
+        }
+
+        operation operator()(const legacy_fill_order_operation &op) const {
+            return operation(fill_order_operation(op));
+        }
+
+        operation operator()(const legacy_fill_transfer_from_savings_operation &op) const {
+            return operation(fill_transfer_from_savings_operation(op));
+        }
+
+        operation operator()(const legacy_return_vesting_delegation_operation &op) const {
+            return operation(return_vesting_delegation_operation(op));
+        }
+
+        operation operator()(const legacy_comment_benefactor_reward_operation &op) const {
+            return operation(comment_benefactor_reward_operation(op));
+        }
+
+        operation operator()(const legacy_producer_reward_operation &op) const {
+            return operation(producer_reward_operation(op));
+        }
+
+        operation operator()(const legacy_claim_account_operation &op) const {
+            return operation(claim_account_operation(op));
+        }
+
+        template<typename T>
+        operation operator()(const T &t) const {
+            return operation(t);
+        }
+    };
+
 } } } // bmchain::plugins::condenser_api
 
 namespace fc {
@@ -1439,3 +1575,22 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create_operation
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_escrow_transfer_operation, (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) );
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(sbd_amount)(steem_amount) );
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_pow2_operation, (work)(new_owner_key)(props) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_claim_reward_balance_operation, (account)(reward_steem)(reward_sbd)(reward_vests) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) );
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_author_reward_operation, (author)(permlink)(sbd_payout)(steem_payout)(vesting_payout) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_curation_reward_operation, (curator)(reward)(comment_author)(comment_permlink) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_comment_reward_operation, (author)(permlink)(payout) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_fill_convert_request_operation, (owner)(requestid)(amount_in)(amount_out) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_liquidity_reward_operation, (owner)(payout) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_interest_operation, (owner)(interest) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_fill_vesting_withdraw_operation, (from_account)(to_account)(withdrawn)(deposited) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_fill_order_operation, (current_owner)(current_orderid)(current_pays)(open_owner)(open_orderid)(open_pays) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_fill_transfer_from_savings_operation, (from)(to)(amount)(request_id)(memo) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_return_vesting_delegation_operation, (account)(vesting_shares) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_comment_benefactor_reward_operation, (benefactor)(author)(permlink)(sbd_payout)(steem_payout)(vesting_payout) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_producer_reward_operation, (producer)(vesting_shares) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_claim_account_operation, (creator)(fee)(extensions) )
+
+FC_REFLECT_TYPENAME( bmchain::plugins::condenser_api::legacy_operation )
