@@ -679,7 +679,6 @@ operation.st_operations = [
   return_vesting_delegation,
   comment_benefactor_reward,
   producer_reward,
-  smt_create
 ];
 
 var transaction = new Serializer("transaction", {
