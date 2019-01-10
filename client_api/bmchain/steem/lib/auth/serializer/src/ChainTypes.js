@@ -122,7 +122,7 @@ ChainTypes.operations = { vote: 0,
   comment_reward: 49,
   liquidity_reward: 50,
   interest: 51,
-  fill_vesting_withdraw: 52,
+  fill_rep_withdraw: 52,
   fill_order: 53,
   shutdown_witness: 54,
   fill_transfer_from_savings: 55,
@@ -131,7 +131,11 @@ ChainTypes.operations = { vote: 0,
   return_vesting_delegation: 58,
   comment_benefactor_reward: 59,
   producer_reward: 60,
-  smt_create: 61
+  content_order_cancel_by_author: 61,
+  custom_token_create: 62,
+  custom_token_transfer: 63,
+  custom_token_setup_emissions: 64,
+  custom_token_set_setup_parameters: 65
 };
 
 //types.hpp
