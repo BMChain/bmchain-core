@@ -35,3 +35,26 @@ bmchain.broadcast.encrypted_content(
             console.log(err, result);
         }
     );
+
+bmchain.broadcast.encrypted_content(
+    wif,
+    username,
+    '',
+    '',
+    username,
+    'encrypted_post_001',
+    'encrypted_post_title',
+    'encrypted_post_body',
+    'json_metadata',
+    'encrypted_message',
+    1,
+    2,
+    3,
+    '0.000 BMT',
+    username,
+    0,
+    1,
+    function(err, result) {
+        console.log(err, result);
+    }
+);
