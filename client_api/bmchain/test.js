@@ -1,3 +1,4 @@
+var pkg = require('./package.json');
 const bmchain = require("./steem/lib");
 
 (async () => {
@@ -11,50 +12,53 @@ const bmchain = require("./steem/lib");
 })();
 
 const username = 'user001';
-const wif = '5JnWUyuk9jT3nW7x2pwFkz7qVLV7pgpKAXnM8dXAShwZqcXCYee';
+const postingWif = '5JnWUyuk9jT3nW7x2pwFkz7qVLV7pgpKAXnM8dXAShwZqcXCYee';
 
-bmchain.broadcast.encrypted_content(
-        wif,
-        username,
-        '',
-        '',
-        username,
-        'encrypted_post_000',
-        'encrypted_post_title',
-        'encrypted_post_body',
-        'json_metadata',
-        'encrypted_message',
-        1,
-        2,
-        3,
-        '1.000 BMT',
-        username,
-        0,
-        1,
-        function(err, result) {
-            console.log(err, result);
-        }
-    );
+(async () => {
+    try
+    {
+        const permlink = bmchain.formatter.commentPermlink('siol', 'test');
+        const operations = [
+            ['comment',
+                {
+                    parent_author: '',
+                    parent_permlink: 'test',
+                    author: username,
+                    permlink,
+                    title: 'Test',
+                    body: `This is a test using Steem.js v${pkg.version}.`,
+                    json_metadata : JSON.stringify({
+                        tags: ['test'],
+                        app: `steemjs/${pkg.version}`
+                    })
+                }
+            ]
+        ];
 
-bmchain.broadcast.encrypted_content(
-    wif,
-    username,
-    '',
-    '',
-    username,
-    'encrypted_post_001',
-    'encrypted_post_title',
-    'encrypted_post_body',
-    'json_metadata',
-    'encrypted_message',
-    1,
-    2,
-    3,
-    '0.000 BMT',
-    username,
-    0,
-    1,
-    function(err, result) {
-        console.log(err, result);
+        const tx = await bmchain.broadcast.sendAsync(
+            { operations, extensions: [] },
+            { posting: postingWif }
+        );
+
+        tx.should.have.properties([
+            'expiration',
+            'ref_block_num',
+            'ref_block_prefix',
+            'extensions',
+            'operations',
+            'signatures',
+        ]);
+    }catch (e) {
+        console.error(e);
     }
-);
+})();
+
+// #1: posting encrypted content
+
+// #2: get list of encrypted contents
+
+// #3: order to buy
+
+// #4: approve order
+
+// #5: get brought content and decrypt it
