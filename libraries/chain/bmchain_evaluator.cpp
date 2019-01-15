@@ -1013,12 +1013,12 @@ void transfer_evaluator::do_apply( const transfer_operation& o )
 
 void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operation& o )
 {
-   const auto& from_account = _db.get_account(o.from);
-   const auto& to_account = o.to.size() ? _db.get_account(o.to) : from_account;
-
-   FC_ASSERT( _db.get_balance( from_account, BMT_SYMBOL) >= o.amount, "Account does not have sufficient BMT for transfer." );
-   _db.adjust_balance( from_account, -o.amount );
-   _db.create_vesting( to_account, o.amount );
+//   const auto& from_account = _db.get_account(o.from);
+//   const auto& to_account = o.to.size() ? _db.get_account(o.to) : from_account;
+//
+//   FC_ASSERT( _db.get_balance( from_account, BMT_SYMBOL) >= o.amount, "Account does not have sufficient BMT for transfer." );
+//   _db.adjust_balance( from_account, -o.amount );
+//   _db.create_vesting( to_account, o.amount );
 }
 
 void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
