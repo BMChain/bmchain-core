@@ -422,7 +422,7 @@ module.exports = [{
 }, {
   "api": "database_api",
   "method": "get_content_orders",
-  "params": ["owner", "author", "limit"]
+  "params": ["owner", "author", "start_id", "limit"]
 }, {
   "api": "database_api",
   "method": "get_content_order_by_id",
