@@ -62,6 +62,14 @@ if (get_inbox) {
             console.error(e);
         }
     })();
+    (async () => {
+        try {
+            const ret = await bmchain.api.getInbox('user002', "2019-1-1T0:0:0", 10);
+            console.log(ret);
+        } catch (e) {
+            console.error(e);
+        }
+    })();
 }
 
 // #3: get outbox
@@ -69,6 +77,14 @@ if (get_outbox) {
     (async () => {
         try {
             const ret = await bmchain.api.getOutbox('user001', "2019-1-1T0:0:0", 10);
+            console.log(ret);
+        } catch (e) {
+            console.error(e);
+        }
+    })();
+    (async () => {
+        try {
+            const ret = await bmchain.api.getOutbox('user002', "2019-1-1T0:0:0", 10);
             console.log(ret);
         } catch (e) {
             console.error(e);

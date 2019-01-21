@@ -2285,7 +2285,7 @@ void content_order_cancel_by_author_evaluator::do_apply( const content_order_can
 
 void private_message_evaluator::do_apply( const private_message_operation& pm )
 {
-    using bmchain::private_message::message_object;
+   using bmchain::private_message::message_object;
 
    FC_ASSERT(pm.from != pm.to);
    FC_ASSERT(pm.from_memo_key != pm.to_memo_key);
