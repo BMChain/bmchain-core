@@ -213,4 +213,21 @@ module.exports = [{
   "roles": ["active"],
   "operation": "content_order_cancel",
   "params": ["owner", "order_id", "json_metadata"]
+}, {
+  "roles": ["active"],
+  "operation": "custom_token_create",
+  "params": ["control_account", "current_supply", "custom_token_creation_fee"]
+}, {
+  "roles": ["active"],
+  "operation": "custom_token_transfer",
+  "params": ["from", "to", "amount"]
+}, {
+  "roles": ["active"],
+  "operation": "custom_token_setup_emissions",
+  "params": ["emissions_unit", "schedule_time", "control_account", "symbol", "inflation_rate", "interval_seconds",
+    "interval_count"]
+}, {
+  "roles": ["active"],
+  "operation": "custom_token_set_setup_parameters",
+  "params": ["control_account", "symbol", "setup_parameters", "extensions"]
 }];

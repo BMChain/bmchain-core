@@ -1,7 +1,7 @@
 var aes = require('./steem/lib/auth/ecc/src/aes');
 const bmchain = require("./steem/lib");
 
-var content_order_create = True
+var custom_token_create = true;
 
 if (custom_token_create) {
     (async () => {

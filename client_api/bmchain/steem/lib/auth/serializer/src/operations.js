@@ -615,7 +615,42 @@ var content_order_cancel = new Serializer("content_order_cancel", {
 });
 
 var producer_reward = new Serializer("producer_reward", {});
-var smt_create = new Serializer("smt_create", {});
+
+var content_order_cancel_by_author = new Serializer("content_order_cancel_by_author", {
+    author: string,
+    order_id: uint32,
+    json_metadata: string
+});
+
+var custom_token_create = new Serializer("custom_token_create", {
+    control_account: string,
+    current_supply: asset,
+    custom_token_creation_fee: asset
+});
+
+var custom_token_transfer = new Serializer("custom_token_transfer", {
+    from: string,
+    to: string,
+    amount: asset
+});
+
+var custom_token_setup_emissions = new Serializer("custom_token_setup_emissions", {
+    emissions_unit: string,
+    schedule_time: string,
+    control_account: string,
+
+    symbol: asset,
+    inflation_rate: uint16,
+    interval_seconds: uint32,
+    interval_count: uint32
+});
+
+var custom_token_set_setup_parameters = new Serializer("custom_token_set_setup_parameters", {
+    control_account: string,
+    symbol: asset,
+    setup_parameters: string,
+    extensions: string
+});
 
 operation.st_operations = [
   vote,
@@ -679,6 +714,11 @@ operation.st_operations = [
   return_vesting_delegation,
   comment_benefactor_reward,
   producer_reward,
+  content_order_cancel_by_author,
+  custom_token_create,
+  custom_token_transfer,
+  custom_token_setup_emissions,
+  custom_token_set_setup_parameters,
 ];
 
 var transaction = new Serializer("transaction", {
