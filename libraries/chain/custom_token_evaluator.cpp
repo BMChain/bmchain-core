@@ -82,9 +82,9 @@ struct smt_setup_evaluator_visitor
 };
 
 void custom_token_create_evaluator::do_apply( const custom_token_create_operation& o ) {
-      const auto &by_symbol_idx = _db.get_index<custom_token_index>().indices().get<by_symbol>();
+   const auto &by_symbol_idx = _db.get_index<custom_token_index>().indices().get<by_symbol>();
    auto itr = by_symbol_idx.find(boost::make_tuple(o.current_supply.symbol));
-   auto acc = _db.get_account(o.control_account);
+   const auto&  acc = _db.get_account(o.control_account);
    //FC_ASSERT( acc != nullptr, "This control account dosn't esixt." );
    FC_ASSERT(acc.balance >= o.custom_token_creation_fee, "Control account dosn't have enough BMT.");
    FC_ASSERT(itr == by_symbol_idx.end(), "Custom token with such symbol exists.");
@@ -93,6 +93,7 @@ void custom_token_create_evaluator::do_apply( const custom_token_create_operatio
       token.control_account = o.control_account;
       token.symbol = o.current_supply.symbol;
       token.current_supply = o.current_supply;
+      token.reward_fund = asset( 0, o.current_supply.symbol );
       token.generation_time = _db.head_block_time();
    });
 
