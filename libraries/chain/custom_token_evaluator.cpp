@@ -141,7 +141,7 @@ void custom_token_setup_emissions_evaluator::do_apply( const custom_token_setup_
    _db.modify(*itr, [&](custom_token_object &obj) {
       obj.inflation_rate = o.inflation_rate;
       obj.schedule_time = o.schedule_time;
-      obj.emissions_unit = o.emissions_unit;
+//      obj.emissions_unit = o.emissions_unit;
       obj.interval_count = o.interval_count;
       obj.interval_seconds = o.interval_seconds;
    });

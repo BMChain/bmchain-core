@@ -39,7 +39,7 @@ struct custom_token_transfer_operation : public base_operation
 
 struct custom_token_setup_emissions_operation : public base_operation
 {
-   custom_token_emissions_unit emissions_unit;
+//   custom_token_emissions_unit emissions_unit;
    time_point_sec schedule_time;
 
    account_name_type control_account;
@@ -190,7 +190,7 @@ FC_REFLECT( bmchain::protocol::custom_token_emissions_unit, (token_unit))
 FC_REFLECT( bmchain::protocol::custom_token_create_operation,(control_account)(current_supply)(custom_token_creation_fee) )
 FC_REFLECT( bmchain::protocol::custom_token_transfer_operation,(from)(to)(amount) )
 FC_REFLECT( bmchain::protocol::custom_token_setup_emissions_operation,
-            (emissions_unit)(schedule_time)(control_account)(symbol)(inflation_rate)(interval_seconds)(interval_count) )
+            (schedule_time)(control_account)(symbol)(inflation_rate)(interval_seconds)(interval_count) )
 FC_REFLECT( bmchain::protocol::custom_token_set_setup_parameters_operation,(control_account)(symbol)(setup_parameters)(extensions) )
 FC_REFLECT( bmchain::protocol::custom_token_generation_unit, (bmt_unit)(token_unit))
 FC_REFLECT( bmchain::protocol::custom_token_cap_commitment, (lower_bound)(upper_bound)(hash))
