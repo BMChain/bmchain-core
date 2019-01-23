@@ -635,7 +635,6 @@ var custom_token_transfer = new Serializer("custom_token_transfer", {
 });
 
 var custom_token_setup_emissions = new Serializer("custom_token_setup_emissions", {
-    emissions_unit: string,
     schedule_time: string,
     control_account: string,
 

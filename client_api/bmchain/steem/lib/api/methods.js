@@ -431,4 +431,8 @@ module.exports = [{
   "api": "database_api",
   "method": "get_content_orders_by_comment",
   "params": ["author", "permlink", "owner", "limit"]
+}, {
+  "api": "database_api",
+  "method": "get_custom_tokens",
+  "params": ["limit"]
 }];
