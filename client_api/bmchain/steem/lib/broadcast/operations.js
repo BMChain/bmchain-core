@@ -224,8 +224,7 @@ module.exports = [{
 }, {
   "roles": ["active"],
   "operation": "custom_token_setup_emissions",
-  "params": ["emissions_unit", "schedule_time", "control_account", "symbol", "inflation_rate", "interval_seconds",
-    "interval_count"]
+  "params": ["schedule_time", "control_account", "symbol", "inflation_rate", "interval_seconds", "interval_count"]
 }, {
   "roles": ["active"],
   "operation": "custom_token_set_setup_parameters",

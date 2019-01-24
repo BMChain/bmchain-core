@@ -635,9 +635,8 @@ var custom_token_transfer = new Serializer("custom_token_transfer", {
 });
 
 var custom_token_setup_emissions = new Serializer("custom_token_setup_emissions", {
-    schedule_time: string,
+    schedule_time: time_point_sec,
     control_account: string,
-
     symbol: asset,
     inflation_rate: uint16,
     interval_seconds: uint32,

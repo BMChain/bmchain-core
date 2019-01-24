@@ -2,9 +2,14 @@ var aes = require('./steem/lib/auth/ecc/src/aes');
 const bmchain = require("./steem/lib");
 
 var custom_token_create = false;
-var get_custom_tokens = false;
+var get_custom_tokens = true;
 var custom_token_transfer = false;
-var custom_token_setup_emissions = true;
+var custom_token_setup_emissions = false;
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 if (custom_token_create) {
     (async () => {
@@ -38,6 +43,7 @@ if (custom_token_create) {
     })();
 }
 
+
 if (get_custom_tokens) {
     (async () => {
         try {
@@ -48,6 +54,7 @@ if (get_custom_tokens) {
         }
     })();
 }
+
 
 if (custom_token_transfer) {
     (async () => {
@@ -81,16 +88,16 @@ if (custom_token_transfer) {
     })();
 }
 
+
 if (custom_token_setup_emissions) {
     (async () => {
         try {
             const operations = [
                 ['custom_token_setup_emissions',
                     {
-                        schedule_time: "2019-1-1T0:0:0",
+                        schedule_time: new Date('2019-01-22'),
                         control_account: 'user001',
-
-                        symbol: '0.000 NEW',
+                        symbol: bmchain.formatter.amount(0.000, 'NEW'),
                         inflation_rate: 20,
                         interval_seconds: 60,
                         interval_count: 1
