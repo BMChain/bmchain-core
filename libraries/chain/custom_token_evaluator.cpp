@@ -136,7 +136,7 @@ void custom_token_transfer_evaluator::do_apply( const custom_token_transfer_oper
 void custom_token_setup_emissions_evaluator::do_apply( const custom_token_setup_emissions_operation& o ) {
    const auto&by_symbol_idx = _db.get_index<custom_token_index>().indices().get<by_symbol>();
    auto itr = by_symbol_idx.find(boost::make_tuple(o.symbol.symbol));
-   FC_ASSERT(itr == by_symbol_idx.end(), "Custom token with such symbol exists.");
+   FC_ASSERT(itr != by_symbol_idx.end(), "Custom token with such symbol don't exists.");
 
    _db.modify(*itr, [&](custom_token_object &obj) {
       obj.inflation_rate = o.inflation_rate;
