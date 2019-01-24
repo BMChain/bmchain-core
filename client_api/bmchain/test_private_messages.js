@@ -4,6 +4,7 @@ var memo = require('./steem/lib/auth/memo.js')
 const bmchain = require("./steem/lib");
 
 var public_key = require("./steem/lib/auth/ecc/src/key_public.js");
+var private_key = require("./steem/lib/auth/ecc/src/key_private.js");
 
 var send_private_message = true;
 var get_inbox = true;
@@ -13,11 +14,28 @@ var get_outbox = true;
 if (send_private_message) {
     (async () => {
         try {
-            const encrypted_message = aes.encrypt(
-                '5J2wPb6BVAyZZYpmJHRks1DgCLEHRmzAyrwzbsvX3xaHibH8XLM',
-                'BMT58GceeEnG9TRDHjGcnTY3sWfPtwKEdD6kemCyuTihfsma7Db9d',
-                'encrypted private message',
-                '111111');
+            const priv_memo_user001 = '5J2wPb6BVAyZZYpmJHRks1DgCLEHRmzAyrwzbsvX3xaHibH8XLM';
+            const publ_memo_user002 = 'BMT58GceeEnG9TRDHjGcnTY3sWfPtwKEdD6kemCyuTihfsma7Db9d';
+
+            const priv_memo_user002 = '5KDkjj6MV2EsoabJqMqfVrXz2hnsmsPFyqiycyduy5ycKjNRYpD';
+            const publ_memo_user001 = 'BMT7o4Az56RoUhLay68NaUFh56sgCjStvEBt7kGzVGBqPuuQjgbpr';
+
+            const timestamp = (new Date).getTime();
+            const encrypt_message = aes.encrypt(
+                priv_memo_user001,
+                publ_memo_user002,
+                'I go it!');
+
+            const decrypt_message = aes.decrypt(
+                priv_memo_user002,
+                publ_memo_user001,
+                encrypt_message.nonce,
+                encrypt_message.message,
+                encrypt_message.checksum
+            );
+
+            console.log(decrypt_message.toString('utf8'))
+
             const operations = [
                 ['private_message',
                     {
@@ -25,10 +43,10 @@ if (send_private_message) {
                         to: 'user002',
                         from_memo_key: public_key.fromString('BMT7o4Az56RoUhLay68NaUFh56sgCjStvEBt7kGzVGBqPuuQjgbpr'),
                         to_memo_key: public_key.fromString('BMT58GceeEnG9TRDHjGcnTY3sWfPtwKEdD6kemCyuTihfsma7Db9d'),
-                        sent_time: 111111,
-                        checksum: encrypted_message.checksum,
-                        message_size: 32,
-                        encrypted_message: encrypted_message.message.toString('utf8')
+                        sent_time: encrypt_message.nonce,
+                        checksum: encrypt_message.checksum,
+                        message_size: encrypt_message.message.toString('hex').length,
+                        encrypted_message: encrypt_message.message.toString('hex')
                     }
                 ]
             ];
