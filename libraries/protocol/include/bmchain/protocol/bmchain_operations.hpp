@@ -101,7 +101,7 @@ namespace bmchain { namespace protocol {
    {
       /// encrypted content
       string   encrypted_message;
-      uint32_t sent_time = 0;
+      uint64_t sent_time = 0;
       uint32_t message_size;
       uint32_t checksum;
       asset    price;
