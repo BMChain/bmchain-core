@@ -15,7 +15,6 @@ var private_key = require("./steem/lib/auth/ecc/src/key_private.js");
         const priv_memo_user002 = '5KDkjj6MV2EsoabJqMqfVrXz2hnsmsPFyqiycyduy5ycKjNRYpD';
         const publ_memo_user001 = 'BMT7o4Az56RoUhLay68NaUFh56sgCjStvEBt7kGzVGBqPuuQjgbpr';
 
-        const timestamp = (new Date).getTime();
         const encrypt_message = aes.encrypt(
             priv_memo_user001,
             publ_memo_user002,

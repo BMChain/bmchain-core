@@ -1,6 +1,6 @@
 {
   "transport": "ws",
-  "websocket": "wss://ws.bmchain.io:7654",
+  "websocket": "ws://127.0.0.1:8765",
   "uri": "",
   "url": "",
   "dev_uri": "",

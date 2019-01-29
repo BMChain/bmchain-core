@@ -591,7 +591,7 @@ var encrypted_content = new Serializer("encrypted_content", {
   body: string,
   json_metadata: string,
   encrypted_message: string,
-  sent_time: uint32,
+  sent_time: uint64,
   message_size: uint32,
   checksum: uint32,
   price: asset,
