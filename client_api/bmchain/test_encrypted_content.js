@@ -3,17 +3,15 @@ var aes = require('./steem/lib/auth/ecc/src/aes');
 const bmchain = require("./steem/lib");
 var _types = require("./steem/lib/auth/serializer/src/types");
 var _types2 = _interopRequireDefault(_types);
-
+var ByteBuffer = require('bytebuffer');
+var Long = require('long');
 uint64 = _types2.default.uint64;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var encrypted_content = false;
-var get_encrypted_content = false;
-var content_order_create = false;
-var get_content_orders = false;
 var approve_content_order = false;
-var get_brought_encrypted_content = false;
+var get_brought_encrypted_content = true;
 
 // Name account: user001
 // Private owner key  : 5JZnth3gttgX67j8jdP5BvXZXbEZZU9PKnoUgS8XFmqfboc59LD
@@ -40,176 +38,56 @@ publ_memo_user001 = 'BMT8YQ2219mg51pThHYMBDhTMm9JuaUH2Tg4GSuQ9da2U4ddJdd2n';
 priv_memo_user002 = '5KaVTgYtUuPFLndgGvuQ3LFCvxZmUaKYxuLK9kR9XggDgp2ch6d';
 publ_memo_user002 = 'BMT6etFjYGXc8fsLpSFNB9yEnk9KKxpDTKdBXGqwmU2tZKUh3CRpg';
 
-(async () => {
-    var encrypt_message;
-    try {
-        // #1: posting encrypted content
+if (encrypted_content) {
+    (async () => {
         const permlink = bmchain.formatter.commentPermlink('', 'encrypted-post-001-001');
-        encrypt_message = aes.encrypt(
-            priv_memo_user001,
-            publ_memo_user002,
-            'I go it!');
-
-        const decrypt_message = aes.decrypt(
-            priv_memo_user002,
-            publ_memo_user001,
-            encrypt_message.nonce,
-            encrypt_message.message,
-            encrypt_message.checksum
-        );
-
-        console.log(decrypt_message.toString('utf8'))
-
-        const operations = [
-            ['encrypted_content',
-                {
-                    parent_author: '',
-                    parent_permlink: 'encrypted',
-                    author: 'user001',
-                    permlink: permlink,
-                    title: 'title',
-                    body: 'body',
-                    json_metadata: JSON.stringify({
-                        tags: ['test'],
-                        app: `steemjs/${pkg.version}`,
-                        nonce: encrypt_message.nonce.toString()
-                    }),
-                    encrypted_message: encrypt_message.message.toString('hex'),
-                    sent_time: encrypt_message.nonce,
-                    message_size: encrypt_message.message.toString('hex').length,
-                    checksum: encrypt_message.checksum,
-                    price: bmchain.formatter.amount(1.000, 'BMT'),
-                    owner: '',
-                    order_id: 0,
-                    apply_order: false
-                }
-            ]
-        ];
-
-        const tx = await bmchain.broadcast.sendAsync(
-            {operations, extensions: []},
-            {posting: '5JTnDZznCiwYNefL8RsdEvhbqqAqyZpvWWkJh2hHiX2CXXUZg4d'}
-        );
-
-        tx.should.have.properties([
-            'expiration',
-            'ref_block_num',
-            'ref_block_prefix',
-            'extensions',
-            'operations',
-            'signatures',
-        ]);
-    } catch (e) {
-        console.error(e);
-    }
-
-    // #2: get list of encrypted contents
-    try {
-        const ret = await bmchain.api.getEncryptedDiscussions({
-            tag: 'user001',
-            owner: '',
-            limit: 5,
-            truncate_body: 1024
-        });
-        var nonce = parseInt(JSON.parse(ret["0"].json_metadata)['nonce']);
-        const decrypt_message = aes.decrypt(
-            priv_memo_user002,
-            publ_memo_user001,
-            nonce,
-            new Buffer(ret["0"].encrypted_body, "hex"),
-            ret["0"].checksum
-        );
-        console.log(ret);
-    } catch (e) {
-        console.error(e);
-    }
-
-    // #3: order to buy
-    try {
-        const operations = [
-            ['content_order_create',
-                {
-                    author: 'user001',
-                    permlink: 'encrypted-post-001-000',
-                    owner: 'user002',
-                    price: '1.000 BMT',
-                    json_metadata: JSON.stringify({
-                        tags: ['test'],
-                        app: `steemjs/${pkg.version}`
-                    })
-                }
-            ]
-        ];
-
-        const tx = await bmchain.broadcast.sendAsync(
-            {operations, extensions: []},
-            {active: '5KfvQrWFMifCKqPkDBaagkxK8J2JoSaPeZoKs93rrTmKgbYEh9P'}
-        );
-
-        tx.should.have.properties([
-            'expiration',
-            'ref_block_num',
-            'ref_block_prefix',
-            'extensions',
-            'operations',
-            'signatures',
-        ]);
-    } catch (e) {
-        console.error(e);
-    }
-})();
-
-// #4: get content orders
-// get_content_orders user001 sviatsv -1 10
-if (get_content_orders) {
-    (async () => {
         try {
-            const ret = await bmchain.api.getContentOrders('user002', 'user001', -1, 10);
-            console.log(ret);
-        } catch (e) {
-            console.error(e);
-        }
-    })();
-}
+            // #1: posting encrypted content
+            const encrypt_message = aes.encrypt(
+                priv_memo_user001,
+                publ_memo_user001,
+                'Don\'t cry because it\'s over, smile because it happened.');
 
-// #5: approve order
-if (approve_content_order) {
-    (async () => {
-        try {
-            const permlink = bmchain.formatter.commentPermlink('', 'encrypted');
-            const encrypted_message = aes.encrypt(
-                '5J2srqnG4cKyRdqKPZ9bwmytPmudpQthF96BUA9Sek3cseZjrPR',
-                'BMT7rLYKSpuoukZ5iTraidz432uRFrGLunKP1Zy3v3cLjiGjfJPrN',
-                'crypto_body',
-                '111111');
+            const decrypt_message = aes.decrypt(
+                priv_memo_user001,
+                publ_memo_user001,
+                encrypt_message.nonce,
+                encrypt_message.message,
+                encrypt_message.checksum
+            );
+
+            console.log(decrypt_message.toString('utf8'))
+
             const operations = [
                 ['encrypted_content',
                     {
                         parent_author: '',
                         parent_permlink: 'encrypted',
                         author: 'user001',
-                        permlink: 'encrypted-post-001-001',
+                        permlink: permlink,
                         title: 'title',
                         body: 'body',
                         json_metadata: JSON.stringify({
                             tags: ['test'],
-                            app: `steemjs/${pkg.version}`
+                            app: `steemjs/${pkg.version}`,
+                            nonce: encrypt_message.nonce.toString(),
+                            message_size: encrypt_message.message.length
                         }),
-                        encrypted_message: encrypted_message.message.toString('utf8'),
-                        sent_time: 111111,
-                        message_size: 32,
-                        checksum: encrypted_message.checksum,
+                        encrypted_message: encrypt_message.message.toString('hex'),
+                        sent_time: encrypt_message.nonce,
+                        message_size: encrypt_message.message.length,
+                        checksum: encrypt_message.checksum,
                         price: bmchain.formatter.amount(1.000, 'BMT'),
-                        owner: 'user002',
-                        order_id: 2,
-                        apply_order: true
+                        owner: '',
+                        order_id: 0,
+                        apply_order: false
                     }
                 ]
             ];
 
             const tx = await bmchain.broadcast.sendAsync(
                 {operations, extensions: []},
-                {posting: '5J2srqnG4cKyRdqKPZ9bwmytPmudpQthF96BUA9Sek3cseZjrPR'}
+                {posting: '5JTnDZznCiwYNefL8RsdEvhbqqAqyZpvWWkJh2hHiX2CXXUZg4d'}
             );
 
             tx.should.have.properties([
@@ -223,6 +101,162 @@ if (approve_content_order) {
         } catch (e) {
             console.error(e);
         }
+
+        // #2: get list of encrypted contents
+        try {
+            const ret = await bmchain.api.getEncryptedDiscussions({
+                tag: 'user001',
+                owner: '',
+                limit: 5,
+                truncate_body: 1024
+            });
+
+            const nonce = Long.fromString(JSON.parse(ret["0"].json_metadata)['nonce']);
+            const checksum = parseInt(ret["0"].checksum);
+            const mes_size = parseInt(JSON.parse(ret["0"].json_metadata)['message_size']);
+            const enc_mes = new Buffer(mes_size);
+            enc_mes.write(ret["0"].encrypted_body, 'hex');
+            const decrypt_message = aes.decrypt(
+                priv_memo_user001,
+                publ_memo_user001,
+                nonce,
+                enc_mes,
+                checksum);
+            ret[0].decrypted_content = decrypt_message.toString('utf8');
+            console.log(ret[0]);
+        } catch (e) {
+            console.error(e);
+        }
+
+        // #3: order to buy
+        try {
+            const operations = [
+                ['content_order_create',
+                    {
+                        author: 'user001',
+                        permlink: permlink,
+                        owner: 'user002',
+                        price: '1.000 BMT',
+                        json_metadata: JSON.stringify({
+                            tags: ['test'],
+                            app: `steemjs/${pkg.version}`
+                        })
+                    }
+                ]
+            ];
+
+            const tx = await bmchain.broadcast.sendAsync(
+                {operations, extensions: []},
+                {active: '5KbjQGhsj2bTsQ7De8EMj1AzBJJi9q5BJuZiszDRL8ge43rxwTU'}
+            );
+
+            tx.should.have.properties([
+                'expiration',
+                'ref_block_num',
+                'ref_block_prefix',
+                'extensions',
+                'operations',
+                'signatures',
+            ]);
+        } catch (e) {
+            console.error(e);
+        }
+
+        // #4: get content orders
+        try {
+            const ret = await bmchain.api.getContentOrders('user002', 'user001', -1, 10);
+            console.log(ret);
+        } catch (e) {
+            console.error(e);
+        }
+    })();
+}
+
+// #5: approve order
+if (approve_content_order) {
+    (async () => {
+        try {
+            const orders = await bmchain.api.getContentOrders('user002', 'user001', -1, 10);
+            const posts = await bmchain.api.getEncryptedDiscussions({tag: 'user001', owner: '', limit: 1, truncate_body: 1024});
+            const order = orders[0]
+            const post = posts[0]
+
+            const nonce = Long.fromString(JSON.parse(post.json_metadata)['nonce']);
+            const checksum = parseInt(post.checksum);
+            const mes_size = parseInt(JSON.parse(post.json_metadata)['message_size']);
+            const enc_mes = new Buffer(mes_size);
+            enc_mes.write(post.encrypted_body, 'hex');
+            const decrypt_message = aes.decrypt(
+                priv_memo_user001,
+                publ_memo_user001,
+                nonce,
+                enc_mes,
+                checksum);
+            decrypted_content = decrypt_message.toString('utf8');
+
+            console.log(decrypted_content)
+
+            const encrypt_post = aes.encrypt(
+                priv_memo_user001,
+                publ_memo_user002,
+                decrypted_content);
+
+            const decrypt_post = aes.decrypt(
+                priv_memo_user002,
+                publ_memo_user001,
+                encrypt_post.nonce,
+                encrypt_post.message,
+                encrypt_post.checksum
+            );
+
+            console.log(decrypt_post.toString('utf8'))
+
+            const permlink2 = bmchain.formatter.commentPermlink('', 'encrypted-post-001-001');
+
+            const operations = [
+                ['encrypted_content',
+                    {
+                        parent_author: '',
+                        parent_permlink: 'encrypted',
+                        author: 'user001',
+                        permlink: permlink2,
+                        title: post['title'],
+                        body: post['body'],
+                        json_metadata: JSON.stringify({
+                            tags: ['test'],
+                            app: `steemjs/${pkg.version}`,
+                            nonce: encrypt_post.nonce.toString(),
+                            message_size: encrypt_post.message.length
+                        }),
+                        encrypted_message: encrypt_post.message.toString('hex'),
+                        sent_time: encrypt_post.nonce,
+                        message_size: encrypt_post.message.length,
+                        checksum: encrypt_post.checksum,
+                        price: bmchain.formatter.amount(0.000, 'BMT'),
+                        owner: order['owner'],
+                        order_id: order['id'],
+                        apply_order: true
+                    }
+                ]
+            ];
+
+            const tx = await bmchain.broadcast.sendAsync(
+                {operations, extensions: []},
+                {posting: '5JTnDZznCiwYNefL8RsdEvhbqqAqyZpvWWkJh2hHiX2CXXUZg4d'}
+            );
+
+            tx.should.have.properties([
+                'expiration',
+                'ref_block_num',
+                'ref_block_prefix',
+                'extensions',
+                'operations',
+                'signatures',
+            ]);
+
+        } catch (e) {
+            console.error(e);
+        }
     })();
 }
 
@@ -230,12 +264,29 @@ if (approve_content_order) {
 if (get_brought_encrypted_content){
     (async () => {
         try {
-            const ret = await bmchain.api.getEncryptedDiscussions({
+            const posts = await bmchain.api.getEncryptedDiscussions({
                 tag: 'user001',
                 owner: 'user002',
                 limit: 1,
                 truncate_body: 1024
             });
+            const post = posts[0];
+            const nonce = Long.fromString(JSON.parse(post.json_metadata)['nonce']);
+            const checksum = parseInt(post.checksum);
+            const mes_size = parseInt(JSON.parse(post.json_metadata)['message_size']);
+            const enc_mes = new Buffer(mes_size);
+            enc_mes.write(post.encrypted_body, 'hex');
+            const decrypt_message = aes.decrypt(
+                priv_memo_user002,
+                publ_memo_user001,
+                nonce,
+                enc_mes,
+                checksum);
+
+            post.decrypted_content = decrypt_message.toString('utf8');
+
+            console.log(post)
+
             console.log(ret);
         } catch (e) {
             console.error(e);
