@@ -92,8 +92,10 @@ class message_object : public object< message_object_type, message_object >
       public_key_type   from_memo_key;
       public_key_type   to_memo_key;
       uint64_t          sent_time = 0; /// used as seed to secret generation
+      uint64_t          nonce = 0;
       time_point_sec    receive_time; /// time received by blockchain
       uint32_t          checksum = 0;
+      uint32_t          message_size;
       buffer_type       encrypted_message;
 };
 
@@ -215,7 +217,7 @@ FC_API( bmchain::private_message::private_message_api, (get_inbox)(get_outbox)(g
 
 FC_REFLECT( bmchain::private_message::message_body, (thread_start)(subject)(body)(json_meta)(cc) );
 
-FC_REFLECT( bmchain::private_message::message_object, (id)(from)(to)(from_memo_key)(to_memo_key)(sent_time)(receive_time)(checksum)(encrypted_message) );
+FC_REFLECT( bmchain::private_message::message_object, (id)(from)(to)(from_memo_key)(to_memo_key)(sent_time)(nonce)(receive_time)(checksum)(message_size)(encrypted_message) );
 CHAINBASE_SET_INDEX_TYPE( bmchain::private_message::message_object, bmchain::private_message::message_index );
 
 FC_REFLECT( bmchain::private_message::message_api_obj, (id)(from)(to)(from_memo_key)(to_memo_key)(sent_time)(receive_time)(checksum)(encrypted_message) );

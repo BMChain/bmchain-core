@@ -102,6 +102,7 @@ namespace bmchain { namespace protocol {
       /// encrypted content
       string   encrypted_message;
       uint64_t sent_time = 0;
+      uint64_t nonce = 0;
       uint32_t message_size;
       uint32_t checksum;
       asset    price;
@@ -1000,6 +1001,7 @@ namespace bmchain { namespace protocol {
       protocol::public_key_type from_memo_key;
       protocol::public_key_type to_memo_key;
       uint64_t sent_time = 0;
+      uint64_t nonce = 0;
       uint32_t checksum = 0;
       uint32_t message_size = 0;
       string encrypted_message;
@@ -1105,6 +1107,6 @@ FC_REFLECT( bmchain::protocol::content_order_cancel_operation, (owner)(order_id)
 FC_REFLECT( bmchain::protocol::content_order_cancel_by_author_operation, (author)(order_id)(json_metadata) );
 
 FC_REFLECT_DERIVED( bmchain::protocol::encrypted_content_operation, (bmchain::protocol::comment_operation),
-                   (encrypted_message)(sent_time)(message_size)(checksum)(price)(owner)(order_id)(apply_order));
+                   (encrypted_message)(sent_time)(nonce)(message_size)(checksum)(price)(owner)(order_id)(apply_order));
 
-FC_REFLECT( bmchain::protocol::private_message_operation, (from)(to)(from_memo_key)(to_memo_key)(sent_time)(checksum)(message_size)(encrypted_message) )
+FC_REFLECT( bmchain::protocol::private_message_operation, (from)(to)(from_memo_key)(to_memo_key)(sent_time)(nonce)(checksum)(message_size)(encrypted_message) )

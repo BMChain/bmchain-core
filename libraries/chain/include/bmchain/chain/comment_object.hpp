@@ -106,7 +106,9 @@ namespace bmchain { namespace chain {
          bool private_post = false;
          account_name_type owner;
          buffer_type       encrypted_body;
-         uint32_t          checksum = 0;
+         uint32_t          message_size;
+         uint32_t          checksum;
+         uint64_t          nonce;
          asset             price = asset(0, BMT_SYMBOL);
    };
 
@@ -305,7 +307,7 @@ FC_REFLECT( bmchain::chain::comment_object,
              (max_accepted_payout)(percent_bmt_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
              (beneficiaries)
              (unique)
-             (encrypted)(private_post)(owner)(encrypted_body)(checksum)(price)
+             (encrypted)(private_post)(owner)(encrypted_body)(message_size)(checksum)(nonce)(price)
           )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::comment_object, bmchain::chain::comment_index )
 

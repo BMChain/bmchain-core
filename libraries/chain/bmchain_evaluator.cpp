@@ -729,6 +729,8 @@ void encrypted_content_evaluator::do_apply( const encrypted_content_operation& o
             com.encrypted = !o.encrypted_message.empty();
             if (com.encrypted) {
                com.checksum = o.checksum;
+               com.nonce = o.nonce;
+               com.message_size = o.message_size;
                com.price = o.price;
                com.encrypted_body.resize(o.message_size);
                std::copy(enc_msg.begin(), enc_msg.end(), com.encrypted_body.begin());

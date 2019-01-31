@@ -2428,6 +2428,7 @@ annotated_signed_transaction wallet_api::post_encrypted_comment( string author, 
    op.json_metadata     = json;
    op.encrypted_message = fc::to_hex(encrypted_msg);
    op.sent_time         = sent_time;
+   op.nonce             = sent_time;
    op.message_size      = encrypted_msg.size();
    op.checksum          = checksum;
    op.price             = price;
