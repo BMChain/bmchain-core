@@ -9,9 +9,9 @@ uint64 = _types2.default.uint64;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var encrypted_content = false;
+var encrypted_content = true;
 var approve_content_order = false;
-var get_brought_encrypted_content = true;
+var get_brought_encrypted_content = false;
 
 // Name account: user001
 // Private owner key  : 5JZnth3gttgX67j8jdP5BvXZXbEZZU9PKnoUgS8XFmqfboc59LD
@@ -75,6 +75,7 @@ if (encrypted_content) {
                         }),
                         encrypted_message: encrypt_message.message.toString('hex'),
                         sent_time: encrypt_message.nonce,
+                        nonce: encrypt_message.nonce,
                         message_size: encrypt_message.message.length,
                         checksum: encrypt_message.checksum,
                         price: bmchain.formatter.amount(1.000, 'BMT'),
@@ -101,6 +102,8 @@ if (encrypted_content) {
         } catch (e) {
             console.error(e);
         }
+
+        return;
 
         // #2: get list of encrypted contents
         try {

@@ -204,7 +204,7 @@ module.exports = [{
   "roles": ["posting"],
   "operation": "encrypted_content",
   "params": ["parent_author", "parent_permlink", "author", "permlink", "title", "body", "json_metadata",
-    "encrypted_message", "sent_time", "message_size", "checksum", "price", "owner", "order_id", "apply_order"]
+    "encrypted_message", "sent_time", "nonce", "message_size", "checksum", "price", "owner", "order_id", "apply_order"]
 }, {
   "roles": ["active"],
   "operation": "content_order_create",
