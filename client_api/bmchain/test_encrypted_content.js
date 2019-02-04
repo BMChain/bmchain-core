@@ -14,33 +14,33 @@ var approve_content_order = false;
 var get_brought_encrypted_content = false;
 
 // Name account: user001
-// Private owner key  : 5JZnth3gttgX67j8jdP5BvXZXbEZZU9PKnoUgS8XFmqfboc59LD
-// Public owner key   : BMT6Jyi5X9p1L5ou9iVB6qq7nUHpikXgcEiW1X7hB1oofsv38g6Yd
-// Private active key : 5KaXtAD4YWCzp1KksyC2rVTDbgr6BcyvRw4n6zQ9W6rrSjavQUT
-// Public active key  : BMT6iGC8BNBx8Dd389qrFVEvGXLwbNCyPNBCiZ9dyotwbCRVNXN3K
-// Private posting key: 5JTnDZznCiwYNefL8RsdEvhbqqAqyZpvWWkJh2hHiX2CXXUZg4d
-// Public posting key : BMT6AEeYUz7jCbKBxVyoFPfGvtjfyiXDp5W638C5swzQ5QnZUqoNo
-// Private memo key   : 5K8YTCRuCV3Jm1pJjH8BTf6GcHKSgF6gAxzk5p8R7b8th8vXoMs
-// Public memo key    : BMT8YQ2219mg51pThHYMBDhTMm9JuaUH2Tg4GSuQ9da2U4ddJdd2n
+// Private owner key  : 5J5bXq2eXvddekkLNSp85XBkrK3CGRyo1fSCP5Q3PgEoh5BsrNB
+// Public owner key   : BMT4zjx55qKc6BphoVqNLDrtwML7RSXLGokfzWpnwSgcha7jBH7h7
+// Private active key : 5HzQgs6Z33Ru8T4kqFZbPw9qwuhQAap7gA6VP22LK7btZz38btV
+// Public active key  : BMT7aLD9yK75LaHo9fubJb8xkALTPj5y5L4U6YCnuDSnegn4N8Jm1
+// Private posting key: 5Jn4xHEksEPtDheWzoUGq5wyicCgPb1iuvce5enQzmhWQieytMs
+// Public posting key : BMT8YzkXTtFi8cpsWpPZBxvLmZfefWdZ6hzpK1tZbNJoc1ndZPFwd
+// Private memo key   : 5K1exEzxbg1gkZBqBP2S7zM31Mhku9TXJubsdvFeAMHNoG4RY2c
+// Public memo key    : BMT5mvxq7mQrjGtyVQQ7uZh4XNzN5LjoJ49kzxc6JE5twfBL3mgs9
 
 // Name account: user002
-// Private owner key  : 5KR47BtUq1QXEabTyj5Rm17bVWGzN3pM5dqBQpiVhKfxnUdC1Pk
-// Public owner key   : BMT7tvCtDCx2HoPxcHimtVtoDXT1YbwgjaWjEqomL1GQn23gdYLXA
-// Private active key : 5KbjQGhsj2bTsQ7De8EMj1AzBJJi9q5BJuZiszDRL8ge43rxwTU
-// Public active key  : BMT6mezynnxdCBHEbd7DairHFC4wHaC7NZpb66w17qMZ4Ko24FgKj
-// Private posting key: 5KEv9Qfd82GpJC74kUN76mB2pxw8QQ6HRBgcP69Mdsopnxuzf1T
-// Public posting key : BMT5qBkzyGLxyH1qh9JC8MpHHrw47NCwLHFQ82U7nQinEx8qFZKdP
-// Private memo key   : 5KaVTgYtUuPFLndgGvuQ3LFCvxZmUaKYxuLK9kR9XggDgp2ch6d
-// Public memo key    : BMT6etFjYGXc8fsLpSFNB9yEnk9KKxpDTKdBXGqwmU2tZKUh3CRpg
+// Private owner key  : 5K5RHExhyXxP3EFinzurQhxVtggPbFm1fwHtWtVp3HjdPwQ5fWa
+// Public owner key   : BMT5e7GB21HpNCcP3j7HYptCRZpTVVWAVaE1XoktgycmpvauSUHxP
+// Private active key : 5Hxez51taPrNmQCbzFuDPuzF1kw68zjxx1yCiZB2k2rjpJ2moa5
+// Public active key  : BMT56QrZqA4Wbxg4umFS5eEU5KZtSwkyDqpirmXLcAZZMrxKJS1pL
+// Private posting key: 5JTM96uunx9MS5oYeSKfqAA9s9hQ4gZK7ryDLG75u6SVky3qwsR
+// Public posting key : BMT6Ztegfi35FRUFmgxisUN9DqoyURpMqKwkiBjT1DJXH6wZJL4Ao
+// Private memo key   : 5Js7QFLZ1kUxkWA42Hjf9vipuKvjniXYCVjNJWQi52Sndohf5wX
+// Public memo key    : BMT774HWEajgLMjNmf1QdD5NFH96yaEf69XvWEE2qvVYAt2zcZyfE
 
-priv_memo_user001 = '5K8YTCRuCV3Jm1pJjH8BTf6GcHKSgF6gAxzk5p8R7b8th8vXoMs';
-publ_memo_user001 = 'BMT8YQ2219mg51pThHYMBDhTMm9JuaUH2Tg4GSuQ9da2U4ddJdd2n';
-priv_memo_user002 = '5KaVTgYtUuPFLndgGvuQ3LFCvxZmUaKYxuLK9kR9XggDgp2ch6d';
-publ_memo_user002 = 'BMT6etFjYGXc8fsLpSFNB9yEnk9KKxpDTKdBXGqwmU2tZKUh3CRpg';
+priv_memo_user001 = '5K1exEzxbg1gkZBqBP2S7zM31Mhku9TXJubsdvFeAMHNoG4RY2c';
+publ_memo_user001 = 'BMT5mvxq7mQrjGtyVQQ7uZh4XNzN5LjoJ49kzxc6JE5twfBL3mgs9';
+priv_memo_user002 = '5Js7QFLZ1kUxkWA42Hjf9vipuKvjniXYCVjNJWQi52Sndohf5wX';
+publ_memo_user002 = 'BMT774HWEajgLMjNmf1QdD5NFH96yaEf69XvWEE2qvVYAt2zcZyfE';
 
 if (encrypted_content) {
     (async () => {
-        const permlink = bmchain.formatter.commentPermlink('', 'encrypted-post-001-001');
+        var permlink = bmchain.formatter.commentPermlink('', 'encrypted-post-001-001');
         try {
             // #1: posting encrypted content
             const encrypt_message = aes.encrypt(
@@ -88,7 +88,7 @@ if (encrypted_content) {
 
             const tx = await bmchain.broadcast.sendAsync(
                 {operations, extensions: []},
-                {posting: '5JTnDZznCiwYNefL8RsdEvhbqqAqyZpvWWkJh2hHiX2CXXUZg4d'}
+                {posting: '5Jn4xHEksEPtDheWzoUGq5wyicCgPb1iuvce5enQzmhWQieytMs'}
             );
 
             tx.should.have.properties([
@@ -103,8 +103,6 @@ if (encrypted_content) {
             console.error(e);
         }
 
-        return;
-
         // #2: get list of encrypted contents
         try {
             const ret = await bmchain.api.getEncryptedDiscussions({
@@ -114,9 +112,13 @@ if (encrypted_content) {
                 truncate_body: 1024
             });
 
-            const nonce = Long.fromString(JSON.parse(ret["0"].json_metadata)['nonce']);
+            permlink = ret["0"].permlink;
+
+            // const nonce = Long.fromString(JSON.parse(ret["0"].json_metadata)['nonce']);
+            // const mes_size = parseInt(JSON.parse(ret["0"].json_metadata)['message_size']);
+            const nonce = ret["0"].nonce;
+            const mes_size = ret["0"].message_size;
             const checksum = parseInt(ret["0"].checksum);
-            const mes_size = parseInt(JSON.parse(ret["0"].json_metadata)['message_size']);
             const enc_mes = new Buffer(mes_size);
             enc_mes.write(ret["0"].encrypted_body, 'hex');
             const decrypt_message = aes.decrypt(
@@ -150,7 +152,7 @@ if (encrypted_content) {
 
             const tx = await bmchain.broadcast.sendAsync(
                 {operations, extensions: []},
-                {active: '5KbjQGhsj2bTsQ7De8EMj1AzBJJi9q5BJuZiszDRL8ge43rxwTU'}
+                {active: '5Hxez51taPrNmQCbzFuDPuzF1kw68zjxx1yCiZB2k2rjpJ2moa5'}
             );
 
             tx.should.have.properties([

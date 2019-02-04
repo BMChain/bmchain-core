@@ -16,7 +16,7 @@ const bmchain = require("./steem/lib");
 
         const tx = await bmchain.broadcast.sendAsync(
             {operations, extensions: []},
-            {owner: '5JnWUyuk9jT3nW7x2pwFkz7qVLV7pgpKAXnM8dXAShwZqcXCYee'}
+            {owner: '5J5bXq2eXvddekkLNSp85XBkrK3CGRyo1fSCP5Q3PgEoh5BsrNB'}
         );
 
         tx.should.have.properties([
@@ -53,7 +53,7 @@ const bmchain = require("./steem/lib");
 
         const tx = await bmchain.broadcast.sendAsync(
             {operations, extensions: []},
-            {owner: '5JnWUyuk9jT3nW7x2pwFkz7qVLV7pgpKAXnM8dXAShwZqcXCYee'}
+            {owner: '5J5bXq2eXvddekkLNSp85XBkrK3CGRyo1fSCP5Q3PgEoh5BsrNB'}
         );
 
         tx.should.have.properties([
@@ -85,7 +85,7 @@ const bmchain = require("./steem/lib");
 
         const tx = await bmchain.broadcast.sendAsync(
             {operations, extensions: []},
-            {owner: '5JnWUyuk9jT3nW7x2pwFkz7qVLV7pgpKAXnM8dXAShwZqcXCYee'}
+            {owner: '5J5bXq2eXvddekkLNSp85XBkrK3CGRyo1fSCP5Q3PgEoh5BsrNB'}
         );
 
         tx.should.have.properties([
