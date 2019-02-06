@@ -1463,7 +1463,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             for( auto& b : comment.beneficiaries )
             {
                auto benefactor_tokens = ( author_tokens * b.weight ) / BMCHAIN_100_PERCENT;
-               auto vest_created = create_vesting( get_account( b.account ), benefactor_tokens, true );
+               auto vest_created = create_vesting( get_account( b.account ), asset( benefactor_tokens, BMT_SYMBOL), true );
                push_virtual_operation( comment_benefactor_reward_operation( b.account, comment.author, to_string( comment.permlink ), vest_created ) );
                total_beneficiary += benefactor_tokens;
             }
@@ -1475,7 +1475,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             auto vesting_bmt = author_tokens - _bmt;
 
             const auto &author = get_account(comment.author);
-            auto vest_created = create_vesting(author, vesting_bmt);
+            auto vest_created = create_vesting(author, asset( vesting_bmt, BMT_SYMBOL ));
             adjust_balance( author, bmt );
 
             adjust_total_payout( comment, bmt + asset( vesting_bmt, BMT_SYMBOL ), asset( curation_tokens, BMT_SYMBOL ), asset( total_beneficiary, BMT_SYMBOL ) );
@@ -1628,7 +1628,7 @@ void database::process_comment_cashout()
          modify( get< reward_fund_object, by_id >( reward_fund_id_type( i ) ), [&]( reward_fund_object& rfo )
          {
             rfo.recent_claims = funds[ i ].recent_claims;
-            rfo.reward_balance -= funds[ i ].bmt_awarded;
+            rfo.reward_balance -= asset( funds[ i ].bmt_awarded, BMT_SYMBOL );
          });
       }
    }
@@ -2994,9 +2994,9 @@ void database::adjust_balance( const account_object& a, const asset& delta )
 {
    modify( a, [&]( account_object& acnt )
    {
-      switch( delta.symbol )
+      switch( delta.symbol.asset_num )
       {
-         case BMT_SYMBOL:
+         case STEEM_ASSET_NUM_BMT:
             acnt.balance += delta;
             break;
          default:
@@ -3010,9 +3010,9 @@ void database::adjust_savings_balance( const account_object& a, const asset& del
 {
    modify( a, [&]( account_object& acnt )
    {
-      switch( delta.symbol )
+      switch( delta.symbol.asset_num )
       {
-         case BMT_SYMBOL:
+         case STEEM_ASSET_NUM_BMT:
             acnt.savings_balance += delta;
             break;
          default:
@@ -3026,9 +3026,9 @@ void database::adjust_reward_balance( const account_object& a, const asset& delt
 {
    modify( a, [&]( account_object& acnt )
    {
-      switch( delta.symbol )
+      switch( delta.symbol.asset_num )
       {
-         case BMT_SYMBOL:
+         case STEEM_ASSET_NUM_BMT:
             acnt.reward_bmt_balance += delta;
             break;
          default:
@@ -3047,9 +3047,9 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
 
    modify( props, [&]( dynamic_global_property_object& props )
    {
-      switch( delta.symbol )
+      switch( delta.symbol.asset_num )
       {
-         case BMT_SYMBOL:
+         case STEEM_ASSET_NUM_BMT:
          {
             asset new_vesting( (adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, BMT_SYMBOL );
             props.current_supply += delta + new_vesting;
@@ -3067,9 +3067,9 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
 
 asset database::get_balance( const account_object& a, asset_symbol_type symbol )const
 {
-   switch( symbol )
+   switch( symbol.asset_num )
    {
-      case BMT_SYMBOL:
+      case STEEM_ASSET_NUM_BMT:
          return a.balance;
       default:
          FC_ASSERT( false, "invalid symbol" );
@@ -3078,9 +3078,9 @@ asset database::get_balance( const account_object& a, asset_symbol_type symbol )
 
 asset database::get_savings_balance( const account_object& a, asset_symbol_type symbol )const
 {
-   switch( symbol )
+   switch( symbol.asset_num )
    {
-      case BMT_SYMBOL:
+      case STEEM_ASSET_NUM_BMT:
          return a.savings_balance;
       default:
          FC_ASSERT( !"invalid symbol" );
