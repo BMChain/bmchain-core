@@ -72,12 +72,20 @@ struct strcmp_equal
    }
 };
 
+template< bool force_canon >
+void copy_legacy_chain_properties( chain_properties& dest, const legacy_chain_properties& src )
+{
+   dest.account_creation_fee = src.account_creation_fee.to_asset< force_canon >();
+   dest.maximum_block_size = src.maximum_block_size;
+   dest.sbd_interest_rate = src.sbd_interest_rate;
+}
+
 void witness_update_evaluator::do_apply( const witness_update_operation& o )
 {
    _db.get_account( o.owner ); // verify owner exists
 
    FC_ASSERT( o.url.size() <= BMCHAIN_MAX_WITNESS_URL_LENGTH, "URL is too long" );
-   FC_ASSERT( o.props.account_creation_fee.symbol == BMT_SYMBOL );
+   FC_ASSERT( o.props.account_creation_fee.symbol.is_canon() );
 
    const auto& by_witness_name_idx = _db.get_index< witness_index >().indices().get< by_name >();
    auto wit_itr = by_witness_name_idx.find( o.owner );
@@ -86,7 +94,7 @@ void witness_update_evaluator::do_apply( const witness_update_operation& o )
       _db.modify( *wit_itr, [&]( witness_object& w ) {
          from_string( w.url, o.url );
          w.signing_key        = o.block_signing_key;
-         w.props              = o.props;
+         copy_legacy_chain_properties< false >( w.props, o.props );
       });
    }
    else
@@ -96,7 +104,7 @@ void witness_update_evaluator::do_apply( const witness_update_operation& o )
          from_string( w.url, o.url );
          w.signing_key        = o.block_signing_key;
          w.created            = _db.head_block_time();
-         w.props              = o.props;
+         copy_legacy_chain_properties< false >( w.props, o.props );
       });
    }
 }

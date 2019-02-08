@@ -2,6 +2,7 @@
 #include <bmchain/protocol/base.hpp>
 #include <bmchain/protocol/block_header.hpp>
 #include <bmchain/protocol/asset.hpp>
+#include <bmchain/protocol/legacy_asset.hpp>
 
 #include <fc/utf8.hpp>
 #include <fc/crypto/equihash.hpp>
@@ -424,6 +425,42 @@ namespace bmchain { namespace protocol {
 
 
    /**
+    * Witnesses must vote on how to set certain chain properties to ensure a smooth
+    * and well functioning network.  Any time @owner is in the active set of witnesses these
+    * properties will be used to control the blockchain configuration.
+    */
+   struct legacy_chain_properties
+   {
+      /**
+       *  This fee, paid in STEEM, is converted into VESTING SHARES for the new account. Accounts
+       *  without vesting shares cannot earn usage rations and therefore are powerless. This minimum
+       *  fee requires all accounts to have some kind of commitment to the network that includes the
+       *  ability to vote and make transactions.
+       */
+      legacy_steem_asset account_creation_fee = legacy_steem_asset::from_amount( BMCHAIN_MIN_ACCOUNT_CREATION_FEE );
+
+      /**
+       *  This witnesses vote for the maximum_block_size which is used by the network
+       *  to tune rate limiting and capacity
+       */
+      uint32_t          maximum_block_size = BMCHAIN_MIN_BLOCK_SIZE_LIMIT * 2;
+      uint16_t          sbd_interest_rate  = BMCHAIN_DEFAULT_SBD_INTEREST_RATE;
+
+      template< bool force_canon >
+      void validate()const
+      {
+         if( force_canon )
+         {
+            FC_ASSERT( account_creation_fee.symbol.is_canon() );
+         }
+         FC_ASSERT( account_creation_fee.amount >= BMCHAIN_MIN_ACCOUNT_CREATION_FEE);
+         FC_ASSERT( maximum_block_size >= BMCHAIN_MIN_BLOCK_SIZE_LIMIT);
+         FC_ASSERT( sbd_interest_rate >= 0 );
+         FC_ASSERT( sbd_interest_rate <= BMCHAIN_100_PERCENT );
+      }
+   };
+
+   /**
     *  Users who wish to become a witness must pay a fee acceptable to
     *  the current witnesses to apply for the position and allow voting
     *  to begin.
@@ -442,7 +479,7 @@ namespace bmchain { namespace protocol {
       account_name_type owner;
       string            url;
       public_key_type   block_signing_key;
-      chain_properties  props;
+      legacy_chain_properties  props;
       asset             fee; ///< the fee paid to register a new witness, should be 10x current block production pay
 
       void validate()const;
@@ -1030,6 +1067,11 @@ FC_REFLECT( bmchain::protocol::pow2, (input)(pow_summary) )
 FC_REFLECT( bmchain::protocol::pow2_input, (worker_account)(prev_block)(nonce) )
 FC_REFLECT( bmchain::protocol::equihash_pow, (input)(proof)(prev_block)(pow_summary) )
 FC_REFLECT( bmchain::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) );
+FC_REFLECT( bmchain::protocol::legacy_chain_properties,
+            (account_creation_fee)
+            (maximum_block_size)
+            (sbd_interest_rate)
+          )
 
 FC_REFLECT_TYPENAME( bmchain::protocol::pow2_work )
 FC_REFLECT( bmchain::protocol::pow_operation, (worker_account)(block_id)(nonce)(work)(props) )

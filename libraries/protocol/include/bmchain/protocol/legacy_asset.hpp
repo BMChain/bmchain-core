@@ -55,6 +55,8 @@ namespace bmchain { namespace protocol {
 
     } }
 
+FC_REFLECT( bmchain::protocol::legacy_steem_asset_symbol_type,(ser))
+
 namespace fc { namespace raw {
 
         template< typename Stream >
@@ -121,15 +123,17 @@ namespace fc { namespace raw {
         leg = bmchain::protocol::legacy_steem_asset::from_asset( a );
     }
 
-    template<>
-    struct get_typename< bmchain::protocol::legacy_steem_asset_symbol_type >
-    {
-        static const char* name()
-        {
-            return "bmchain::protocol::legacy_steem_asset_symbol_type";
-        }
-    };
+//    template<>
+//    struct get_typename< bmchain::protocol::legacy_steem_asset_symbol_type >
+//    {
+//        static const char* name()
+//        {
+//            return "bmchain::protocol::legacy_steem_asset_symbol_type";
+//        }
+//    };
 
 } // fc
+
+
 
 FC_REFLECT( bmchain::protocol::legacy_steem_asset,(amount)(symbol))
