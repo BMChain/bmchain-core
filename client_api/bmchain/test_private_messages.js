@@ -38,6 +38,7 @@ var private_key = require("./steem/lib/auth/ecc/src/key_private.js");
                     from_memo_key: public_key.fromString('BMT7o4Az56RoUhLay68NaUFh56sgCjStvEBt7kGzVGBqPuuQjgbpr'),
                     to_memo_key: public_key.fromString('BMT58GceeEnG9TRDHjGcnTY3sWfPtwKEdD6kemCyuTihfsma7Db9d'),
                     sent_time: encrypt_message.nonce,
+                    nonce: encrypt_message.nonce,
                     checksum: encrypt_message.checksum,
                     message_size: encrypt_message.message.toString('hex').length,
                     encrypted_message: encrypt_message.message.toString('hex')

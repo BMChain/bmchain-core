@@ -199,7 +199,7 @@ module.exports = [{
 }, {
   "roles": ["posting"],
   "operation": "private_message",
-  "params": ["from", "to", "from_memo_key", "to_memo_key", "sent_time", "checksum", "message_size", "encrypted_message"]
+  "params": ["from", "to", "from_memo_key", "to_memo_key", "sent_time", "nonce", "checksum", "message_size", "encrypted_message"]
 }, {
   "roles": ["posting"],
   "operation": "encrypted_content",
