@@ -151,7 +151,7 @@ typedef multi_index_container<
                member< message_object, time_point_sec, &message_object::receive_time >,
                member< message_object, message_id_type, &message_object::id >
             >,
-            composite_key_compare< std::less< string >, std::greater< time_point_sec >, std::less< message_id_type > >
+            composite_key_compare< std::less< string >, std::less< time_point_sec >, std::less< message_id_type > >
       >,
       ordered_unique< tag< by_from_date >,
             composite_key< message_object,
@@ -159,7 +159,7 @@ typedef multi_index_container<
                member< message_object, time_point_sec, &message_object::receive_time >,
                member< message_object, message_id_type, &message_object::id >
             >,
-            composite_key_compare< std::less< string >, std::greater< time_point_sec >, std::less< message_id_type > >
+            composite_key_compare< std::less< string >, std::less< time_point_sec >, std::less< message_id_type > >
       >
    >,
    allocator< message_object >
