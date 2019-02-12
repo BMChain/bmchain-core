@@ -237,7 +237,7 @@ namespace bmchain { namespace protocol {
 
    void pow_operation::validate()const
    {
-      props.validate();
+      props.validate< true >();
       validate_account_name( worker_account );
       FC_ASSERT( work_input() == work.input, "Determninistic input does not match recorded input" );
       work.validate();
@@ -256,7 +256,7 @@ namespace bmchain { namespace protocol {
 
    void pow2_operation::validate()const
    {
-      props.validate();
+      props.validate< true >();
       work.visit( pow2_operation_validate_visitor() );
    }
 

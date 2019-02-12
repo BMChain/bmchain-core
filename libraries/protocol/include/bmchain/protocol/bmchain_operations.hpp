@@ -677,7 +677,7 @@ namespace bmchain { namespace protocol {
       block_id_type     block_id;
       uint64_t          nonce = 0;
       pow               work;
-      chain_properties  props;
+      legacy_chain_properties  props;
 
       void validate()const;
       fc::sha256 work_input()const;
@@ -723,7 +723,7 @@ namespace bmchain { namespace protocol {
    {
       pow2_work                     work;
       optional< public_key_type >   new_owner_key;
-      chain_properties              props;
+      legacy_chain_properties              props;
 
       void validate()const;
 
