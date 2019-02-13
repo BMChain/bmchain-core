@@ -1714,7 +1714,7 @@ void pow2_evaluator::do_apply( const pow2_operation& o )
       db.create<witness_object>( [&]( witness_object& w )
       {
           w.owner             = worker_account;
-          w.props             = o.props;
+          copy_legacy_chain_properties< true >( w.props, o.props );
           w.signing_key       = *o.new_owner_key;
           w.pow_worker        = dgp.total_pow;
       });
@@ -1727,7 +1727,7 @@ void pow2_evaluator::do_apply( const pow2_operation& o )
       FC_ASSERT( cur_witness->pow_worker == 0, "This account is already scheduled for pow block production." );
       db.modify(*cur_witness, [&]( witness_object& w )
       {
-          w.props             = o.props;
+          copy_legacy_chain_properties< true >( w.props, o.props );
           w.pow_worker        = dgp.total_pow;
       });
    }
