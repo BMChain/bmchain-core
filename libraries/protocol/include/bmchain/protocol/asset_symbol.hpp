@@ -4,17 +4,17 @@
 #include <bmchain/protocol/types_fwd.hpp>
 
 #define STEEM_ASSET_SYMBOL_PRECISION_BITS    4
-#define SMT_MAX_NAI                          99999999
+#define SMT_MAX_NAI                          999999999
 #define SMT_MIN_NAI                          1
 #define SMT_MIN_NON_RESERVED_NAI             10000000
 #define STEEM_ASSET_SYMBOL_NAI_LENGTH        10
 #define STEEM_ASSET_SYMBOL_NAI_STRING_LENGTH ( STEEM_ASSET_SYMBOL_NAI_LENGTH + 2 )
 
+#define STEEM_PRECISION_BMT (3)
+#define STEEM_PRECISION_REP (6)
 #define STEEM_PRECISION_SBD   (3)
 #define STEEM_PRECISION_STEEM (3)
 #define STEEM_PRECISION_VESTS (6)
-#define STEEM_PRECISION_BMT (3)
-#define STEEM_PRECISION_REP (6)
 
 // One's place is used for check digit, which means NAI 0-9 all have NAI data of 0 which is invalid
 // This space is safe to use because it would alwasys result in failure to convert from NAI
@@ -24,16 +24,17 @@
 #define STEEM_NAI_STEEM (4)
 #define STEEM_NAI_VESTS (5)
 
+#define STEEM_ASSET_NUM_BMT \
+  (((SMT_MAX_NAI + STEEM_NAI_BMT) << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_BMT)
+#define STEEM_ASSET_NUM_REP \
+  (((SMT_MAX_NAI + STEEM_NAI_REP) << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_REP)
 #define STEEM_ASSET_NUM_SBD \
   (((SMT_MAX_NAI + STEEM_NAI_SBD)   << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_SBD)
 #define STEEM_ASSET_NUM_STEEM \
   (((SMT_MAX_NAI + STEEM_NAI_STEEM) << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_STEEM)
 #define STEEM_ASSET_NUM_VESTS \
   (((SMT_MAX_NAI + STEEM_NAI_VESTS) << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_VESTS)
-#define STEEM_ASSET_NUM_BMT \
-  (((SMT_MAX_NAI + STEEM_NAI_BMT) << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_BMT)
-#define STEEM_ASSET_NUM_REP \
-  (((SMT_MAX_NAI + STEEM_NAI_REP) << STEEM_ASSET_SYMBOL_PRECISION_BITS) | STEEM_PRECISION_REP)
+
 
 #ifdef IS_TEST_NET
 
@@ -43,11 +44,11 @@
 
 #else
 
+#define BMT_SYMBOL_U64    (uint64_t('B') | (uint64_t('M') << 8) | (uint64_t('T') << 16))
+#define REP_SYMBOL_U64    (uint64_t('R') | (uint64_t('E') << 8) | (uint64_t('P') << 16))
 #define VESTS_SYMBOL_U64  (uint64_t('V') | (uint64_t('E') << 8) | (uint64_t('S') << 16) | (uint64_t('T') << 24) | (uint64_t('S') << 32))
 #define STEEM_SYMBOL_U64  (uint64_t('S') | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('E') << 24) | (uint64_t('M') << 32))
 #define SBD_SYMBOL_U64    (uint64_t('S') | (uint64_t('B') << 8) | (uint64_t('D') << 16))
-#define BMT_SYMBOL_U64    (uint64_t('B') | (uint64_t('M') << 8) | (uint64_t('T') << 16))
-#define REP_SYMBOL_U64    (uint64_t('R') | (uint64_t('E') << 8) | (uint64_t('P') << 16))
 
 #endif
 
