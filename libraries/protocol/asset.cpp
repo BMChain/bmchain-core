@@ -81,7 +81,7 @@ namespace bmchain { namespace protocol {
                             {
                                 uint64_t new_nai = nai*10 + ((*p) - '0');
                                 FC_ASSERT( new_nai >= nai, "Cannot parse asset amount" ); // This is failing for system assets
-                                FC_ASSERT( new_nai <= SMT_MAX_NAI, "Cannot parse asset amount" );
+                                FC_ASSERT( new_nai <= SMT_MAX_NAI, "Cannot parse asset amount",  ("new_nai", new_nai)("SMT_MAX_NAI", SMT_MAX_NAI));
                                 nai = new_nai;
                                 ++p;
                                 ++digit_count;
@@ -177,6 +177,9 @@ namespace bmchain { namespace protocol {
 
             switch( nai_data_digits )
             {
+                case STEEM_NAI_BMT:
+                    FC_ASSERT( decimal_places == STEEM_PRECISION_BMT );
+                    return STEEM_ASSET_NUM_BMT;
                 case STEEM_NAI_STEEM:
                     FC_ASSERT( decimal_places == STEEM_PRECISION_STEEM );
                     return STEEM_ASSET_NUM_STEEM;
@@ -199,6 +202,9 @@ namespace bmchain { namespace protocol {
             // Can be replaced with some clever bitshifting
             switch( asset_num )
             {
+                case STEEM_ASSET_NUM_BMT:
+                    nai_data_digits = STEEM_NAI_BMT;
+                    break;
                 case STEEM_ASSET_NUM_STEEM:
                     nai_data_digits = STEEM_NAI_STEEM;
                     break;
