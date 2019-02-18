@@ -1192,7 +1192,6 @@ annotated_signed_transaction wallet_api::create_account_with_keys( string creato
                                       bool broadcast )const
 { try {
    FC_ASSERT( !is_locked() );
-   asset account_creation_fee = asset( BMCHAIN_MIN_ACCOUNT_CREATION_FEE, BMT_SYMBOL );
    account_create_operation op;
    op.creator = creator;
    op.new_account_name = new_account_name;
@@ -1201,9 +1200,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys( string creato
    op.posting = authority( 1, posting, 1 );
    op.memo_key = memo;
    op.json_metadata = json_meta;
-   auto props = my->_remote_db->get_chain_properties();
-   auto fee = props.account_creation_fee;
-   op.fee = fee;
+   op.fee = my->_remote_db->get_chain_properties().account_creation_fee;;
 
    signed_transaction tx;
    tx.operations.push_back(op);
