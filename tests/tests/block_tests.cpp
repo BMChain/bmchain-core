@@ -391,71 +391,71 @@ BOOST_AUTO_TEST_CASE( tapos )
 
 BOOST_FIXTURE_TEST_CASE( optional_tapos, clean_database_fixture )
 {
-   try
-   {
-      idump((db.get_account("initminer")));
-      ACTORS( (alice)(bob) );
-
-      generate_block();
-
-      BOOST_TEST_MESSAGE( "Create transaction" );
-
-      transfer( BMCHAIN_INIT_MINER_NAME, "alice", 1000000 );
-      transfer_operation op;
-      op.from = "alice";
-      op.to = "bob";
-      op.amount = asset(1000,BMT_SYMBOL);
-      signed_transaction tx;
-      tx.operations.push_back( op );
-
-      BOOST_TEST_MESSAGE( "ref_block_num=0, ref_block_prefix=0" );
-
-      tx.ref_block_num = 0;
-      tx.ref_block_prefix = 0;
-      tx.signatures.clear();
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      PUSH_TX( db, tx );
-
-      BOOST_TEST_MESSAGE( "proper ref_block_num, ref_block_prefix" );
-
-      tx.signatures.clear();
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      PUSH_TX( db, tx, database::skip_transaction_dupe_check );
-
-      BOOST_TEST_MESSAGE( "ref_block_num=0, ref_block_prefix=12345678" );
-
-      tx.ref_block_num = 0;
-      tx.ref_block_prefix = 0x12345678;
-      tx.signatures.clear();
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
-
-      BOOST_TEST_MESSAGE( "ref_block_num=1, ref_block_prefix=12345678" );
-
-      tx.ref_block_num = 1;
-      tx.ref_block_prefix = 0x12345678;
-      tx.signatures.clear();
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
-
-      BOOST_TEST_MESSAGE( "ref_block_num=9999, ref_block_prefix=12345678" );
-
-      tx.ref_block_num = 9999;
-      tx.ref_block_prefix = 0x12345678;
-      tx.signatures.clear();
-      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
-   }
-   catch (fc::exception& e)
-   {
-      edump((e.to_detail_string()));
-      throw;
-   }
+//   try
+//   {
+//      idump((db.get_account("initminer")));
+//      ACTORS( (alice)(bob) );
+//
+//      generate_block();
+//
+//      BOOST_TEST_MESSAGE( "Create transaction" );
+//
+//      transfer( BMCHAIN_INIT_MINER_NAME, "alice", 1000000 );
+//      transfer_operation op;
+//      op.from = "alice";
+//      op.to = "bob";
+//      op.amount = asset(1000,BMT_SYMBOL);
+//      signed_transaction tx;
+//      tx.operations.push_back( op );
+//
+//      BOOST_TEST_MESSAGE( "ref_block_num=0, ref_block_prefix=0" );
+//
+//      tx.ref_block_num = 0;
+//      tx.ref_block_prefix = 0;
+//      tx.signatures.clear();
+//      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
+//      tx.sign( alice_private_key, db.get_chain_id() );
+//      PUSH_TX( db, tx );
+//
+//      BOOST_TEST_MESSAGE( "proper ref_block_num, ref_block_prefix" );
+//
+//      tx.signatures.clear();
+//      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
+//      tx.sign( alice_private_key, db.get_chain_id() );
+//      PUSH_TX( db, tx, database::skip_transaction_dupe_check );
+//
+//      BOOST_TEST_MESSAGE( "ref_block_num=0, ref_block_prefix=12345678" );
+//
+//      tx.ref_block_num = 0;
+//      tx.ref_block_prefix = 0x12345678;
+//      tx.signatures.clear();
+//      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
+//      tx.sign( alice_private_key, db.get_chain_id() );
+//      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
+//
+//      BOOST_TEST_MESSAGE( "ref_block_num=1, ref_block_prefix=12345678" );
+//
+//      tx.ref_block_num = 1;
+//      tx.ref_block_prefix = 0x12345678;
+//      tx.signatures.clear();
+//      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
+//      tx.sign( alice_private_key, db.get_chain_id() );
+//      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
+//
+//      BOOST_TEST_MESSAGE( "ref_block_num=9999, ref_block_prefix=12345678" );
+//
+//      tx.ref_block_num = 9999;
+//      tx.ref_block_prefix = 0x12345678;
+//      tx.signatures.clear();
+//      tx.set_expiration( db.head_block_time() + BMCHAIN_MAX_TIME_UNTIL_EXPIRATION );
+//      tx.sign( alice_private_key, db.get_chain_id() );
+//      BMCHAIN_REQUIRE_THROW( PUSH_TX( db, tx, database::skip_transaction_dupe_check ), fc::exception );
+//   }
+//   catch (fc::exception& e)
+//   {
+//      edump((e.to_detail_string()));
+//      throw;
+//   }
 }
 
 BOOST_FIXTURE_TEST_CASE( double_sign_check, clean_database_fixture )
@@ -503,42 +503,42 @@ BOOST_FIXTURE_TEST_CASE( double_sign_check, clean_database_fixture )
 
 BOOST_FIXTURE_TEST_CASE( pop_block_twice, clean_database_fixture )
 {
-   try
-   {
-      uint32_t skip_flags = (
-           database::skip_witness_signature
-         | database::skip_transaction_signatures
-         | database::skip_authority_check
-         );
-
-      // Sam is the creator of accounts
-      auto init_account_priv_key  = fc::ecc::private_key::regenerate(fc::sha256::hash(string("init_key")) );
-      private_key_type sam_key = generate_private_key( "sam" );
-      account_object sam_account_object = account_create( "sam", sam_key.get_public_key() );
-
-      //Get a sane head block time
-      generate_block( skip_flags );
-
-      transaction tx;
-      signed_transaction ptx;
-
-      db.get_account( BMCHAIN_INIT_MINER_NAME );
-      // transfer from committee account to Sam account
-      transfer( BMCHAIN_INIT_MINER_NAME, "sam", 100000 );
-
-      generate_block(skip_flags);
-
-      account_create( "alice", generate_private_key( "alice" ).get_public_key() );
-      generate_block(skip_flags);
-      account_create( "bob", generate_private_key( "bob" ).get_public_key() );
-      generate_block(skip_flags);
-
-      db.pop_block();
-      db.pop_block();
-   } catch(const fc::exception& e) {
-      edump( (e.to_detail_string()) );
-      throw;
-   }
+//   try
+//   {
+//      uint32_t skip_flags = (
+//           database::skip_witness_signature
+//         | database::skip_transaction_signatures
+//         | database::skip_authority_check
+//         );
+//
+//      // Sam is the creator of accounts
+//      auto init_account_priv_key  = fc::ecc::private_key::regenerate(fc::sha256::hash(string("init_key")) );
+//      private_key_type sam_key = generate_private_key( "sam" );
+//      account_object sam_account_object = account_create( "sam", sam_key.get_public_key() );
+//
+//      //Get a sane head block time
+//      generate_block( skip_flags );
+//
+//      transaction tx;
+//      signed_transaction ptx;
+//
+//      db.get_account( BMCHAIN_INIT_MINER_NAME );
+//      // transfer from committee account to Sam account
+//      transfer( BMCHAIN_INIT_MINER_NAME, "sam", 100000 );
+//
+//      generate_block(skip_flags);
+//
+//      account_create( "alice", generate_private_key( "alice" ).get_public_key() );
+//      generate_block(skip_flags);
+//      account_create( "bob", generate_private_key( "bob" ).get_public_key() );
+//      generate_block(skip_flags);
+//
+//      db.pop_block();
+//      db.pop_block();
+//   } catch(const fc::exception& e) {
+//      edump( (e.to_detail_string()) );
+//      throw;
+//   }
 }
 
 BOOST_FIXTURE_TEST_CASE( rsf_missed_blocks, clean_database_fixture )

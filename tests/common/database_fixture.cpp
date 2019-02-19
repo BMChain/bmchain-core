@@ -313,7 +313,7 @@ void database_fixture::fund(
 {
    try
    {
-      transfer( BMCHAIN_INIT_MINER_NAME, account_name, amount );
+      transfer( BMCHAIN_INIT_MINER_NAME, account_name, asset( amount, BMT_SYMBOL ) );
 
    } FC_CAPTURE_AND_RETHROW( (account_name)(amount) )
 }
@@ -355,7 +355,7 @@ void database_fixture::convert(
 void database_fixture::transfer(
    const string& from,
    const string& to,
-   const share_type& amount )
+   const asset& amount )
 {
    try
    {
