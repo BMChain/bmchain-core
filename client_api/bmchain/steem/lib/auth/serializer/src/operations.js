@@ -577,7 +577,7 @@ var private_message = new Serializer("private_message", {
   from_memo_key: public_key,
   to_memo_key: public_key,
   sent_time: uint64,
-  nonce: uint32,
+  nonce: uint64,
   checksum: uint32,
   message_size: uint32,
   encrypted_message: string
