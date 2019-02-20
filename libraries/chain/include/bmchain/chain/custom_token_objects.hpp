@@ -144,9 +144,10 @@ namespace bmchain { namespace chain {
                       ordered_unique< tag< by_owner >,
                               composite_key< account_balance_object,
                                       member< account_balance_object, account_name_type,  &account_balance_object::owner >,
+                                      member< account_balance_object, asset_symbol_type,  &account_balance_object::symbol >,
                                       member< account_balance_object, account_balance_id_type,  &account_balance_object::id >
                               >,
-                              composite_key_compare< std::less< account_name_type >, std::greater< account_balance_id_type > >
+                              composite_key_compare< std::less< account_name_type >, std::less< asset_symbol_type >, std::greater< account_balance_id_type > >
                       >
               >,
               allocator< account_balance_object >
