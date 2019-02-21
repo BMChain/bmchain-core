@@ -356,6 +356,7 @@ namespace bmchain { namespace chain {
    > account_authority_index;
 
    struct by_delegation;
+   struct by_delegatee;
 
    typedef multi_index_container <
       vesting_delegation_object,
@@ -366,6 +367,13 @@ namespace bmchain { namespace chain {
             composite_key< vesting_delegation_object,
                member< vesting_delegation_object, account_name_type, &vesting_delegation_object::delegator >,
                member< vesting_delegation_object, account_name_type, &vesting_delegation_object::delegatee >
+            >,
+            composite_key_compare< std::less< account_name_type >, std::less< account_name_type > >
+         >,
+         ordered_unique< tag< by_delegatee >,
+            composite_key< vesting_delegation_object,
+               member< vesting_delegation_object, account_name_type, &vesting_delegation_object::delegatee >,
+               member< vesting_delegation_object, account_name_type, &vesting_delegation_object::delegator >
             >,
             composite_key_compare< std::less< account_name_type >, std::less< account_name_type > >
          >
