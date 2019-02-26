@@ -176,26 +176,9 @@ struct operation_visitor
            obj.hot               = hot;
            obj.trending          = trending;
            if( obj.cashout == fc::time_point_sec() )
-               obj.promoted_balance = 0;
+              obj.promoted_balance = 0;
        });
        add_stats( current, stats );
-
-       /*if( comment.cashout_time != fc::time_point_sec::maximum() ) {
-          _db.modify( current, [&]( tag_object& obj ) {
-             obj.active            = comment.active;
-             obj.cashout           = _db.calculate_discussion_payout_time( comment );
-             obj.children          = comment.children;
-             obj.net_rshares       = comment.net_rshares.value;
-             obj.net_votes         = comment.net_votes;
-             obj.hot               = hot;
-             obj.trending          = trending;
-             if( obj.cashout == fc::time_point_sec() )
-               obj.promoted_balance = 0;
-         });
-         add_stats( current, stats );
-       } else {
-          _db.remove( current );
-       }*/
    }
 
    void create_tag( const string& tag, const comment_object& comment, double hot, double trending )const
@@ -552,7 +535,7 @@ void tags_plugin::plugin_startup()
     auto ov = bmchain::tags::detail::operation_visitor( database() );
     const auto & cidx = database().get_index< comment_index >().indices().get< by_permlink >();
     for (auto idx = cidx.cbegin(); idx != cidx.cend(); ++idx){
-        ov.update_tags(*idx, true);
+       ov.update_tags(*idx, true);
     }
 }
 

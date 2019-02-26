@@ -9,6 +9,9 @@
 
 #include <graphene/utilities/key_conversion.hpp>
 
+//#include <bmchain/plugins/condenser_api/condenser_api_legacy_asset.hpp>
+#include "/media/igor/wd/PROJECTS/BMCHAIN/bmchain-core/libraries/plugins/apis/condenser_api/include/bmchain/plugins/condenser_api/condenser_api_legacy_asset.hpp"
+
 #include <iostream>
 
 #define INITIAL_TEST_SUPPLY (10000000000ll)
@@ -127,8 +130,10 @@ extern uint32_t ( BMCHAIN_TESTING_GENESIS_TIMESTAMP );
 #define ACTORS(names) BOOST_PP_SEQ_FOR_EACH(ACTORS_IMPL, ~, names) \
    validate_database();
 
+//#define ASSET( s ) \
+//   asset::from_string( s )
 #define ASSET( s ) \
-   asset::from_string( s )
+   bmchain::plugins::condenser_api::legacy_asset::from_string( s ).to_asset()
 
 namespace bmchain { namespace chain {
 

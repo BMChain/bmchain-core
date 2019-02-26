@@ -12,7 +12,6 @@ add_library( steemit_protocol
              transaction.cpp
              block.cpp
              asset.cpp
-             legacy_asset.cpp
              version.cpp
              get_config.cpp
              custom_token_operations.cpp

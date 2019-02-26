@@ -192,7 +192,7 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( url.size() > 0, "URL size must be greater than 0" );
       FC_ASSERT( fc::is_utf8( url ), "URL is not valid UTF8" );
       FC_ASSERT( fee >= asset( 0, BMT_SYMBOL ), "Fee cannot be negative" );
-      props.validate< false >();
+      props.validate();
    }
 
    void account_witness_vote_operation::validate() const
@@ -237,7 +237,7 @@ namespace bmchain { namespace protocol {
 
    void pow_operation::validate()const
    {
-      props.validate< true >();
+      props.validate();
       validate_account_name( worker_account );
       FC_ASSERT( work_input() == work.input, "Determninistic input does not match recorded input" );
       work.validate();
@@ -256,7 +256,7 @@ namespace bmchain { namespace protocol {
 
    void pow2_operation::validate()const
    {
-      props.validate< true >();
+      props.validate();
       work.visit( pow2_operation_validate_visitor() );
    }
 

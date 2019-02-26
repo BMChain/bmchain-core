@@ -558,7 +558,7 @@ class wallet_api
       annotated_signed_transaction update_witness(string witness_name,
                                         string url,
                                         public_key_type block_signing_key,
-                                        const legacy_chain_properties& props,
+                                        const chain_properties& props,
                                         bool broadcast = false);
 
       /** Set the voting proxy for an account.
@@ -959,6 +959,8 @@ class wallet_api
                                                     uint16_t inflation_rate, uint32_t interval_seconds, uint32_t interval_count, bool broadcast = false );
 
       vector< custom_token_api_obj > get_custom_tokens( uint32_t limit ) const;
+
+      vector< vesting_delegation_object > get_rep_delegations( string account, string from, uint32_t limit ) const;
 private:
 
       set<string> get_tags_from_json(string tags)const{
@@ -1124,6 +1126,9 @@ FC_API( bmchain::wallet::wallet_api,
         (transfer_custom_token)
         (setup_emissions)
         (get_custom_tokens)
+
+        ///
+        (get_rep_delegations)
       )
 
 FC_REFLECT( bmchain::wallet::memo_data, (from)(to)(nonce)(check)(encrypted) )

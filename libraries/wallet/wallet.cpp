@@ -1200,7 +1200,7 @@ annotated_signed_transaction wallet_api::create_account_with_keys( string creato
    op.posting = authority( 1, posting, 1 );
    op.memo_key = memo;
    op.json_metadata = json_meta;
-   op.fee = my->_remote_db->get_chain_properties().account_creation_fee;;
+   op.fee = asset(my->_remote_db->get_chain_properties().account_creation_fee.amount * BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER, BMT_SYMBOL );
 
    signed_transaction tx;
    tx.operations.push_back(op);
@@ -1629,7 +1629,7 @@ annotated_signed_transaction wallet_api::create_account_delegated( string creato
 annotated_signed_transaction wallet_api::update_witness( string witness_account_name,
                                                string url,
                                                public_key_type block_signing_key,
-                                               const legacy_chain_properties& props,
+                                               const chain_properties& props,
                                                bool broadcast  )
 {
    FC_ASSERT( !is_locked() );
@@ -2842,6 +2842,12 @@ vector< custom_token_api_obj > wallet_api::get_custom_tokens( uint32_t limit ) c
    FC_ASSERT( !is_locked() );
    return my->_remote_db->get_custom_tokens( limit );
 }
+
+vector< vesting_delegation_object > wallet_api::get_rep_delegations( string account, string from, uint32_t limit ) const {
+   FC_ASSERT( !is_locked() );
+   return my->_remote_db->get_rep_delegations( account, from, limit );
+}
+
 
 } } // bmchain::wallet
 

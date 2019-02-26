@@ -554,7 +554,7 @@ struct custom_token_api_obj
    custom_token_api_obj(const chain::custom_token_object &o) :
            id(o.id),
            control_account(o.control_account),
-           symbol(o.current_supply.symbol.to_string()),
+           symbol(o.current_supply.symbol_name()),
            inflation_rate(o.inflation_rate),
            current_supply(o.current_supply),
            reward_fund(o.reward_fund),
@@ -577,7 +577,7 @@ struct account_balance_api_obj
    account_balance_api_obj(const chain::account_balance_object &o) :
            id(o.id),
            owner(o.owner),
-           symbol(o.balance.symbol.to_string()),
+           symbol(o.balance.symbol_name()),
            balance(o.balance)
    {}
 
