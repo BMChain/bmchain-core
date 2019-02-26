@@ -3435,8 +3435,9 @@ void database::process_funds_bmchain(int64_t new_bmt)
     /// 90% in reward funds
     share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT_NEW) ) / BMCHAIN_100_PERCENT;
     content_reward = pay_reward_funds( content_reward );
-    /// 15% to vesting fund
-    auto vesting_reward = ( new_bmt * BMCHAIN_VESTING_FUND_PERCENT ) / BMCHAIN_100_PERCENT;
+    /// 5% to vesting fund
+    //auto vesting_reward = ( new_bmt * BMCHAIN_VESTING_FUND_PERCENT ) / BMCHAIN_100_PERCENT;
+    auto vesting_reward = 0;
     /// 10% to wintess
     auto witness_reward = new_bmt - content_reward - vesting_reward; /// Remaining 10% to witness pay
     

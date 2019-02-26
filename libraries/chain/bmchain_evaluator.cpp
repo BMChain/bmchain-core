@@ -164,17 +164,18 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
       auth.last_owner_update = fc::time_point_sec::min();
    });
 
-   if( o.fee.amount > 0 )
-      _db.create_vesting( new_account, o.fee );
+   if( o.fee.amount > 0 ){
+      const auto& reward_idx = _db.get_index< reward_fund_index, by_id >();
+      for( auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr )
+      {
+         _db.modify( *itr, [&]( reward_fund_object& rfo )
+         {
+            rfo.reward_balance += o.fee;
+         });
+      }
+   }
 
-   auto new_bmt = asset(BMCHAIN_USER_EMISSION_RATE, BMT_SYMBOL);
-   _db.create_vesting(new_account, new_bmt);
-   _db.modify( props, [&]( dynamic_global_property_object& props )
-   {
-       props.virtual_supply += new_bmt;
-       props.current_supply += new_bmt;
-   } );
-   //_db.process_funds_bmchain(BMCHAIN_USER_EMISSION_RATE);
+   _db.process_funds_bmchain(BMCHAIN_USER_EMISSION_RATE);
 }
 
 void account_create_with_delegation_evaluator::do_apply( const account_create_with_delegation_operation& o )
