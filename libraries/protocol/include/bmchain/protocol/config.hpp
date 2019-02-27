@@ -32,7 +32,7 @@
 
 #define BMCHAIN_INIT_PUBLIC_KEY_STR             "BMT66aNeWvP9Mkx7j6WiMgYZs1jbDoGtTi6cFTdkeBXkLAqGHvF7L"
 #define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain"))
-#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24)) ///< RPT with 6 digits of precision
+#define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< RPT with 6 digits of precision
 #define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precisionDollars with 3 digits of precision
 #define SBD_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24))
 #define BMCHAIN_SYMBOL                          "BMT"
@@ -49,7 +49,7 @@
 #define BMCHAIN_SECOND_CASHOUT_WINDOW           (60*60*24*30) /// 30 days
 #define BMCHAIN_UPVOTE_LOCKOUT                  (fc::hours(12))
 
-#define BMCHAIN_MIN_ACCOUNT_CREATION_FEE        (1000)
+#define BMCHAIN_MIN_ACCOUNT_CREATION_FEE        (10000)
 
 #define BMCHAIN_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
 #define BMCHAIN_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
@@ -103,7 +103,7 @@
 #define BMCHAIN_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
 #define BMCHAIN_CONTENT_REWARD_PERCENT          (75*BMCHAIN_1_PERCENT)
 #define BMCHAIN_CONTENT_REWARD_PERCENT_NEW      (90*BMCHAIN_1_PERCENT)
-#define BMCHAIN_VESTING_FUND_PERCENT            (5*BMCHAIN_1_PERCENT) //15% of inflation, 1.425% inflation
+#define BMCHAIN_VESTING_FUND_PERCENT            (5*BMCHAIN_1_PERCENT) // 5% of inflation, 1.425% inflation
 
 #define BMCHAIN_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
 #define BMCHAIN_BANDWIDTH_PRECISION             (uint64_t(1000000)) ///< 1 million
@@ -112,7 +112,7 @@
 
 #define BMCHAIN_MAX_RESERVE_RATIO               (20000)
 
-#define BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER 10
+#define BMCHAIN_CREATE_ACCOUNT_WITH_BMT_MODIFIER 1
 #define BMCHAIN_CREATE_ACCOUNT_DELEGATION_RATIO  5
 #define BMCHAIN_CREATE_ACCOUNT_DELEGATION_TIME   fc::days(30)
 
@@ -183,8 +183,8 @@
 #define BMCHAIN_MAX_PERMLINK_LENGTH             256
 #define BMCHAIN_MAX_WITNESS_URL_LENGTH          2048
 
-#define BMCHAIN_INIT_SUPPLY                     int64_t(91907667000ll)
-#define BMCHAIN_INIT_SUPPLY_REP                 int64_t(1000000000ll)
+#define BMCHAIN_INIT_SUPPLY                     int64_t(92000000000ll)
+#define BMCHAIN_INIT_SUPPLY_REP                 int64_t(10000000000000ll)
 #define BMCHAIN_TRANSFER_REP_BLOCK              (1000000)
 #define BMCHAIN_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define BMCHAIN_MAX_SATOSHIS                    int64_t(4611686018427387903ll)
@@ -247,6 +247,8 @@
 #define BMCHAIN_POST_EMISSION_RATE              5000
 #define BMCHAIN_USER_EMISSION_RATE              10000
 
+#define BMCHAIN_BURN_INIT_REP_BLOCK             100
+
 #ifdef IS_TEST_NET
 #define BMCHAIN_REVERSE_AUCTION_TIME (0)
 #else
@@ -255,6 +257,6 @@
 
 /// custom tokens
 #define ENABLE_CUSTOM_TOKENS                    true
-#define CUSTOM_TOKEN_CREATION_FEE               int64_t(1000000ll)
+#define CUSTOM_TOKEN_CREATION_FEE               int64_t(100000ll)
 #define CUSTOM_TOKEN_UPVOTE_LOCKOUT             (60*60*12)  /// 12 hours
 #define CUSTOM_TOKEN_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) /// 1 week per interval
