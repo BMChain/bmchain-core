@@ -2491,7 +2491,7 @@ void database::_apply_block( const signed_block& next_block )
    update_virtual_supply();
 
    clear_null_account_balance();
-//   process_funds();
+   // process_funds();
    process_comment_cashout();
    custom_tokens_emissions();
    process_savings_withdraws();
@@ -3111,6 +3111,20 @@ void database::process_hardforks()
            } else
                throw unknown_hardfork_exception();
        }
+
+      const auto& gpo = get_dynamic_global_properties();
+
+      if (gpo.head_block_number == BMCHAIN_BURN_INIT_REP_BLOCK) {
+         modify( get_account("initminer"), [&](account_object &acnt) {
+            acnt.vesting_shares -= asset( BMCHAIN_INIT_SUPPLY_REP, VESTS_SYMBOL );
+         });
+
+         modify( gpo, [&]( dynamic_global_property_object& gpo ) {
+            gpo.current_supply -= asset(BMCHAIN_INIT_SUPPLY_REP / 1000, BMT_SYMBOL);
+            gpo.total_vesting_shares -= asset(BMCHAIN_INIT_SUPPLY_REP, VESTS_SYMBOL);
+            gpo.total_vesting_fund_bmt -= asset(BMCHAIN_INIT_SUPPLY_REP / 1000, BMT_SYMBOL);
+         });
+      }
    }
    FC_CAPTURE_AND_RETHROW()
 }
