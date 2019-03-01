@@ -177,7 +177,7 @@ vector< app::extended_account > private_message_api::get_accounts_from_messages(
    auto db = _app->chain_database();
 
    const auto& idx_to = db->get_index< message_index >().indices().get< by_to_date >();
-   auto itr_to = idx_to.lower_bound( std::make_tuple( account_name, time_point::now() ) );
+   auto itr_to = idx_to.lower_bound( std::make_tuple( account_name ) );
    while( itr_to != idx_to.end() && limit && itr_to->to == account_name ) {
        result.push_back(itr_to->from);
        ++itr_to;
@@ -186,7 +186,7 @@ vector< app::extended_account > private_message_api::get_accounts_from_messages(
 
    limit = 1000;
    const auto& idx_from = db->get_index< message_index >().indices().get< by_from_date >();
-   auto itr_from = idx_from.lower_bound( std::make_tuple( account_name, time_point::now() ) );
+   auto itr_from = idx_from.lower_bound( std::make_tuple( account_name ) );
    while( itr_from != idx_from.end() && limit && itr_from->from == account_name ) {
        result.push_back(itr_from->to);
        ++itr_from;
@@ -198,7 +198,6 @@ vector< app::extended_account > private_message_api::get_accounts_from_messages(
    result.erase(last, result.end());
 
    vector< app::extended_account > acc_result;
-   acc_result.resize(result.size());
    for (auto acc_str : result){
       acc_result.push_back(app::extended_account(db->get_account(acc_str), *db));
    }
