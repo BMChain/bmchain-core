@@ -2687,13 +2687,16 @@ void wallet_api::test_api() const{
     }*/
 
    /// test get_accounts_from_messages
-   /*string acc = "user001";
+   string acc = "user001";
    my->use_remote_message_api();
-   auto result = (*my->_remote_message_api)->get_accounts_from_messages(acc);*/
+   auto result = (*my->_remote_message_api)->get_accounts_from_messages(acc);
+   for (auto a : result){
+      std::cout << std::string(a.name) << endl;
+   }
    //copy(result.cbegin(), result.cend(), std::ostream_iterator< string >(cout, " <-> "));
 
    /// test get_content_replies
-   auto result = my->_remote_db->get_content_replies("maggi", "iyierro-budiet-glavnim-trienierom-sbornoiy-ispanii-na-chm-2018");
+   //auto result = my->_remote_db->get_content_replies("maggi", "iyierro-budiet-glavnim-trienierom-sbornoiy-ispanii-na-chm-2018");
 
 }
 

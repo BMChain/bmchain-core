@@ -2323,7 +2323,7 @@ namespace bmchain {
               auto author = query.tag;
               auto owner = query.owner;
 
-              vector<discussion> result;
+              vector< discussion > result;
               result.reserve(query.limit);
 
               if (!author.empty() && owner.empty()) {
@@ -2368,6 +2368,13 @@ namespace bmchain {
                     }
                     ++itr;
                  }
+              }
+
+              /// add active votes
+              for ( auto& d: result){
+                 d.active_votes = get_active_votes(d.author, d.permlink);
+                 set_url(d);
+                 set_pending_payout(d);
               }
 
               return result;
