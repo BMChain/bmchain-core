@@ -247,7 +247,7 @@
 #define BMCHAIN_POST_EMISSION_RATE              5000
 #define BMCHAIN_USER_EMISSION_RATE              10000
 
-#define BMCHAIN_BURN_INIT_REP_BLOCK             100
+#define BMCHAIN_BURN_INIT_REP_BLOCK             10512000 /// 1 year
 
 #ifdef IS_TEST_NET
 #define BMCHAIN_REVERSE_AUCTION_TIME (0)
