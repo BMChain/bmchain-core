@@ -2377,6 +2377,8 @@ namespace bmchain {
                  set_pending_payout(d);
               }
 
+              set_last_comments(result, 3);
+
               return result;
            });
         }
