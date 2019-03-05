@@ -1482,7 +1482,7 @@ namespace bmchain {
 
                 while (result.size() < query.limit && blog_itr != b_idx.end()) {
                     if (blog_itr->account != account.name)
-                        break;
+                        break;                    
                     try {
                         if (query.select_authors.size() &&
                             query.select_authors.find(blog_itr->account) == query.select_authors.end()) {
@@ -1507,9 +1507,12 @@ namespace bmchain {
                             }
                         }
 
-                        result.push_back(get_discussion(blog_itr->comment, query.truncate_body));
-                        if (blog_itr->reblogged_on > time_point_sec()) {
-                            result.back().first_reblogged_on = blog_itr->reblogged_on;
+                        auto disc = get_discussion(blog_itr->comment, query.truncate_body);
+                        if ( !disc.private_post ) {
+                            result.push_back(std::move(disc));
+                            if (blog_itr->reblogged_on > time_point_sec()) {
+                                result.back().first_reblogged_on = blog_itr->reblogged_on;
+                            }
                         }
                     }
                     catch ( const fc::exception &e) {
