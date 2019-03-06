@@ -1568,8 +1568,9 @@ void database::process_comment_cashout()
       // Add all reward funds to the local cache and decay their recent rshares
       modify( *itr, [&]( reward_fund_object& rfo )
       {
-         fc::microseconds decay_rate;
-         decay_rate = BMCHAIN_RECENT_RSHARES_DECAY_RATE;
+         fc::microseconds decay_time;
+         decay_time = BMCHAIN_RECENT_RSHARES_DECAY_RATE;
+         rfo.recent_claims -= ( rfo.recent_claims * ( head_block_time() - rfo.last_update ).to_seconds() ) / decay_time.to_seconds();
          rfo.last_update = head_block_time();
       });
 

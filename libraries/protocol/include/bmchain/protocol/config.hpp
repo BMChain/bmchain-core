@@ -240,7 +240,7 @@
 
 #define BMCHAIN_STRESS_TESTING                  false
 #define BMCHAIN_USING_CLOSE_CONTENT             1
-#define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*5)) /// 7 days
+#define BMCHAIN_FIRST_PAYOUT_BLOCK              ((20*60*24*7)) /// 7 days
 
 #define BMCHAIN_VOTE_EMISSION_RATE              500
 #define BMCHAIN_COMMENT_EMISSION_RATE           2000
