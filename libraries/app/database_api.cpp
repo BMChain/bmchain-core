@@ -978,8 +978,13 @@ namespace bmchain {
 
 
                 u256 r2 = to256(vshares); //to256(abs_net_rshares);
-                r2 *= pot.amount.value;
-                r2 /= total_r2;
+                if ( r2 < total_r2 ) {
+                    r2 *= pot.amount.value;
+                    r2 /= total_r2;
+                }
+                else {
+                    r2 = pot.amount.value;
+                }
 
                 d.pending_payout_value = asset(static_cast<uint64_t>(r2), pot.symbol);
 
