@@ -2237,6 +2237,11 @@ void content_order_create_evaluator::do_apply( const content_order_create_operat
    {
       if ( itr->status == content_order_object::order_status::open && itr->price != op.price ){
          const auto& order = *itr;
+
+         _db.modify(owner, [&](account_object &acc) {
+            acc.balance -= (order.price - op.price);
+         });
+
          _db.modify( order, [&]( content_order_object& order )
          {
             order.price = op.price;
