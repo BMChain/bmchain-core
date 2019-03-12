@@ -106,6 +106,17 @@ void custom_token_create_evaluator::do_apply( const custom_token_create_operatio
    _db.modify(acc, [&](account_object &acc_obj) {
       acc_obj.balance -= o.custom_token_creation_fee;
    });
+
+   if( o.custom_token_creation_fee.amount > 0 ){
+      const auto& reward_idx = _db.get_index< reward_fund_index, by_id >();
+      for( auto itr = reward_idx.begin(); itr != reward_idx.end(); ++itr )
+      {
+         _db.modify( *itr, [&]( reward_fund_object& rfo )
+         {
+            rfo.reward_balance += o.custom_token_creation_fee;
+         });
+      }
+   }
 }
 
 void custom_token_transfer_evaluator::do_apply( const custom_token_transfer_operation& o ) {
