@@ -256,7 +256,6 @@
 #endif
 
 /// custom tokens
-#define ENABLE_CUSTOM_TOKENS                    true
 #define CUSTOM_TOKEN_CREATION_FEE               int64_t(100000ll)
 #define CUSTOM_TOKEN_UPVOTE_LOCKOUT             (60*60*12)  /// 12 hours
 #define CUSTOM_TOKEN_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) /// 1 week per interval
