@@ -1423,6 +1423,9 @@ try {
             c.total_vote_weight += max_vote_weight;
          });
       }
+
+      _db.process_funds_bmchain(BMCHAIN_VOTE_EMISSION_RATE);
+
    }
    else
    {
@@ -1497,8 +1500,6 @@ try {
          from_string(cv.comment_bmchain, o.comment_bmchain);
       });
    }
-
-   _db.process_funds_bmchain(BMCHAIN_VOTE_EMISSION_RATE);
 
 } FC_CAPTURE_AND_RETHROW( (o)) }
 
