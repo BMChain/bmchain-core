@@ -87,14 +87,14 @@ namespace bmchain { namespace chain {
           *  @note the minimum value for maximum_block_size is defined by the protocol to prevent the
           *  network from getting stuck by witnesses attempting to set this too low.
           */
-         uint32_t     maximum_block_size = 0;
+         uint32_t maximum_block_size = 0;
 
          /**
           * The current absolute slot number.  Equal to the total
           * number of slots since genesis.  Also equal to the total
           * number of missed slots plus head_block_number.
           */
-         uint64_t      current_aslot = 0;
+         uint64_t current_aslot = 0;
 
          /**
           * used to compute witness participation.
@@ -110,9 +110,10 @@ namespace bmchain { namespace chain {
           * their votes reduced.
           */
          uint32_t vote_power_reserve_rate = 10;
-         asset custom_token_creation_fee = asset( CUSTOM_TOKEN_CREATION_FEE, BMT_SYMBOL );
+         asset    custom_token_creation_fee = asset( CUSTOM_TOKEN_CREATION_FEE, BMT_SYMBOL );
          uint16_t sbd_stop_percent = 0;
          uint16_t sbd_start_percent = 0;
+         asset    daily_emission; /// daily issue
    };
 
    typedef multi_index_container<
@@ -156,5 +157,6 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (custom_token_creation_fee)
              (sbd_stop_percent)
              (sbd_start_percent)
+             (daily_emission)
           )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::dynamic_global_property_object, bmchain::chain::dynamic_global_property_index )

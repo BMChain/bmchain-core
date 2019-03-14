@@ -2456,7 +2456,7 @@ void database::_apply_block( const signed_block& next_block )
    modify( gprops, [&]( dynamic_global_property_object& dgp ){
       dgp.current_witness = next_block.witness;
    });
-///
+   ///
    /// parse witness version reporting
    process_header_extensions( next_block );
 
@@ -3267,14 +3267,16 @@ void database::validate_invariants()const
          total_supply += itr->reward_balance;
       }
 
-       const auto& content_order_idx = get_index< content_order_index, by_id >();
+      const auto& content_order_idx = get_index< content_order_index, by_id >();
+      asset order_supply = asset( 0, BMT_SYMBOL );
 
-       for( auto itr = content_order_idx.begin(); itr != content_order_idx.end(); ++itr )
-       {
-           if (itr->status == content_order_object::order_status::open) {
-               total_supply += itr->price;
-           }
-       }
+      for( auto itr = content_order_idx.begin(); itr != content_order_idx.end(); ++itr )
+      {
+         order_supply += itr->price;
+         if (itr->status == content_order_object::order_status::open) {
+            total_supply += itr->price;
+         }
+      }
 
       total_supply += gpo.total_vesting_fund_bmt + gpo.total_reward_fund_bmt + gpo.pending_rewarded_vesting_bmt;
 
@@ -3465,9 +3467,15 @@ void database::process_funds_bmchain(int64_t new_bmt)
     /// global properties
     modify( props, [&]( dynamic_global_property_object& p )
     {
-        p.total_vesting_fund_bmt += asset( vesting_reward, BMT_SYMBOL );       
-        p.current_supply += asset( content_reward + witness_reward + vesting_reward, BMT_SYMBOL );
-        p.virtual_supply += asset( content_reward + witness_reward + vesting_reward, BMT_SYMBOL );
+        if ( p.head_block_number % (20 * 60 * 24) == 0 ) {
+            p.daily_emission = asset( 0, BMT_SYMBOL );
+        }
+        if ( p.daily_emission.amount.value < (p.current_supply.amount.value * 20 / 100 / 365 ) ) {
+            p.total_vesting_fund_bmt += asset(vesting_reward, BMT_SYMBOL);
+            p.current_supply += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
+            p.virtual_supply += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
+            p.daily_emission += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
+        }
     });
 }
 
