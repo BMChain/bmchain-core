@@ -3449,6 +3449,11 @@ void database::process_funds_bmchain(int64_t new_bmt)
 {
     const auto& props = get_dynamic_global_properties();
 
+    if ( props.daily_emission.amount.value >= (props.current_supply.amount.value * BMCHAIN_DAILY_INFLATION_RATE_RESTRICTION / 100 / 365 )
+        && props.head_block_number % (20 * 60 * 24) != 0 ) {
+        return;
+    }
+
     /// 90% in reward funds
     share_type content_reward = ( new_bmt * (BMCHAIN_CONTENT_REWARD_PERCENT_NEW) ) / BMCHAIN_100_PERCENT;
     content_reward = pay_reward_funds( content_reward );
@@ -3470,12 +3475,11 @@ void database::process_funds_bmchain(int64_t new_bmt)
         if ( p.head_block_number % (20 * 60 * 24) == 0 ) {
             p.daily_emission = asset( 0, BMT_SYMBOL );
         }
-        if ( p.daily_emission.amount.value < (p.current_supply.amount.value * 20 / 100 / 365 ) ) {
-            p.total_vesting_fund_bmt += asset(vesting_reward, BMT_SYMBOL);
-            p.current_supply += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
-            p.virtual_supply += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
-            p.daily_emission += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
-        }
+
+        p.total_vesting_fund_bmt += asset(vesting_reward, BMT_SYMBOL);
+        p.current_supply += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
+        p.virtual_supply += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
+        p.daily_emission += asset(content_reward + witness_reward + vesting_reward, BMT_SYMBOL);
     });
 }
 
