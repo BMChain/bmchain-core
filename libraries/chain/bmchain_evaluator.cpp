@@ -130,7 +130,7 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
       c.balance -= o.fee;
    });
 
-   const auto& new_account = _db.create< account_object >( [&]( account_object& acc )
+   _db.create< account_object >( [&]( account_object& acc )
    {
       acc.name = o.new_account_name;
       acc.memo_key = o.memo_key;
@@ -2295,6 +2295,10 @@ void content_order_cancel_by_author_evaluator::do_apply( const content_order_can
 void private_message_evaluator::do_apply( const private_message_operation& pm )
 {
    using bmchain::private_message::message_object;
+
+   if ( !_db.has_index< private_message::message_index >() ) {
+      return;
+   }
 
    FC_ASSERT(pm.from != pm.to);
    FC_ASSERT(pm.from_memo_key != pm.to_memo_key);
