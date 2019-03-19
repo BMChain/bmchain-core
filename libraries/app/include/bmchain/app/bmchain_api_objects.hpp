@@ -57,9 +57,9 @@ typedef witness::account_bandwidth_object              account_bandwidth_api_obj
 
 struct account_balance_api_obj;
 
-struct comment_api_obj
+struct api_comment_object
 {
-   comment_api_obj( const chain::comment_object& o ):
+   api_comment_object( const chain::comment_object& o ):
       id( o.id ),
       category( to_string( o.category ) ),
       parent_author( o.parent_author ),
@@ -107,7 +107,7 @@ struct comment_api_obj
       std::copy(o.encrypted_body.begin(), o.encrypted_body.end(), encrypted_body.begin());
    }
 
-   comment_api_obj(){}
+   api_comment_object(){}
 
    comment_id_type   id;
    string            category;
@@ -185,9 +185,9 @@ struct tag_api_obj
    fc::uint128          trending = 0;
 };
 
-struct account_api_obj
+struct api_account_object
 {
-   account_api_obj( const chain::account_object& a, const chain::database& db ) :
+   api_account_object( const chain::account_object& a, const chain::database& db ) :
       id( a.id ),
       name( a.name ),
       memo_key( a.memo_key ),
@@ -209,7 +209,6 @@ struct account_api_obj
       post_count( a.post_count ),
       can_vote( a.can_vote ),
       voting_power( a.voting_power ),
-      last_vote_time( a.last_vote_time ),
       balance( a.balance ),
       savings_balance( a.savings_balance ),
       sbd_balance( a.sbd_balance ),
@@ -237,7 +236,8 @@ struct account_api_obj
       withdraw_routes( a.withdraw_routes ),
       witnesses_voted_for( a.witnesses_voted_for ),
       last_post( a.last_post ),
-      last_root_post( a.last_root_post )
+      last_root_post( a.last_root_post ),
+      last_vote_time( a.last_vote_time )
    {
       size_t n = a.proxied_vsf_votes.size();
       proxied_vsf_votes.reserve( n );
@@ -273,7 +273,7 @@ struct account_api_obj
    }
 
 
-   account_api_obj(){}
+   api_account_object(){}
 
    account_id_type   id;
 
@@ -304,7 +304,6 @@ struct account_api_obj
 
    bool              can_vote = false;
    uint16_t          voting_power = 0;
-   time_point_sec    last_vote_time;
 
    asset             balance;
    asset             savings_balance;
@@ -352,6 +351,7 @@ struct account_api_obj
 
    time_point_sec    last_post;
    time_point_sec    last_root_post;
+   time_point_sec    last_vote_time;
 
    map<string, int32_t> reputation_by_categories; /// for bmchain
    vector<account_balance_api_obj> custom_token_balance;
@@ -591,7 +591,7 @@ struct account_balance_api_obj
 
 } } // bmchain::app
 
-FC_REFLECT( bmchain::app::comment_api_obj,
+FC_REFLECT( bmchain::app::api_comment_object,
              (id)(author)(permlink)
              (category)(parent_author)(parent_permlink)
              (title)(body)(json_metadata)(last_update)(created)(active)(last_payout)
@@ -605,11 +605,11 @@ FC_REFLECT( bmchain::app::comment_api_obj,
              (encrypted)(private_post)(owner)(encrypted_body)(checksum)(price)
           )
 
-FC_REFLECT( bmchain::app::account_api_obj,
+FC_REFLECT( bmchain::app::api_account_object,
              (id)(name)(owner)(active)(posting)(memo_key)(json_metadata)(proxy)(avatar)(last_owner_update)(last_account_update)
              (created)(mined)
              (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)(reset_account)
-             (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
+             (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)
              (balance)
              (savings_balance)
              (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
@@ -621,7 +621,7 @@ FC_REFLECT( bmchain::app::account_api_obj,
              (proxied_vsf_votes)(witnesses_voted_for)
              (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
              (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)
-             (last_post)(last_root_post)
+             (last_post)(last_root_post)(last_vote_time)
              (reputation_by_categories)
              (custom_token_balance)
           )

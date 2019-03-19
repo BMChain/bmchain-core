@@ -153,7 +153,7 @@ class wallet_api
       /**
        *  Gets the account information for all accounts for which this wallet has a private key
        */
-      vector<account_api_obj>              list_my_accounts();
+      vector<api_account_object>              list_my_accounts();
 
       /** Lists all accounts registered in the blockchain.
        * This returns a list of all account names and their account ids, sorted by account name.
@@ -182,7 +182,7 @@ class wallet_api
        * @param account_name the name of the account to provide information about
        * @returns the public account data stored in the blockchain
        */
-      account_api_obj                     get_account( string account_name ) const;
+      api_account_object                     get_account( string account_name ) const;
 
       /** Returns the current wallet filename.
        *
@@ -896,7 +896,7 @@ class wallet_api
       /**
        * Checks memos against private keys on account and imported in wallet
        */
-      void check_memo( const string& memo, const account_api_obj& account )const;
+      void check_memo( const string& memo, const api_account_object& account )const;
 
       /**
        *  Returns the encrypted memo if memo starts with '#' otherwise returns memo

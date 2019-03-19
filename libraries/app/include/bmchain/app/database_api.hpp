@@ -245,7 +245,7 @@ class database_api
        *
        * This function has semantics identical to @ref get_objects
        */
-      vector<optional<account_api_obj>> lookup_account_names(const vector<string>& account_names) const;
+      vector<optional<api_account_object>> lookup_account_names(const vector<string>& account_names) const;
 
       /**
        * @brief Get names and IDs for registered accounts
@@ -464,8 +464,8 @@ class database_api
       void set_url( discussion& d ) const;
       discussion get_discussion( comment_id_type, uint32_t truncate_body = 0 ) const;
 
-      static bool filter_default( const comment_api_obj& c ) { return false; }
-      static bool exit_default( const comment_api_obj& c )   { return false; }
+      static bool filter_default( const api_comment_object& c ) { return false; }
+      static bool exit_default( const api_comment_object& c )   { return false; }
       static bool tag_exit_default( const tags::tag_object& c ) { return false; }
 
       template<typename Index, typename StartItr>
@@ -474,8 +474,8 @@ class database_api
                                           comment_id_type parent,
                                           const Index& idx, StartItr itr,
                                           uint32_t truncate_body = 0,
-                                          const std::function< bool( const comment_api_obj& ) >& filter = &database_api::filter_default,
-                                          const std::function< bool( const comment_api_obj& ) >& exit   = &database_api::exit_default,
+                                          const std::function< bool( const api_comment_object& ) >& filter = &database_api::filter_default,
+                                          const std::function< bool( const api_comment_object& ) >& exit   = &database_api::exit_default,
                                           const std::function< bool( const tags::tag_object& ) >& tag_exit = &database_api::tag_exit_default,
                                           bool ignore_parent = false
                                           ) const;

@@ -64,8 +64,8 @@ namespace bmchain { namespace app {
       time_point_sec time;
    };
 
-   struct  discussion : public comment_api_obj {
-      discussion( const comment_object& o ):comment_api_obj(o){}
+   struct  discussion : public api_comment_object {
+      discussion( const comment_object& o ):api_comment_object(o){}
       discussion(){}
 
       string                      url; /// /category/@rootauthor/root_permlink#author/permlink
@@ -80,17 +80,17 @@ namespace bmchain { namespace app {
       vector<account_name_type>   reblogged_by;
       optional<account_name_type> first_reblogged_by;
       optional<time_point_sec>    first_reblogged_on;
-      vector<comment_api_obj>     comments;
+      vector<api_comment_object>     comments;
       std::string                 decrypted_content;
    };
 
    /**
     *  Convert's vesting shares
     */
-   struct extended_account : public account_api_obj
+   struct extended_account : public api_account_object
    {
       extended_account(){}
-      extended_account( const account_object& a, const database& db ):account_api_obj( a, db ){}
+      extended_account( const account_object& a, const database& db ):api_account_object( a, db ){}
 
       asset                                   rep_balance; /// convert vesting_shares to vesting steem
       share_type                              reputation = 0;
@@ -179,7 +179,7 @@ namespace bmchain { namespace app {
 } }
 
 FC_REFLECT_DERIVED( bmchain::app::extended_account,
-                   (bmchain::app::account_api_obj),
+                   (bmchain::app::api_account_object),
                    (rep_balance)(reputation)
                    (transfer_history)(market_history)(post_history)(vote_history)(other_history)(witness_votes)(tags_usage)(guest_bloggers)(open_orders)(comments)(feed)(blog)(recent_replies)(recommended) )
 
@@ -189,7 +189,7 @@ FC_REFLECT( bmchain::app::account_vote, (authorperm)(weight)(rshares)(percent)(t
 
 FC_REFLECT( bmchain::app::discussion_index, (category)(trending)(payout)(payout_comments)(trending30)(updated)(created)(responses)(active)(votes)(maturing)(best)(hot)(promoted)(cashout) )
 FC_REFLECT( bmchain::app::tag_index, (trending) )
-FC_REFLECT_DERIVED( bmchain::app::discussion, (bmchain::app::comment_api_obj), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on)(comments)(decrypted_content) )
+FC_REFLECT_DERIVED( bmchain::app::discussion, (bmchain::app::api_comment_object), (url)(root_title)(pending_payout_value)(total_pending_payout_value)(active_votes)(replies)(author_reputation)(promoted)(body_length)(reblogged_by)(first_reblogged_by)(first_reblogged_on)(comments)(decrypted_content) )
 
 FC_REFLECT( bmchain::app::state, (current_route)(props)(tag_idx)(tags)(content)(accounts)(pow_queue)(witnesses)(discussion_idx)(witness_schedule)(feed_price)(error)(market_data) )
 

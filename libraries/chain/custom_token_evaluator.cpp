@@ -159,9 +159,6 @@ void custom_token_setup_emissions_evaluator::do_apply( const custom_token_setup_
 }
 
 void custom_token_set_setup_parameters_evaluator::do_apply( const custom_token_set_setup_parameters_operation& o ) {
-
-   const auto& by_owner_idx = _db.get_index< account_balance_index >().indices().get< by_owner >();
-
    const custom_token_object& token = common_pre_setup_evaluation(_db, o.symbol.symbol, o.control_account);
 
    _db.modify( token, [&]( custom_token_object& token )

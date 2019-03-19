@@ -345,7 +345,7 @@ public:
       return result;
    }
 
-   account_api_obj get_account( string account_name ) const
+   api_account_object get_account( string account_name ) const
    {
       auto accounts = _remote_db->get_accounts( { account_name } );
       FC_ASSERT( !accounts.empty(), "Unknown account" );
@@ -370,7 +370,7 @@ public:
    }
 
 
-   fc::ecc::private_key get_private_key_for_account(const account_api_obj& account)const
+   fc::ecc::private_key get_private_key_for_account(const api_account_object& account)const
    {
       vector<public_key_type> active_keys = account.active.get_keys();
       if (active_keys.size() != 1)
@@ -578,9 +578,9 @@ public:
 
       FC_ASSERT( approving_account_objects.size() == v_approving_account_names.size(), "", ("aco.size:", approving_account_objects.size())("acn",v_approving_account_names.size()) );
 
-      flat_map< string, account_api_obj > approving_account_lut;
+      flat_map< string, api_account_object > approving_account_lut;
       size_t i = 0;
-      for( const optional< account_api_obj >& approving_acct : approving_account_objects )
+      for( const optional< api_account_object >& approving_acct : approving_account_objects )
       {
          if( !approving_acct.valid() )
          {
@@ -592,7 +592,7 @@ public:
          approving_account_lut[ approving_acct->name ] =  *approving_acct;
          i++;
       }
-      auto get_account_from_lut = [&]( const std::string& name ) -> const account_api_obj&
+      auto get_account_from_lut = [&]( const std::string& name ) -> const api_account_object&
       {
          auto it = approving_account_lut.find( name );
          FC_ASSERT( it != approving_account_lut.end() );
@@ -605,7 +605,7 @@ public:
          const auto it = approving_account_lut.find( acct_name );
          if( it == approving_account_lut.end() )
             continue;
-         const account_api_obj& acct = it->second;
+         const api_account_object& acct = it->second;
          vector<public_key_type> v_approving_keys = acct.active.get_keys();
          wdump((v_approving_keys));
          for( const public_key_type& approving_key : v_approving_keys )
@@ -620,7 +620,7 @@ public:
          const auto it = approving_account_lut.find( acct_name );
          if( it == approving_account_lut.end() )
             continue;
-         const account_api_obj& acct = it->second;
+         const api_account_object& acct = it->second;
          vector<public_key_type> v_approving_keys = acct.posting.get_keys();
          wdump((v_approving_keys));
          for( const public_key_type& approving_key : v_approving_keys )
@@ -635,7 +635,7 @@ public:
          const auto it = approving_account_lut.find( acct_name );
          if( it == approving_account_lut.end() )
             continue;
-         const account_api_obj& acct = it->second;
+         const api_account_object& acct = it->second;
          vector<public_key_type> v_approving_keys = acct.owner.get_keys();
          for( const public_key_type& approving_key : v_approving_keys )
          {
@@ -730,7 +730,7 @@ public:
       m["list_my_accounts"] = [](variant result, const fc::variants& a ) {
          std::stringstream out;
 
-         auto accounts = result.as<vector<account_api_obj>>();
+         auto accounts = result.as<vector<api_account_object>>();
          asset total_bmt;
          asset total_vest(0, VESTS_SYMBOL );
          for( const auto& a : accounts ) {
@@ -916,10 +916,10 @@ vector<applied_operation> wallet_api::get_ops_in_block(uint32_t block_num, bool 
    return my->_remote_db->get_ops_in_block(block_num, only_virtual);
 }
 
-vector<account_api_obj> wallet_api::list_my_accounts()
+vector<api_account_object> wallet_api::list_my_accounts()
 {
    FC_ASSERT( !is_locked(), "Wallet must be unlocked to list accounts" );
-   vector<account_api_obj> result;
+   vector<api_account_object> result;
 
    try
    {
@@ -1004,7 +1004,7 @@ string wallet_api::get_wallet_filename() const
    return my->get_wallet_filename();
 }
 
-account_api_obj wallet_api::get_account( string account_name ) const{
+api_account_object wallet_api::get_account( string account_name ) const{
    return my->get_account( account_name );
 }
 
@@ -1675,7 +1675,7 @@ annotated_signed_transaction wallet_api::vote_for_witness(string voting_account,
    return my->sign_transaction( tx, broadcast );
 } FC_CAPTURE_AND_RETHROW( (voting_account)(witness_to_vote_for)(approve)(broadcast) ) }
 
-void wallet_api::check_memo( const string& memo, const account_api_obj& account )const
+void wallet_api::check_memo( const string& memo, const api_account_object& account )const
 {
    vector< public_key_type > keys;
 

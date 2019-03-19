@@ -56,7 +56,7 @@ namespace bmchain {
 
             vector<account_id_type> get_account_references(account_id_type account_id) const;
 
-            vector<optional<account_api_obj>> lookup_account_names( const vector<string> &account_names) const;
+            vector<optional<api_account_object>> lookup_account_names( const vector<string> &account_names) const;
 
             set<string> lookup_accounts( const string &lower_bound_name, uint32_t limit) const;
 
@@ -394,25 +394,25 @@ namespace bmchain {
             FC_ASSERT(false, "database_api::get_account_references --- Needs to be refactored for steem.");
         }
 
-        vector<optional<account_api_obj>>
+        vector<optional<api_account_object>>
         database_api::lookup_account_names( const vector<string> &account_names) const {
             return my->_db.with_read_lock([&]() {
                 return my->lookup_account_names(account_names);
             });
         }
 
-        vector<optional<account_api_obj>>
+        vector<optional<api_account_object>>
         database_api_impl::lookup_account_names( const vector<string> &account_names) const {
-            vector<optional<account_api_obj> > result;
+            vector<optional<api_account_object> > result;
             result.reserve(account_names.size());
 
             for (auto &name : account_names) {
                 auto itr = _db.find<account_object, by_name>(name);
 
                 if (itr) {
-                    result.push_back(account_api_obj(*itr, _db));
+                    result.push_back(api_account_object(*itr, _db));
                 } else {
-                    result.push_back(optional<account_api_obj>());
+                    result.push_back(optional<api_account_object>());
                 }
             }
 
@@ -1005,7 +1005,7 @@ namespace bmchain {
         }
 
         void database_api::set_url(discussion &d) const {
-            const comment_api_obj root(my->_db.get<comment_object, by_id>(d.root_comment));
+            const api_comment_object root(my->_db.get<comment_object, by_id>(d.root_comment));
             d.url = "/" + root.category + "/@" + root.author + "/" + root.permlink;
             d.root_title = root.title;
             if (root.id != d.id)
@@ -1154,8 +1154,8 @@ namespace bmchain {
                                                          comment_id_type parent,
                                                          const Index &tidx, StartItr tidx_itr,
                                                          uint32_t truncate_body,
-                                                         const std::function<bool( const comment_api_obj &)> &filter,
-                                                         const std::function<bool( const comment_api_obj &)> &exit,
+                                                         const std::function<bool( const api_comment_object &)> &filter,
+                                                         const std::function<bool( const api_comment_object &)> &exit,
                                                          const std::function<bool( const tags::tag_object &)> &tag_exit,
                                                          bool ignore_parent
         ) const {
@@ -1235,7 +1235,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(tag);
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       []( const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
+                                       []( const api_comment_object &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
@@ -1250,7 +1250,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, true));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       []( const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
+                                       []( const api_comment_object &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
@@ -1265,7 +1265,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, false));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       []( const comment_api_obj &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
+                                       []( const api_comment_object &c) { return c.net_rshares <= 0 || c.private_post; }, exit_default,
                                        tag_exit_default, true);
             });
         }
@@ -1295,7 +1295,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<double>::max()));
 
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                                   [&query]( const comment_api_obj &c) {
+                                                   [&query]( const api_comment_object &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
                                                        return c.net_rshares < 0 || c.private_post || filter;
                                                    });
@@ -1315,7 +1315,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, fc::time_point_sec::maximum()));
 
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                                   [&query]( const comment_api_obj &c) {
+                                                   [&query]( const api_comment_object &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
                                                        return c.private_post || filter; });
                 set_last_comments(discussions, 3);
@@ -1334,7 +1334,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, fc::time_point_sec::maximum()));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       []( const comment_api_obj &c) { return c.private_post; });
+                                       []( const api_comment_object &c) { return c.private_post; });
             });
         }
 
@@ -1350,7 +1350,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, fc::time_point::now() - fc::minutes(60)));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       []( const comment_api_obj &c) { return c.net_rshares < 0 || c.private_post; });
+                                       []( const api_comment_object &c) { return c.net_rshares < 0 || c.private_post; });
             });
         }
 
@@ -1364,7 +1364,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<int32_t>::max()));
 
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                                   [&query]( const comment_api_obj &c) {
+                                                   [&query]( const api_comment_object &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
                                                        return c.private_post || filter;
                                                    });
@@ -1384,7 +1384,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<int32_t>::max()));
 
                 return get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                       []( const comment_api_obj &c) { return c.private_post; });
+                                       []( const api_comment_object &c) { return c.private_post; });
             });
         }
 
@@ -1398,7 +1398,7 @@ namespace bmchain {
                 auto tidx_itr = tidx.lower_bound(boost::make_tuple(tag, parent, std::numeric_limits<double>::max()));
 
                 auto discussions = get_discussions(query, tag, parent, tidx, tidx_itr, query.truncate_body,
-                                                   [&query]( const comment_api_obj &c) {
+                                                   [&query]( const api_comment_object &c) {
                                                        bool filter = query.filter_tags.find(c.category) != query.filter_tags.end();
                                                        return c.net_rshares < 0 || c.private_post || filter;
                                                    });
@@ -2154,7 +2154,7 @@ namespace bmchain {
 
         void database_api::set_last_comments(vector<discussion> &discussions, uint32_t limit) const {
             const auto &com_by_root = my->_db.get_index<comment_index>().indices().get<by_root>();
-            vector<comment_api_obj> comment_buf;
+            vector<api_comment_object> comment_buf;
 
             for (auto &disc : discussions) {
 
@@ -2169,14 +2169,14 @@ namespace bmchain {
                     while (current_comment != com_by_root.end()
                            && itr->root_comment == current_comment->root_comment) {
                         if (current_comment->depth == 1) {
-                            comment_api_obj comment(*current_comment);
+                            api_comment_object comment(*current_comment);
                             comment_buf.push_back(move(comment));
                         }
                         //cout << "   com: " << current_comment->permlink.c_str() << endl;
                         ++current_comment;
                     }
 
-                    auto sort_lamda = []( const comment_api_obj &elem1, const comment_api_obj &elem2) {
+                    auto sort_lamda = []( const api_comment_object &elem1, const api_comment_object &elem2) {
                         return elem1.created > elem2.created;
                     };
 
