@@ -141,11 +141,6 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( challenged != challenger, "cannot challenge yourself" );
    }
 
-   void prove_authority_operation::validate()const
-   {
-      validate_account_name( challenged );
-   }
-
    void vote_operation::validate() const
    {
       validate_account_name( voter );

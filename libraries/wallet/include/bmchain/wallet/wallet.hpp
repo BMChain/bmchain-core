@@ -860,15 +860,6 @@ class wallet_api
       vector< owner_authority_history_api_obj > get_owner_history( string account )const;
 
       /**
-       * Prove an account's active authority, fulfilling a challenge, restoring posting rights, and making
-       * the account immune to challenge for 24 hours.
-       *
-       * @param challenged The account that was challenged and is proving its authority.
-       * @param broadcast true if you wish to broadcast the transaction
-       */
-      annotated_signed_transaction prove( string challenged, bool broadcast );
-
-      /**
        *  Account operations have sequence numbers from 0 to N where N is the most recent operation. This method
        *  returns operations in the range [from-limit, from]
        *
@@ -1077,7 +1068,6 @@ FC_API( bmchain::wallet::wallet_api,
         (vote)
         (set_transaction_expiration)
         (challenge)
-        (prove)
         (request_account_recovery)
         (recover_account)
         (change_recovery_account)

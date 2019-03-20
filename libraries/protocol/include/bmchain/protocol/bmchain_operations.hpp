@@ -177,13 +177,6 @@ namespace bmchain { namespace protocol {
 
    struct prove_authority_operation : public base_operation
    {
-      account_name_type challenged;
-      bool              require_owner = false;
-
-      void validate()const;
-
-      void get_required_active_authorities( flat_set<account_name_type>& a )const{ if( !require_owner ) a.insert(challenged); }
-      void get_required_owner_authorities( flat_set<account_name_type>& a )const{  if(  require_owner ) a.insert(challenged); }
    };
 
 
@@ -1094,7 +1087,7 @@ FC_REFLECT( bmchain::protocol::escrow_approve_operation, (from)(to)(agent)(who)(
 FC_REFLECT( bmchain::protocol::escrow_dispute_operation, (from)(to)(agent)(who)(escrow_id) );
 FC_REFLECT( bmchain::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(bmt_amount) );
 FC_REFLECT( bmchain::protocol::challenge_authority_operation, (challenger)(challenged)(require_owner) );
-FC_REFLECT( bmchain::protocol::prove_authority_operation, (challenged)(require_owner) );
+FC_REFLECT( bmchain::protocol::prove_authority_operation, );
 FC_REFLECT( bmchain::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions) );
 FC_REFLECT( bmchain::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) );
 FC_REFLECT( bmchain::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) );

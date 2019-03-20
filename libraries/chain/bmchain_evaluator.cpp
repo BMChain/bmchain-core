@@ -1832,23 +1832,6 @@ void challenge_authority_evaluator::do_apply( const challenge_authority_operatio
   }
 }
 
-void prove_authority_evaluator::do_apply( const prove_authority_operation& o )
-{
-   const auto& challenged = _db.get_account( o.challenged );
-   FC_ASSERT( challenged.owner_challenged || challenged.active_challenged, "Account is not challeneged. No need to prove authority." );
-
-   _db.modify( challenged, [&]( account_object& a )
-   {
-      a.active_challenged = false;
-      a.last_active_proved = _db.head_block_time();
-      if( o.require_owner )
-      {
-         a.owner_challenged = false;
-         a.last_owner_proved = _db.head_block_time();
-      }
-   });
-}
-
 void request_account_recovery_evaluator::do_apply( const request_account_recovery_operation& o )
 {
    const auto& account_to_recover = _db.get_account( o.account_to_recover );
