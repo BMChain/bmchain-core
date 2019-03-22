@@ -237,7 +237,8 @@ struct api_account_object
       witnesses_voted_for( a.witnesses_voted_for ),
       last_post( a.last_post ),
       last_root_post( a.last_root_post ),
-      last_vote_time( a.last_vote_time )
+      last_vote_time( a.last_vote_time ),
+      post_bandwidth( a.post_bandwidth )
    {
       size_t n = a.proxied_vsf_votes.size();
       proxied_vsf_votes.reserve( n );
@@ -249,27 +250,6 @@ struct api_account_object
       active = authority( auth.active );
       posting = authority( auth.posting );
       last_owner_update = auth.last_owner_update;
-
-      if( db.has_index< witness::account_bandwidth_index >() )
-      {
-         auto forum_bandwidth = db.find< witness::account_bandwidth_object, witness::by_account_bandwidth_type >( boost::make_tuple( name, witness::bandwidth_type::forum ) );
-
-         if( forum_bandwidth != nullptr )
-         {
-            average_bandwidth = forum_bandwidth->average_bandwidth;
-            lifetime_bandwidth = forum_bandwidth->lifetime_bandwidth;
-            last_bandwidth_update = forum_bandwidth->last_bandwidth_update;
-         }
-
-         auto market_bandwidth = db.find< witness::account_bandwidth_object, witness::by_account_bandwidth_type >( boost::make_tuple( name, witness::bandwidth_type::market ) );
-
-         if( market_bandwidth != nullptr )
-         {
-            average_market_bandwidth = market_bandwidth->average_bandwidth;
-            lifetime_market_bandwidth = market_bandwidth->lifetime_bandwidth;
-            last_market_bandwidth_update = market_bandwidth->last_bandwidth_update;
-         }
-      }
    }
 
 
@@ -341,17 +321,10 @@ struct api_account_object
 
    uint16_t          witnesses_voted_for;
 
-   share_type        average_bandwidth = 0;
-   share_type        lifetime_bandwidth = 0;
-   time_point_sec    last_bandwidth_update;
-
-   share_type        average_market_bandwidth = 0;
-   share_type        lifetime_market_bandwidth = 0;
-   time_point_sec    last_market_bandwidth_update;
-
    time_point_sec    last_post;
    time_point_sec    last_root_post;
    time_point_sec    last_vote_time;
+   uint32_t          post_bandwidth = 0;
 
    map<string, int32_t> reputation_by_categories; /// for bmchain
    vector<account_balance_api_obj> custom_token_balance;
@@ -619,9 +592,7 @@ FC_REFLECT( bmchain::app::api_account_object,
              (curation_rewards)
              (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)
-             (average_bandwidth)(lifetime_bandwidth)(last_bandwidth_update)
-             (average_market_bandwidth)(lifetime_market_bandwidth)(last_market_bandwidth_update)
-             (last_post)(last_root_post)(last_vote_time)
+             (last_post)(last_root_post)(last_vote_time)(post_bandwidth)
              (reputation_by_categories)
              (custom_token_balance)
           )
