@@ -2223,10 +2223,12 @@ void database::init_genesis( uint64_t init_supply )
          } );
       }
 
+      std::string dev_public_key = std::string(BMCHAIN_ADDRESS_PREFIX) + "83TrTEYeDGyADDNX2mEZoX3JDFrMcyf5xbt9guS6BxeBgfdJ7U";
+
       create< account_object >( [&]( account_object& a )
       {
           a.name = "devs";
-          a.memo_key = public_key_type("BMT83TrTEYeDGyADDNX2mEZoX3JDFrMcyf5xbt9guS6BxeBgfdJ7U");
+          a.memo_key = public_key_type(dev_public_key);
           a.balance = asset(init_supply * 0.1, BMT_SYMBOL);
           a.vesting_shares  = asset( 100000000, VESTS_SYMBOL );
       } );
@@ -2234,7 +2236,7 @@ void database::init_genesis( uint64_t init_supply )
       create< account_authority_object >( [&]( account_authority_object& auth )
       {
           auth.account = "devs";
-          auth.owner.add_authority(public_key_type("BMT83TrTEYeDGyADDNX2mEZoX3JDFrMcyf5xbt9guS6BxeBgfdJ7U"), 1);
+          auth.owner.add_authority(public_key_type(dev_public_key), 1);
           auth.owner.weight_threshold = 1;
           auth.active = auth.owner;
           auth.posting = auth.active;
