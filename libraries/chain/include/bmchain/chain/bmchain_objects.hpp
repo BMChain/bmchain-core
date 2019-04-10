@@ -351,7 +351,7 @@ namespace bmchain { namespace chain {
          >
       >,
       allocator< withdraw_rep_route_object >
-   > withdraw_vesting_route_index;
+   > withdraw_savings_route_index;
 
    struct by_from_id;
    struct by_to;
@@ -509,7 +509,7 @@ CHAINBASE_SET_INDEX_TYPE( bmchain::chain::convert_request_object, bmchain::chain
 
 FC_REFLECT( bmchain::chain::withdraw_rep_route_object,
              (id)(from_account)(to_account)(percent)(auto_vest) )
-CHAINBASE_SET_INDEX_TYPE( bmchain::chain::withdraw_rep_route_object, bmchain::chain::withdraw_vesting_route_index )
+CHAINBASE_SET_INDEX_TYPE( bmchain::chain::withdraw_rep_route_object, bmchain::chain::withdraw_savings_route_index )
 
 FC_REFLECT( bmchain::chain::savings_withdraw_object,
              (id)(from)(to)(memo)(request_id)(amount)(complete) )

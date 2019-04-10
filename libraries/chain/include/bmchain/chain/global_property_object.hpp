@@ -114,6 +114,7 @@ namespace bmchain { namespace chain {
          uint16_t sbd_stop_percent = 0;
          uint16_t sbd_start_percent = 0;
          asset    daily_emission; /// daily issue
+         asset    last_current_supply       = asset( 0, BMT_SYMBOL ); ///
    };
 
    typedef multi_index_container<
@@ -158,5 +159,6 @@ FC_REFLECT( bmchain::chain::dynamic_global_property_object,
              (sbd_stop_percent)
              (sbd_start_percent)
              (daily_emission)
+             (last_current_supply)
           )
 CHAINBASE_SET_INDEX_TYPE( bmchain::chain::dynamic_global_property_object, bmchain::chain::dynamic_global_property_index )

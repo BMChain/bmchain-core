@@ -18,7 +18,7 @@ module.exports = [{
   "params": ["from", "to", "amount"]
 }, {
   "roles": ["active"],
-  "operation": "withdraw_vesting",
+  "operation": "withdraw_savings",
   "params": ["account", "vesting_shares"]
 }, {
   "roles": ["active"],
@@ -82,7 +82,7 @@ module.exports = [{
   "params": ["author", "permlink", "max_accepted_payout", "percent_steem_dollars", "allow_votes", "allow_curation_rewards", "extensions"]
 }, {
   "roles": ["active"],
-  "operation": "set_withdraw_vesting_route",
+  "operation": "set_withdraw_savings_route",
   "params": ["from_account", "to_account", "percent", "auto_vest"]
 }, {
   "roles": ["active"],

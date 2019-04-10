@@ -97,7 +97,7 @@ struct bucket_object : public object< bucket_object_type, bucket_object >
    share_type           bmt_vested = 0;                              ///< Ammount of BMT vested
    uint32_t             new_vesting_withdrawal_requests = 0;         ///< New vesting withdrawal requests
    uint32_t             modified_rep_withdrawal_requests = 0;    ///< Changes to vesting withdrawal requests
-   share_type           vesting_withdraw_rate_delta = 0;
+   share_type           savings_withdraw_rate_delta = 0;
    uint32_t             rep_withdrawals_processed = 0;           ///< Number of vesting withdrawals
    uint32_t             finished_rep_withdrawals = 0;            ///< Processed vesting withdrawals that are now finished
    share_type           vests_withdrawn = 0;                         ///< Ammount of VESTS withdrawn to BMT
@@ -160,7 +160,7 @@ FC_REFLECT( bmchain::blockchain_statistics::bucket_object,
    (bmt_vested)
    (new_vesting_withdrawal_requests)
    (modified_rep_withdrawal_requests)
-   (vesting_withdraw_rate_delta)
+   (savings_withdraw_rate_delta)
    (rep_withdrawals_processed)
    (finished_rep_withdrawals)
    (vests_withdrawn)

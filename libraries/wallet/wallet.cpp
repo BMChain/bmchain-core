@@ -1942,11 +1942,11 @@ annotated_signed_transaction wallet_api::transfer_to_vesting(string from, string
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset vesting_shares, bool broadcast ) {
+annotated_signed_transaction wallet_api::withdraw_savings(string from, asset savings, bool broadcast ) {
    FC_ASSERT(!is_locked());
-   withdraw_vesting_operation op;
+   withdraw_savings_operation op;
    op.account = from;
-   op.vesting_shares = vesting_shares;
+   op.savings = savings;
 
    signed_transaction tx;
    tx.operations.push_back(op);
@@ -1955,9 +1955,9 @@ annotated_signed_transaction wallet_api::withdraw_vesting(string from, asset ves
    return my->sign_transaction( tx, broadcast );
 }
 
-annotated_signed_transaction wallet_api::set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast ) {
+annotated_signed_transaction wallet_api::set_withdraw_savings_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast ) {
     FC_ASSERT(!is_locked());
-    set_withdraw_vesting_route_operation op;
+    set_withdraw_savings_route_operation op;
     op.from_account = from;
     op.to_account = to;
     op.percent = percent;

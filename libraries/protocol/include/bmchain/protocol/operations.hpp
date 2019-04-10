@@ -16,7 +16,7 @@ namespace bmchain { namespace protocol {
 
             transfer_operation,
             transfer_to_vesting_operation,
-            withdraw_vesting_operation,
+            withdraw_savings_operation,
 
             limit_order_create_operation,
             limit_order_cancel_operation,
@@ -40,7 +40,7 @@ namespace bmchain { namespace protocol {
             delete_comment_operation,
             custom_json_operation,
             comment_options_operation,
-            set_withdraw_vesting_route_operation,
+            set_withdraw_savings_route_operation,
             limit_order_create2_operation,
             challenge_authority_operation,
             prove_authority_operation,

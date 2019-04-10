@@ -83,8 +83,8 @@ namespace bmchain { namespace chain {
          asset             delegated_vesting_shares = asset( 0, VESTS_SYMBOL );
          asset             received_vesting_shares = asset( 0, VESTS_SYMBOL );
 
-         asset             vesting_withdraw_rate = asset( 0, VESTS_SYMBOL ); ///< at the time this is updated it can be at most vesting_shares/104
-         time_point_sec    next_rep_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
+         asset             savings_withdraw_rate = asset( 0, BMT_SYMBOL ); ///< at the time this is updated it can be at most vesting_shares/104
+         time_point_sec    next_savings_withdrawal = fc::time_point_sec::maximum(); ///< after every withdrawal this is incremented by 1 week
          share_type        withdrawn = 0; /// Track how many shares have been withdrawn
          share_type        to_withdraw = 0; /// Might be able to look this up with operation history.
          uint16_t          withdraw_routes = 0;
@@ -228,7 +228,7 @@ namespace bmchain { namespace chain {
    struct by_name;
    struct by_proxy;
    struct by_last_post;
-   struct by_next_rep_withdrawal;
+   struct by_next_savings_withdrawal;
    struct by_bmt_balance;
    struct by_smp_balance;
    struct by_smd_balance;
@@ -252,11 +252,11 @@ namespace bmchain { namespace chain {
                member< account_object, account_id_type, &account_object::id >
             > /// composite key by proxy
          >,
-         ordered_unique< tag< by_next_rep_withdrawal >,
+         ordered_unique< tag< by_next_savings_withdrawal >,
             composite_key< account_object,
-               member< account_object, time_point_sec, &account_object::next_rep_withdrawal >,
+               member< account_object, time_point_sec, &account_object::next_savings_withdrawal >,
                member< account_object, account_id_type, &account_object::id >
-            > /// composite key by_next_rep_withdrawal
+            > /// composite key by_next_savings_withdrawal
          >,
          ordered_unique< tag< by_last_post >,
             composite_key< account_object,
@@ -470,7 +470,7 @@ FC_REFLECT( bmchain::chain::account_object,
              (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
              (reward_bmt_balance)(reward_sbd_balance)(reward_vesting_balance)(reward_vesting_bmt)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)
-             (vesting_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+             (savings_withdraw_rate)(next_savings_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)

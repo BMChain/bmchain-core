@@ -254,7 +254,7 @@ namespace detail
                   {
                      switch( item.second.op.which() ) {
                         case operation::tag<transfer_to_vesting_operation>::value:
-                        case operation::tag<withdraw_vesting_operation>::value:
+                        case operation::tag<withdraw_savings_operation>::value:
                         case operation::tag<interest_operation>::value:
                         case operation::tag<transfer_operation>::value:
                         case operation::tag<liquidity_reward_operation>::value:
@@ -985,13 +985,13 @@ namespace detail
 
       if( destination == outgoing || destination == all )
       {
-         auto routes = _database_api->find_withdraw_vesting_routes( { account, database_api::by_withdraw_route } ).routes;
+         auto routes = _database_api->find_withdraw_savings_routes( { account, database_api::by_withdraw_route } ).routes;
          result.insert( result.end(), routes.begin(), routes.end() );
       }
 
       if( destination == incoming || destination == all )
       {
-         auto routes = _database_api->find_withdraw_vesting_routes( { account, database_api::by_destination } ).routes;
+         auto routes = _database_api->find_withdraw_savings_routes( { account, database_api::by_destination } ).routes;
          result.insert( result.end(), routes.begin(), routes.end() );
       }
 

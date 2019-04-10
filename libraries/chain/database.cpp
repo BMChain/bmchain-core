@@ -1364,6 +1364,56 @@ void database::update_owner_authority( const account_object& account, const auth
    });
 }
 
+void database::process_vesting_withdrawals() {
+   const auto &widx = get_index<account_index>().indices().get<by_next_savings_withdrawal>();
+   const auto &didx = get_index<withdraw_savings_route_index>().indices().get<by_withdraw_route>();
+   auto current = widx.begin();
+
+   const auto &cprops = get_dynamic_global_properties();
+
+   while (current != widx.end() && current->next_savings_withdrawal <= head_block_time()) {
+      const auto &from_account = *current;
+      ++current;
+
+      share_type to_withdraw;
+      if (from_account.to_withdraw - from_account.withdrawn < from_account.savings_withdraw_rate.amount)
+         to_withdraw = std::min(from_account.savings_balance.amount,
+                                from_account.to_withdraw % from_account.savings_withdraw_rate.amount).value;
+      else
+         to_withdraw = std::min(from_account.savings_balance.amount, from_account.savings_withdraw_rate.amount).value;
+
+      for (auto itr = didx.upper_bound(boost::make_tuple(from_account.id, account_id_type()));
+           itr != didx.end() && itr->from_account == from_account.id;
+           ++itr) {
+         if (!itr->auto_vest) {
+            const auto &to_account = get(itr->to_account);
+
+            share_type to_deposit = ((fc::uint128_t(to_withdraw.value) * itr->percent) /
+                                     BMCHAIN_100_PERCENT).to_uint64();
+
+            if (to_deposit > 0) {
+               modify(to_account, [&](account_object &a) {
+                  a.balance += asset(to_deposit, BMT_SYMBOL);
+               });
+
+               modify(from_account, [&](account_object &a) {
+                  a.savings_balance.amount -= to_withdraw;
+                  a.withdrawn += to_withdraw;
+
+                  if (a.withdrawn >= a.to_withdraw || a.savings_balance.amount == 0) {
+                     a.savings_withdraw_rate.amount = 0;
+                     a.next_savings_withdrawal = fc::time_point_sec::maximum();
+                  } else {
+                     a.next_savings_withdrawal += fc::seconds(BMCHAIN_SAVINGS_WITHDRAW_INTERVAL_SECONDS);
+                  }
+               });
+
+            }
+         }
+      }
+   }
+}
+
 void database::adjust_total_payout(const comment_object &cur, const asset &bmt_created, const asset &curator_bmt_value,
                                    const asset &beneficiary_value)
 {
@@ -1744,25 +1794,64 @@ void database::custom_tokens_emissions() {
    }
 }
 
+void database::process_savings_reward() {
+   auto& cprops = get_dynamic_global_properties();
+
+   if ( cprops.head_block_number % BMCHAIN_SAVINGS_REWARD_INTERVAL_BLOCKS != 0 )
+      return;
+
+   auto delta = (cprops.current_supply.amount.value - cprops.last_current_supply.amount.value) * double(BMCHAIN_SAVINGS_EMISSION_RATE) / 100;
+   if ( delta == 0 ) {
+      return;
+   }
+
+   auto total_saving_balance = asset(0, BMT_SYMBOL);
+   const auto& account_idx = get_index<account_index>().indices().get<by_name>();
+   for( auto itr = account_idx.cbegin(); itr != account_idx.cend(); ++itr ) {
+      total_saving_balance += itr->savings_balance;
+   }
+
+   if ( total_saving_balance.amount.value <= 0 ) {
+      return;
+   }
+
+   auto total_saving_rewards = asset(0, BMT_SYMBOL);
+   for( auto itr = account_idx.begin(); itr != account_idx.end(); ++itr ) {
+      if ( itr->savings_balance.amount.value > 0 ) {
+         const auto &saving_reward = asset(
+               delta * itr->savings_balance.amount.value / total_saving_balance.amount.value, BMT_SYMBOL);
+
+         adjust_savings_balance( *itr, saving_reward );
+         total_saving_rewards += saving_reward;
+      }
+   }
+
+   modify( cprops, [&]( dynamic_global_property_object& props ) {
+      props.current_supply += total_saving_rewards;
+      props.virtual_supply += total_saving_rewards;
+      props.last_current_supply = props.current_supply;
+   } );
+}
+
 void database::process_savings_withdraws()
 {
-  const auto& idx = get_index< savings_withdraw_index >().indices().get< by_complete_from_rid >();
-  auto itr = idx.begin();
-  while( itr != idx.end() ) {
-     if( itr->complete > head_block_time() )
-        break;
-     adjust_balance( get_account( itr->to ), itr->amount );
-
-     modify( get_account( itr->from ), [&]( account_object& a )
-     {
-        a.savings_withdraw_requests--;
-     });
-
-     push_virtual_operation( fill_transfer_from_savings_operation( itr->from, itr->to, itr->amount, itr->request_id, to_string( itr->memo) ) );
-
-     remove( *itr );
-     itr = idx.begin();
-  }
+//  const auto& idx = get_index< savings_withdraw_index >().indices().get< by_complete_from_rid >();
+//  auto itr = idx.begin();
+//  while( itr != idx.end() ) {
+//     if( itr->complete > head_block_time() )
+//        break;
+//     adjust_balance( get_account( itr->to ), itr->amount );
+//
+//     modify( get_account( itr->from ), [&]( account_object& a )
+//     {
+//        a.savings_withdraw_requests--;
+//     });
+//
+//     push_virtual_operation( fill_transfer_from_savings_operation( itr->from, itr->to, itr->amount, itr->request_id, to_string( itr->memo) ) );
+//
+//     remove( *itr );
+//     itr = idx.begin();
+//  }
 }
 
 asset database::get_liquidity_reward()const
@@ -1977,8 +2066,8 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< delete_comment_evaluator                 >();
    _my->_evaluator_registry.register_evaluator< transfer_evaluator                       >();
    _my->_evaluator_registry.register_evaluator< transfer_to_vesting_evaluator            >();
-   _my->_evaluator_registry.register_evaluator< withdraw_vesting_evaluator               >();
-   _my->_evaluator_registry.register_evaluator< set_withdraw_vesting_route_evaluator     >();
+   _my->_evaluator_registry.register_evaluator< withdraw_savings_evaluator               >();
+   _my->_evaluator_registry.register_evaluator< set_withdraw_savings_route_evaluator     >();
    _my->_evaluator_registry.register_evaluator< account_create_evaluator                 >();
    _my->_evaluator_registry.register_evaluator< account_update_evaluator                 >();
    _my->_evaluator_registry.register_evaluator< witness_update_evaluator                 >();
@@ -2056,7 +2145,7 @@ void database::initialize_indexes()
    add_core_index< operation_index                         >(*this);
    add_core_index< account_history_index                   >(*this);
    add_core_index< hardfork_property_index                 >(*this);
-   add_core_index< withdraw_vesting_route_index            >(*this);
+   add_core_index< withdraw_savings_route_index            >(*this);
    add_core_index< owner_authority_history_index           >(*this);
    add_core_index< account_recovery_request_index          >(*this);
    add_core_index< change_recovery_account_request_index   >(*this);
@@ -2252,6 +2341,7 @@ void database::init_genesis( uint64_t init_supply )
          p.participation_count = 128;
          p.current_supply = asset( init_supply + init_rep / 1000, BMT_SYMBOL );
          p.virtual_supply = p.current_supply;
+         p.last_current_supply = p.current_supply;
          p.total_vesting_shares = asset( init_rep, VESTS_SYMBOL);
          p.total_vesting_fund_bmt = asset( init_rep / 1000, BMT_SYMBOL);
          p.maximum_block_size = BMCHAIN_MAX_BLOCK_SIZE;
@@ -2514,7 +2604,9 @@ void database::_apply_block( const signed_block& next_block )
    clear_null_account_balance();
    // process_funds();
    process_comment_cashout();
+   process_vesting_withdrawals();
    custom_tokens_emissions();
+   process_savings_reward();
    process_savings_withdraws();
    update_virtual_supply();
 
@@ -3332,8 +3424,8 @@ void database::perform_vesting_share_split( uint32_t magnitude )
             a.vesting_shares.amount *= magnitude;
             a.withdrawn             *= magnitude;
             a.to_withdraw           *= magnitude;
-            if( a.vesting_withdraw_rate.amount == 0 )
-               a.vesting_withdraw_rate.amount = 1;
+            if( a.savings_withdraw_rate.amount == 0 )
+               a.savings_withdraw_rate.amount = 1;
 
             for( uint32_t i = 0; i < BMCHAIN_MAX_PROXY_RECURSION_DEPTH; ++i )
                a.proxied_vsf_votes[i] *= magnitude;

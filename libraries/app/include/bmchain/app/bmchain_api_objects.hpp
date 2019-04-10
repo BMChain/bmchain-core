@@ -229,8 +229,8 @@ struct api_account_object
       vesting_shares( a.vesting_shares ),
       delegated_vesting_shares( a.delegated_vesting_shares ),
       received_vesting_shares( a.received_vesting_shares ),
-      vesting_withdraw_rate( a.vesting_withdraw_rate ),
-      next_rep_withdrawal( a.next_rep_withdrawal ),
+      savings_withdraw_rate( a.savings_withdraw_rate ),
+      next_savings_withdrawal( a.next_savings_withdrawal ),
       withdrawn( a.withdrawn ),
       to_withdraw( a.to_withdraw ),
       withdraw_routes( a.withdraw_routes ),
@@ -311,8 +311,8 @@ struct api_account_object
    asset             vesting_shares;
    asset             delegated_vesting_shares;
    asset             received_vesting_shares;
-   asset             vesting_withdraw_rate;
-   time_point_sec    next_rep_withdrawal;
+   asset             savings_withdraw_rate;
+   time_point_sec    next_savings_withdrawal;
    share_type        withdrawn;
    share_type        to_withdraw;
    uint16_t          withdraw_routes = 0;
@@ -588,7 +588,7 @@ FC_REFLECT( bmchain::app::api_account_object,
              (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
              (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
              (reward_sbd_balance)(reward_bmt_balance)(reward_vesting_balance)(reward_vesting_bmt)
-             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_rep_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(savings_withdraw_rate)(next_savings_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)

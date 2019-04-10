@@ -176,7 +176,7 @@ var transfer_to_vesting = new Serializer("transfer_to_vesting", {
     amount: asset
 });
 
-var withdraw_vesting = new Serializer("withdraw_vesting", {
+var withdraw_savings = new Serializer("withdraw_savings", {
     account: string,
     vesting_shares: asset
 });
@@ -303,7 +303,7 @@ var comment_options = new Serializer("comment_options", {
     extensions: set(static_variant([comment_payout_beneficiaries]))
 });
 
-var set_withdraw_vesting_route = new Serializer("set_withdraw_vesting_route", {
+var set_withdraw_savings_route = new Serializer("set_withdraw_savings_route", {
     from_account: string,
     to_account: string,
     percent: uint16,
@@ -657,7 +657,7 @@ operation.st_operations = [
   comment,
   transfer,
   transfer_to_vesting,
-  withdraw_vesting,
+  withdraw_savings,
   limit_order_create,
   limit_order_cancel,
   feed_publish,
@@ -673,7 +673,7 @@ operation.st_operations = [
   delete_comment,
   custom_json,
   comment_options,
-  set_withdraw_vesting_route,
+  set_withdraw_savings_route,
   limit_order_create2,
   challenge_authority,
   prove_authority,

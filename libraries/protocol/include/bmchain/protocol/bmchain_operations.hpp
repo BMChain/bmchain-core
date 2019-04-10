@@ -356,10 +356,10 @@ namespace bmchain { namespace protocol {
     *
     * This operation is not valid if the user has no vesting shares.
     */
-   struct withdraw_vesting_operation : public base_operation
+   struct withdraw_savings_operation : public base_operation
    {
       account_name_type account;
-      asset             vesting_shares;
+      asset             savings;
 
       void validate()const;
       void get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(account); }
@@ -373,7 +373,7 @@ namespace bmchain { namespace protocol {
     * can be immediately vested again, circumventing the conversion from
     * vests to steem and back, guaranteeing they maintain their value.
     */
-   struct set_withdraw_vesting_route_operation : public base_operation
+   struct set_withdraw_savings_route_operation : public base_operation
    {
       account_name_type from_account;
       account_name_type to_account;
@@ -1060,8 +1060,8 @@ FC_REFLECT( bmchain::protocol::account_update_operation,
 
 FC_REFLECT( bmchain::protocol::transfer_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( bmchain::protocol::transfer_to_vesting_operation, (from)(to)(amount) )
-FC_REFLECT( bmchain::protocol::withdraw_vesting_operation, (account)(vesting_shares) )
-FC_REFLECT( bmchain::protocol::set_withdraw_vesting_route_operation, (from_account)(to_account)(percent)(auto_vest) )
+FC_REFLECT( bmchain::protocol::withdraw_savings_operation, (account)(savings) )
+FC_REFLECT( bmchain::protocol::set_withdraw_savings_route_operation, (from_account)(to_account)(percent)(auto_vest) )
 FC_REFLECT( bmchain::protocol::witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( bmchain::protocol::account_witness_vote_operation, (account)(witness)(approve) )
 FC_REFLECT( bmchain::protocol::account_witness_proxy_operation, (account)(proxy) )

@@ -499,7 +499,7 @@ namespace bmchain {
                 const auto &acc = my->_db.get_account(account);
 
                 if (type == outgoing || type == all) {
-                    const auto &by_route = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_withdraw_route>();
+                    const auto &by_route = my->_db.get_index<withdraw_savings_route_index>().indices().get<by_withdraw_route>();
                     auto route = by_route.lower_bound(acc.id);
 
                     while (route != by_route.end() && route->from_account == acc.id) {
@@ -516,7 +516,7 @@ namespace bmchain {
                 }
 
                 if (type == incoming || type == all) {
-                    const auto &by_dest = my->_db.get_index<withdraw_vesting_route_index>().indices().get<by_destination>();
+                    const auto &by_dest = my->_db.get_index<withdraw_savings_route_index>().indices().get<by_destination>();
                     auto route = by_dest.lower_bound(acc.id);
 
                     while (route != by_dest.end() && route->to_account == acc.id) {
@@ -1780,7 +1780,7 @@ namespace bmchain {
                             for (auto &item : history) {
                                 switch (item.second.op.which()) {
                                     case operation::tag<transfer_to_vesting_operation>::value:
-                                    case operation::tag<withdraw_vesting_operation>::value:
+                                    case operation::tag<withdraw_savings_operation>::value:
                                     case operation::tag<interest_operation>::value:
                                     case operation::tag<transfer_operation>::value:
                                     case operation::tag<liquidity_reward_operation>::value:

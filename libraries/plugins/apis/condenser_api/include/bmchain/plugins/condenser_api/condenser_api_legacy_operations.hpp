@@ -46,7 +46,7 @@ namespace bmchain { namespace plugins { namespace condenser_api {
    typedef vote_operation                         legacy_vote_operation;
    typedef escrow_approve_operation               legacy_escrow_approve_operation;
    typedef escrow_dispute_operation               legacy_escrow_dispute_operation;
-   typedef set_withdraw_vesting_route_operation   legacy_set_withdraw_vesting_route_operation;
+   typedef set_withdraw_savings_route_operation   legacy_set_withdraw_savings_route_operation;
    typedef witness_set_properties_operation       legacy_witness_set_properties_operation;
    typedef account_witness_vote_operation         legacy_account_witness_vote_operation;
    typedef account_witness_proxy_operation        legacy_account_witness_proxy_operation;
@@ -397,24 +397,24 @@ namespace bmchain { namespace plugins { namespace condenser_api {
       legacy_asset      amount;
    };
 
-   struct legacy_withdraw_vesting_operation
+   struct legacy_withdraw_savings_operation
    {
-       legacy_withdraw_vesting_operation() {}
+       legacy_withdraw_savings_operation() {}
 
-       legacy_withdraw_vesting_operation(const withdraw_vesting_operation &op) :
+       legacy_withdraw_savings_operation(const withdraw_savings_operation &op) :
                account(op.account),
                vesting_shares(legacy_asset::from_asset(op.vesting_shares)) {}
 
-       operator withdraw_vesting_operation() const {
-           withdraw_vesting_operation
+       operator withdraw_savings_operation() const {
+           withdraw_savings_operation
            op;
            op.account = account;
-           op.vesting_shares = vesting_shares;
+           op.savings = savings;
            return op;
        }
 
        account_name_type account;
-       legacy_asset      vesting_shares;
+       legacy_asset      savings;
    };
 
    struct legacy_witness_update_operation
@@ -994,7 +994,7 @@ namespace bmchain { namespace plugins { namespace condenser_api {
     legacy_comment_operation,
     legacy_transfer_operation,
     legacy_transfer_to_vesting_operation,
-    legacy_withdraw_vesting_operation,
+    legacy_withdraw_savings_operation,
     legacy_limit_order_create_operation,
     legacy_limit_order_cancel_operation,
     legacy_feed_publish_operation,
@@ -1010,7 +1010,7 @@ namespace bmchain { namespace plugins { namespace condenser_api {
     legacy_delete_comment_operation,
     legacy_custom_json_operation,
     legacy_comment_options_operation,
-    legacy_set_withdraw_vesting_route_operation,
+    legacy_set_withdraw_savings_route_operation,
     legacy_limit_order_create2_operation,
     legacy_claim_account_operation,
     legacy_create_claimed_account_operation,
@@ -1093,7 +1093,7 @@ namespace bmchain { namespace plugins { namespace condenser_api {
             return true;
         }
 
-        bool operator()(const set_withdraw_vesting_route_operation &op) const {
+        bool operator()(const set_withdraw_savings_route_operation &op) const {
             l_op = op;
             return true;
         }
@@ -1203,8 +1203,8 @@ namespace bmchain { namespace plugins { namespace condenser_api {
             return true;
         }
 
-        bool operator()(const withdraw_vesting_operation &op) const {
-            l_op = legacy_withdraw_vesting_operation(op);
+        bool operator()(const withdraw_savings_operation &op) const {
+            l_op = legacy_withdraw_savings_operation(op);
             return true;
         }
 
@@ -1368,8 +1368,8 @@ namespace bmchain { namespace plugins { namespace condenser_api {
             return operation(transfer_to_vesting_operation(op));
         }
 
-        operation operator()(const legacy_withdraw_vesting_operation &op) const {
-            return operation(withdraw_vesting_operation(op));
+        operation operator()(const legacy_withdraw_savings_operation &op) const {
+            return operation(withdraw_savings_operation(op));
         }
 
         operation operator()(const legacy_limit_order_create_operation &op) const {
@@ -1569,7 +1569,7 @@ FC_REFLECT( bmchain::plugins::condenser_api::legacy_account_create_with_delegati
 
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_transfer_to_vesting_operation, (from)(to)(amount) )
-FC_REFLECT( bmchain::plugins::condenser_api::legacy_withdraw_vesting_operation, (account)(vesting_shares) )
+FC_REFLECT( bmchain::plugins::condenser_api::legacy_withdraw_savings_operation, (account)(vesting_shares) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_witness_update_operation, (owner)(url)(block_signing_key)(props)(fee) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create_operation, (owner)(orderid)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration) )
 FC_REFLECT( bmchain::plugins::condenser_api::legacy_limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration) )

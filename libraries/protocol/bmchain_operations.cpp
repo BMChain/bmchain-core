@@ -168,13 +168,13 @@ namespace bmchain { namespace protocol {
       FC_ASSERT( amount > asset( 0, BMT_SYMBOL ), "Must transfer a nonzero amount" );
    }
 
-   void withdraw_vesting_operation::validate() const
+   void withdraw_savings_operation::validate() const
    {
       validate_account_name( account );
-      FC_ASSERT( is_asset_type( vesting_shares, VESTS_SYMBOL), "Amount must be VESTS"  );
+      FC_ASSERT( is_asset_type( savings, BMT_SYMBOL), "Amount must be BMT"  );
    }
 
-   void set_withdraw_vesting_route_operation::validate() const
+   void set_withdraw_savings_route_operation::validate() const
    {
       validate_account_name( from_account );
       validate_account_name( to_account );

@@ -1024,64 +1024,51 @@ void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operatio
 //   _db.create_vesting( to_account, o.amount );
 }
 
-void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
+void withdraw_savings_evaluator::do_apply( const withdraw_savings_operation& o )
 {
    const auto &account = _db.get_account(o.account);
 
-   FC_ASSERT(account.vesting_shares >= asset(0, VESTS_SYMBOL),
-             "Account does not have sufficient Steem Power for withdraw.");
-   FC_ASSERT(account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares,
-             "Account does not have sufficient Steem Power for withdraw.");
+   FC_ASSERT(account.savings_balance >= asset(0, BMT_SYMBOL),
+             "Account does not have sufficient savings for withdraw.");
 
-   if (!account.mined) {
-      const auto &props = _db.get_dynamic_global_properties();
-      const witness_schedule_object &wso = _db.get_witness_schedule_object();
-
-      asset min_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
-      min_vests.amount.value *= 10;
-
-      FC_ASSERT(account.vesting_shares > min_vests || o.vesting_shares.amount == 0,
-                "Account registered by another account requires 10x account creation fee worth of Steem Power before it can be powered down.");
-   }
-
-   if (o.vesting_shares.amount == 0) {
-      FC_ASSERT(account.vesting_withdraw_rate.amount != 0,
+   if (o.savings.amount == 0) {
+      FC_ASSERT(account.savings_withdraw_rate.amount != 0,
                 "This operation would not change the vesting withdraw rate.");
 
       _db.modify(account, [&](account_object &a) {
-         a.vesting_withdraw_rate = asset(0, VESTS_SYMBOL);
-         a.next_rep_withdrawal = time_point_sec::maximum();
+         a.savings_withdraw_rate = asset(0, BMT_SYMBOL);
+         a.next_savings_withdrawal = time_point_sec::maximum();
          a.to_withdraw = 0;
          a.withdrawn = 0;
       });
    } else {
-      int vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS;
-      vesting_withdraw_intervals = BMCHAIN_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
+      int vesting_withdraw_intervals = BMCHAIN_SAVINGS_WITHDRAW_INTERVALS;
+      vesting_withdraw_intervals = BMCHAIN_SAVINGS_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
 
       _db.modify(account, [&](account_object &a) {
-         auto new_vesting_withdraw_rate = asset(o.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL);
+         auto new_savings_withdraw_rate = asset(o.savings.amount / vesting_withdraw_intervals, BMT_SYMBOL);
 
-         if (new_vesting_withdraw_rate.amount == 0)
-            new_vesting_withdraw_rate.amount = 1;
+         if (new_savings_withdraw_rate.amount == 0)
+            new_savings_withdraw_rate.amount = 1;
 
-         FC_ASSERT(account.vesting_withdraw_rate != new_vesting_withdraw_rate,
+         FC_ASSERT(account.savings_withdraw_rate != new_savings_withdraw_rate,
                    "This operation would not change the vesting withdraw rate.");
 
-         a.vesting_withdraw_rate = new_vesting_withdraw_rate;
-         a.next_rep_withdrawal = _db.head_block_time() + fc::seconds(BMCHAIN_VESTING_WITHDRAW_INTERVAL_SECONDS);
-         a.to_withdraw = o.vesting_shares.amount;
+         a.savings_withdraw_rate = new_savings_withdraw_rate;
+         a.next_savings_withdrawal = _db.head_block_time() + fc::seconds(BMCHAIN_SAVINGS_WITHDRAW_INTERVAL_SECONDS);
+         a.to_withdraw = o.savings.amount;
          a.withdrawn = 0;
       });
    }
 }
 
-void set_withdraw_vesting_route_evaluator::do_apply( const set_withdraw_vesting_route_operation& o )
+void set_withdraw_savings_route_evaluator::do_apply( const set_withdraw_savings_route_operation& o )
 {
    try
    {
    const auto& from_account = _db.get_account( o.from_account );
    const auto& to_account = _db.get_account( o.to_account );
-   const auto& wd_idx = _db.get_index< withdraw_vesting_route_index >().indices().get< by_withdraw_route >();
+   const auto& wd_idx = _db.get_index< withdraw_savings_route_index >().indices().get< by_withdraw_route >();
    auto itr = wd_idx.find( boost::make_tuple( from_account.id, to_account.id ) );
 
    if( itr == wd_idx.end() )
@@ -1958,28 +1945,28 @@ void transfer_to_savings_evaluator::do_apply( const transfer_to_savings_operatio
 
 void transfer_from_savings_evaluator::do_apply( const transfer_from_savings_operation& op )
 {
-   const auto& from = _db.get_account( op.from );
-   _db.get_account(op.to); // Verify to account exists
-
-   FC_ASSERT( from.savings_withdraw_requests < BMCHAIN_SAVINGS_WITHDRAW_REQUEST_LIMIT, "Account has reached limit for pending withdraw requests." );
-
-   FC_ASSERT( _db.get_savings_balance( from, op.amount.symbol ) >= op.amount );
-   _db.adjust_savings_balance( from, -op.amount );
-   _db.create<savings_withdraw_object>( [&]( savings_withdraw_object& s ) {
-      s.from   = op.from;
-      s.to     = op.to;
-      s.amount = op.amount;
-#ifndef IS_LOW_MEM
-      from_string( s.memo, op.memo );
-#endif
-      s.request_id = op.request_id;
-      s.complete = _db.head_block_time() + BMCHAIN_SAVINGS_WITHDRAW_TIME;
-   });
-
-   _db.modify( from, [&]( account_object& a )
-   {
-      a.savings_withdraw_requests++;
-   });
+//   const auto& from = _db.get_account( op.from );
+//   _db.get_account(op.to); // Verify to account exists
+//
+//   FC_ASSERT( from.savings_withdraw_requests < BMCHAIN_SAVINGS_WITHDRAW_REQUEST_LIMIT, "Account has reached limit for pending withdraw requests." );
+//
+//   FC_ASSERT( _db.get_savings_balance( from, op.amount.symbol ) >= op.amount );
+//   _db.adjust_savings_balance( from, -op.amount );
+//   _db.create<savings_withdraw_object>( [&]( savings_withdraw_object& s ) {
+//      s.from   = op.from;
+//      s.to     = op.to;
+//      s.amount = op.amount;
+//#ifndef IS_LOW_MEM
+//      from_string( s.memo, op.memo );
+//#endif
+//      s.request_id = op.request_id;
+//      s.complete = _db.head_block_time() + BMCHAIN_SAVINGS_WITHDRAW_TIME;
+//   });
+//
+//   _db.modify( from, [&]( account_object& a )
+//   {
+//      a.savings_withdraw_requests++;
+//   });
 }
 
 void cancel_transfer_from_savings_evaluator::do_apply( const cancel_transfer_from_savings_operation& op )

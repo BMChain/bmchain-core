@@ -136,8 +136,8 @@ struct api_account_object
       vesting_shares( legacy_asset::from_asset( a.vesting_shares ) ),
       delegated_vesting_shares( legacy_asset::from_asset( a.delegated_vesting_shares ) ),
       received_vesting_shares( legacy_asset::from_asset( a.received_vesting_shares ) ),
-      vesting_withdraw_rate( legacy_asset::from_asset( a.vesting_withdraw_rate ) ),
-      next_vesting_withdrawal( a.next_vesting_withdrawal ),
+      savings_withdraw_rate( legacy_asset::from_asset( a.savings_withdraw_rate ) ),
+      next_savings_withdrawal( a.next_savings_withdrawal ),
       withdrawn( a.withdrawn ),
       to_withdraw( a.to_withdraw ),
       withdraw_routes( a.withdraw_routes ),
@@ -208,8 +208,8 @@ struct api_account_object
    legacy_asset      vesting_shares;
    legacy_asset      delegated_vesting_shares;
    legacy_asset      received_vesting_shares;
-   legacy_asset      vesting_withdraw_rate;
-   time_point_sec    next_vesting_withdrawal;
+   legacy_asset      savings_withdraw_rate;
+   time_point_sec    next_savings_withdrawal;
    share_type        withdrawn;
    share_type        to_withdraw;
    uint16_t          withdraw_routes = 0;
@@ -956,7 +956,7 @@ DEFINE_API_ARGS( get_account_count,                      vector< variant >,   ui
 DEFINE_API_ARGS( get_owner_history,                      vector< variant >,   vector< database_api::api_owner_authority_history_object > )
 DEFINE_API_ARGS( get_recovery_request,                   vector< variant >,   optional< database_api::api_account_recovery_request_object > )
 DEFINE_API_ARGS( get_escrow,                             vector< variant >,   optional< api_escrow_object > )
-DEFINE_API_ARGS( get_withdraw_routes,                    vector< variant >,   vector< database_api::api_withdraw_vesting_route_object > )
+DEFINE_API_ARGS( get_withdraw_routes,                    vector< variant >,   vector< database_api::api_withdraw_savings_route_object > )
 DEFINE_API_ARGS( get_savings_withdraw_from,              vector< variant >,   vector< api_savings_withdraw_object > )
 DEFINE_API_ARGS( get_savings_withdraw_to,                vector< variant >,   vector< api_savings_withdraw_object > )
 DEFINE_API_ARGS( get_vesting_delegations,                vector< variant >,   vector< api_vesting_delegation_object > )
@@ -1144,7 +1144,7 @@ FC_REFLECT( bmchain::plugins::condenser_api::api_account_object,
              (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
              (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
              (reward_sbd_balance)(reward_bmchain_balance)(reward_vesting_balance)(reward_vesting_steem)
-             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
+             (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(savings_withdraw_rate)(next_savings_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
              (proxied_vsf_votes)(witnesses_voted_for)

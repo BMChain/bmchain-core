@@ -720,7 +720,7 @@ class wallet_api
       *    withdrawn and deposited back as STEEM. i.e. "10.000000 VESTS"
       * @param broadcast true if you wish to broadcast the transaction
       */
-      annotated_signed_transaction withdraw_vesting( string from, asset vesting_shares, bool broadcast = false );
+      annotated_signed_transaction withdraw_savings( string from, asset vesting_shares, bool broadcast = false );
 
       /**
       * Set up a vesting withdraw route. When vesting shares are withdrawn, they will be routed to these accounts
@@ -734,7 +734,7 @@ class wallet_api
       *    them as STEEM.
       * @param broadcast true if you wish to broadcast the transaction.
       */
-      annotated_signed_transaction set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
+      annotated_signed_transaction set_withdraw_savings_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
 
       /**
        * A witness can public a price feed for the BMT:SBD market. The median price feed is used
@@ -1056,8 +1056,8 @@ FC_API( bmchain::wallet::wallet_api,
         (escrow_dispute)
         (escrow_release)
         (transfer_to_vesting)
-        (withdraw_vesting)
-        (set_withdraw_vesting_route)
+        (withdraw_savings)
+        (set_withdraw_savings_route)
 //      (convert_sbd)
         (publish_feed)
 //      (get_order_book)
