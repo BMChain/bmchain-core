@@ -19,7 +19,7 @@ module.exports = [{
 }, {
   "roles": ["active"],
   "operation": "withdraw_savings",
-  "params": ["account", "vesting_shares"]
+  "params": ["account", "savings"]
 }, {
   "roles": ["active"],
   "operation": "limit_order_create",
