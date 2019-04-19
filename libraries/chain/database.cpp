@@ -2312,7 +2312,7 @@ void database::init_genesis( uint64_t init_supply )
          } );
       }
 
-      std::string dev_public_key = std::string(BMCHAIN_ADDRESS_PREFIX) + "6eSz99EbEaEYbroivmXoSVFwP6GKnSSMZo5z18uiZzY1RN4eEd";
+      std::string dev_public_key = std::string(BMCHAIN_ADDRESS_PREFIX) + "83TrTEYeDGyADDNX2mEZoX3JDFrMcyf5xbt9guS6BxeBgfdJ7U";
 
       create< account_object >( [&]( account_object& a )
       {
