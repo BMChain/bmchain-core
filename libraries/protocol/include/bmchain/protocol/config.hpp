@@ -30,8 +30,8 @@
 #define BMCHAIN_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
 #else // IS LIVE BMT NETWORK
 
-#define BMCHAIN_INIT_PUBLIC_KEY_STR             "BMT66aNeWvP9Mkx7j6WiMgYZs1jbDoGtTi6cFTdkeBXkLAqGHvF7L"
-#define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain"))
+#define BMCHAIN_INIT_PUBLIC_KEY_STR             "BMT6v3tNiNbPYSc71hZqWiwAxk2CJfwxm9QJJKzmr1AhPeyBeD82M"
+#define BMCHAIN_CHAIN_ID                        (fc::sha256::hash("bmchain_test_00"))
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< RPT with 6 digits of precision
 #define BMT_SYMBOL  (uint64_t(3) | (uint64_t('B') << 8) | (uint64_t('M') << 16) | (uint64_t('T') << 24))  ///< BMT with 3 digits of precisionDollars with 3 digits of precision
 #define SBD_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24))
