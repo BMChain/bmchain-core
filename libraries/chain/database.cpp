@@ -1397,8 +1397,8 @@ void database::process_vesting_withdrawals() {
                });
 
                modify(from_account, [&](account_object &a) {
-                  a.savings_balance.amount -= to_withdraw;
-                  a.withdrawn += to_withdraw;
+                  a.savings_balance.amount -= to_deposit;
+                  a.withdrawn += to_deposit;
 
                   if (a.withdrawn >= a.to_withdraw || a.savings_balance.amount == 0) {
                      a.savings_withdraw_rate.amount = 0;
