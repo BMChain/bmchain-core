@@ -62,7 +62,7 @@ void new_chain_banner( const bmchain::chain::database& db )
       "********************************\n"
       "*                              *\n"
       "*   ------- NEW CHAIN ------   *\n"
-      "*   -   Welcome to Steem!  -   *\n"
+      "*   -  Welcome to BMChain! -   *\n"
       "*   ------------------------   *\n"
       "*                              *\n"
       "********************************\n"
@@ -116,6 +116,9 @@ namespace detail
          BMCHAIN_ASSERT( cpb.beneficiaries.size() <= 8,
             chain::plugin_exception,
             "Cannot specify more than 8 beneficiaries." );
+      }
+
+      void operator()( const comment_curation_rewards_percent& ccrp ) const {
       }
    };
 

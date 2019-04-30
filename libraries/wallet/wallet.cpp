@@ -2837,6 +2837,22 @@ vector< vesting_delegation_object > wallet_api::get_rep_delegations( string acco
    return my->_remote_db->get_rep_delegations( account, from, limit );
 }
 
+annotated_signed_transaction wallet_api::set_comment_options(string author, string permlink, uint16_t curation_rewards_percent, bool broadcast) const {
+   comment_options_operation op;
+   op.author = author;
+   op.permlink = permlink;
+   op.max_accepted_payout = asset( 1000000000, BMT_SYMBOL );
+   op.percent_bmt_dollars = BMCHAIN_100_PERCENT;
+   op.allow_votes = true;
+   op.allow_curation_rewards = true;
+   op.extensions.insert(comment_curation_rewards_percent(curation_rewards_percent));
+
+   signed_transaction tx;
+   tx.operations.push_back( op );
+   tx.validate();
+
+   return my->sign_transaction( tx, broadcast );
+}
 
 } } // bmchain::wallet
 

@@ -93,6 +93,7 @@ struct api_comment_object
       allow_replies( o.allow_replies ),
       allow_votes( o.allow_votes ),
       allow_curation_rewards( o.allow_curation_rewards ),
+      curation_rewards_percent( o.curation_rewards_percent ),
       unique( o.unique ),
       encrypted( o.encrypted ),
       private_post( o.private_post ),
@@ -152,6 +153,7 @@ struct api_comment_object
    bool              allow_replies = false;
    bool              allow_votes = false;
    bool              allow_curation_rewards = false;
+   uint16_t          curation_rewards_percent = 0;
    vector< beneficiary_route_type > beneficiaries;
 
    bool unique = false;
@@ -572,7 +574,7 @@ FC_REFLECT( bmchain::app::api_comment_object,
              (net_rshares)(abs_rshares)(vote_rshares)
              (children_abs_rshares)(cashout_time)(max_cashout_time)
              (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)
-             (max_accepted_payout)(percent_bmt_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
+             (max_accepted_payout)(percent_bmt_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)(curation_rewards_percent)
              (beneficiaries)
              (unique)
              (encrypted)(private_post)(owner)(encrypted_body)(checksum)(price)

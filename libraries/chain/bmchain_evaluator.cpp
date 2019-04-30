@@ -417,6 +417,19 @@ struct comment_options_extension_visitor
          }
       });
    }
+
+   void operator()( const comment_curation_rewards_percent& ccrp ) const {
+      // const auto& mprops = _db.get_witness_schedule_object().median_props;
+      // auto percent = ccrp.percent;
+
+      FC_ASSERT( BMCHAIN_MIN_CURATION_PERCENT <= ccrp.percent && ccrp.percent <= BMCHAIN_MAX_CURATION_PERCENT,
+                 "Curation rewards percent must be between ${min} and ${max}.",
+                 ("min", BMCHAIN_MIN_CURATION_PERCENT)("max", BMCHAIN_MAX_CURATION_PERCENT) );
+
+      _db.modify(_c, [&](comment_object& c) {
+         c.curation_rewards_percent = ccrp.percent;
+      });
+   }
 };
 
 void comment_options_evaluator::do_apply( const comment_options_operation& o )

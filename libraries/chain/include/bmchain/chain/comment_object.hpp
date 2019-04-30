@@ -96,6 +96,7 @@ namespace bmchain { namespace chain {
          bool              allow_replies = true;      /// allows a post to disable replies.
          bool              allow_votes   = true;      /// allows a post to receive votes;
          bool              allow_curation_rewards = true;
+         uint16_t          curation_rewards_percent = BMCHAIN_MIN_CURATION_PERCENT;
 
          bip::vector< beneficiary_route_type, allocator< beneficiary_route_type > > beneficiaries;
 
@@ -304,7 +305,7 @@ FC_REFLECT( bmchain::chain::comment_object,
              (net_rshares)(abs_rshares)(vote_rshares)
              (children_abs_rshares)(cashout_time)(max_cashout_time)
              (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(beneficiary_payout_value)(author_rewards)(net_votes)(root_comment)
-             (max_accepted_payout)(percent_bmt_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
+             (max_accepted_payout)(percent_bmt_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)(curation_rewards_percent)
              (beneficiaries)
              (unique)
              (encrypted)(private_post)(owner)(encrypted_body)(message_size)(checksum)(nonce)(price)

@@ -265,3 +265,8 @@
 #define CUSTOM_TOKEN_CREATION_FEE               int64_t(100000ll)
 #define CUSTOM_TOKEN_UPVOTE_LOCKOUT             (60*60*12)  /// 12 hours
 #define CUSTOM_TOKEN_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) /// 1 week per interval
+
+/// curation reward
+#define BMCHAIN_MIN_CURATION_PERCENT            (25 * BMCHAIN_1_PERCENT) // 25%
+#define BMCHAIN_DEF_CURATION_PERCENT            (25 * BMCHAIN_1_PERCENT) // 25%
+#define BMCHAIN_MAX_CURATION_PERCENT            BMCHAIN_100_PERCENT

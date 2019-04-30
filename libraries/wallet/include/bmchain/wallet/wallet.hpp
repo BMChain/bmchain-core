@@ -952,6 +952,8 @@ class wallet_api
       vector< custom_token_api_obj > get_custom_tokens( uint32_t limit ) const;
 
       vector< vesting_delegation_object > get_rep_delegations( string account, string from, uint32_t limit ) const;
+
+      annotated_signed_transaction set_comment_options(string author, string permlink, uint16_t curation_rewards_percent, bool broadcast) const;      
 private:
 
       set<string> get_tags_from_json(string tags)const{
@@ -1119,6 +1121,7 @@ FC_API( bmchain::wallet::wallet_api,
 
         ///
         (get_rep_delegations)
+        (set_comment_options)
       )
 
 FC_REFLECT( bmchain::wallet::memo_data, (from)(to)(nonce)(check)(encrypted) )

@@ -93,6 +93,9 @@ namespace bmchain { namespace protocol {
       {
          cpb.validate();
       }
+      void operator()(const comment_curation_rewards_percent& ccrp) const {
+         ccrp.validate();
+      }
    };
 
    void comment_payout_beneficiaries::validate()const
@@ -115,6 +118,11 @@ namespace bmchain { namespace protocol {
          FC_ASSERT( sum <= BMCHAIN_100_PERCENT, "Cannot allocate more than 100% of rewards to a comment" ); // Have to check incrementally to avoid overflow
          FC_ASSERT( beneficiaries[i - 1] < beneficiaries[i], "Benficiaries must be specified in sorted order (account ascending)" );
       }
+   }
+
+   void comment_curation_rewards_percent::validate() const {
+      FC_ASSERT(BMCHAIN_MIN_CURATION_PERCENT <= percent && percent <= BMCHAIN_MAX_CURATION_PERCENT,
+                "Curation rewards percent must be between ${min} and ${max}.");
    }
 
    void comment_options_operation::validate()const

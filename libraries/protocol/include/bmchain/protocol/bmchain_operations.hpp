@@ -134,8 +134,20 @@ namespace bmchain { namespace protocol {
       void validate()const;
    };
 
+   struct comment_curation_rewards_percent {
+      comment_curation_rewards_percent() {}
+
+      comment_curation_rewards_percent(uint16_t perc)
+            : percent(perc) {}
+
+      uint16_t percent = BMCHAIN_MIN_CURATION_PERCENT;
+
+      void validate() const;
+   };
+
    typedef static_variant<
-            comment_payout_beneficiaries
+            comment_payout_beneficiaries,
+            comment_curation_rewards_percent
            > comment_options_extension;
 
    typedef flat_set< comment_options_extension > comment_options_extensions_type;
@@ -1079,6 +1091,7 @@ FC_REFLECT( bmchain::protocol::delete_comment_operation, (author)(permlink) );
 
 FC_REFLECT( bmchain::protocol::beneficiary_route_type, (account)(weight) )
 FC_REFLECT( bmchain::protocol::comment_payout_beneficiaries, (beneficiaries) )
+FC_REFLECT( bmchain::protocol::comment_curation_rewards_percent, (percent) )
 FC_REFLECT_TYPENAME( bmchain::protocol::comment_options_extension )
 FC_REFLECT( bmchain::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_bmt_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
 
@@ -1087,7 +1100,7 @@ FC_REFLECT( bmchain::protocol::escrow_approve_operation, (from)(to)(agent)(who)(
 FC_REFLECT( bmchain::protocol::escrow_dispute_operation, (from)(to)(agent)(who)(escrow_id) );
 FC_REFLECT( bmchain::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(bmt_amount) );
 FC_REFLECT( bmchain::protocol::challenge_authority_operation, (challenger)(challenged)(require_owner) );
-FC_REFLECT( bmchain::protocol::prove_authority_operation, );
+FC_REFLECT( bmchain::protocol::prove_authority_operation, )
 FC_REFLECT( bmchain::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions) );
 FC_REFLECT( bmchain::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) );
 FC_REFLECT( bmchain::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) );
