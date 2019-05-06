@@ -85,6 +85,10 @@ var comment_payout_beneficiaries = new Serializer(0, {
     beneficiaries: set(beneficiaries)
 });
 
+var comment_curation_rewards_percent = new Serializer(1, {
+    percent: uint16
+});
+
 // Custom-types after Generated code
 
 // ##  Generated code follows
@@ -300,7 +304,10 @@ var comment_options = new Serializer("comment_options", {
     percent_steem_dollars: uint16,
     allow_votes: bool,
     allow_curation_rewards: bool,
-    extensions: set(static_variant([comment_payout_beneficiaries]))
+    extensions: set(static_variant([
+        comment_payout_beneficiaries,
+        comment_curation_rewards_percent,
+    ]))
 });
 
 var set_withdraw_savings_route = new Serializer("set_withdraw_savings_route", {
